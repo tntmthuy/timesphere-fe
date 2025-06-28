@@ -3,24 +3,18 @@ import { PageSectionWrapper } from "./PageSectionWrapper";
 export const ContactSection = () => {
   return (
     <PageSectionWrapper>
-      <section id="contact" className="bg-white px-4 py-16 text-black">
-        <div className="w-full max-w-[1000px] mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-            {/* Left: Image */}
-            <div className="space-y-4 max-w-sm mx-auto">
-              <div className="mx-auto rounded overflow-hidden shadow-md">
-                <img
-                  src="https://i.pinimg.com/736x/d7/32/a7/d732a751d3747c3bfe1e5cb1e16f6edc.jpg"
-                  alt="Contact illustration"
-                  className="w-full h-auto object-cover"
-                />
-              </div>
-            </div>
+      <section
+        id="contact"
+        className="bg-white bg-cover bg-center px-4 py-16 text-black"
+        style={{ backgroundImage: "url('/images/contact.png')" }}
+      >
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+          <div className="hidden md:block" />
 
-            {/* Right: Form */}
+          <div className="bg-white bg-opacity-90 p-8 rounded-lg">
             <form className="space-y-4 max-w-md w-full mx-auto">
               <h2 className="text-2xl font-bold">Let’s Optimize Your Time Together</h2>
-              <p className="text-sm text-[#B3B1B0] leading-relaxed">
+              <p className="text-sm text-[#4B4B4B] leading-relaxed">
                 Need help getting started or have questions about our time management tools?
                 We’re here to help you work smarter, not harder.
               </p>

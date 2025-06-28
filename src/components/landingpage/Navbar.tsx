@@ -26,7 +26,7 @@ export const Navbar = () => {
           </Link>
           <Link to="/register">
             <button
-              id="navbar-getstarted" // ✅ để PlanCard bắt hiệu ứng
+              id="navbar-getstarted"
               className="rounded bg-white px-6 py-2 font-medium text-black transition hover:bg-[#FFDE70] hover:text-black"
             >
               Get Started
