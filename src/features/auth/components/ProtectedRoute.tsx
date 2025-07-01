@@ -3,6 +3,8 @@ import { useAppSelector } from "../../../state/hooks";
 import type { JSX } from "react";
 
 export const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
-  const { token } = useAppSelector((state) => state.auth);
-  return token ? children : <Navigate to="/login" replace />;
+  const { token, status } = useAppSelector((state) => state.auth);
+  const isAuthenticated = !!token && status === "succeeded";
+
+  return isAuthenticated ? children : <Navigate to="/login" replace />;
 };

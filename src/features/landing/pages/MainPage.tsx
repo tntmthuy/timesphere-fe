@@ -1,13 +1,13 @@
 import { useState } from "react";
-import { Sidebar } from "../components/sidebar/Sidebar";
+import { Sidebar } from "../../sidebar/Sidebar";
 import { Outlet } from "react-router-dom";
-import { CreateTeamModal } from "../features/team/components/CreateTeamModal";
+import { CreateTeamModal } from "../../team/components/CreateTeamModal";
 
 export const MainPage = () => {
   const [showCreateTeamModal, setShowCreateTeamModal] = useState(false);
 
   return (
-    <div className="relative flex h-screen bg-black">
+    <div className="relative flex min-h-screen bg-black">
       {/* Sidebar trái */}
       <Sidebar onNewTeam={() => setShowCreateTeamModal(true)} />
 

@@ -21,24 +21,18 @@ export const LoginPage = () => {
   };
 
   useEffect(() => {
-  console.log("🧪 [LoginPage] Redux status:", status);
-  console.log("🔑 [LoginPage] Redux token:", token);
-
-  if (token && status === "succeeded") {
-    console.log("🚀 [LoginPage] Điều hướng sang /mainpage");
-    navigate("/mainpage");
-  }
-}, [token, status, navigate]);
-
-
-
+    if (status === "mfa_required") {
+      navigate("/verify-code", { state: { email: form.email } });
+    } else if (token && status === "succeeded") {
+      navigate("/mainpage");
+    }
+  }, [token, status, navigate, form.email]);
   return (
     <section className="flex min-h-screen items-center justify-center bg-[#FFDE70] px-4">
       <div className="w-full max-w-md space-y-6 rounded-xl border border-black bg-white p-8 shadow-lg">
         <h2 className="text-center text-2xl font-bold text-black">
           Welcome Back
         </h2>
-
         <form className="space-y-4" onSubmit={handleSubmit}>
           <div>
             <label
@@ -87,7 +81,9 @@ export const LoginPage = () => {
           {status === "loading" && (
             <p className="text-sm text-gray-500">Đang đăng nhập...</p>
           )}
-          {error && <p className="text-sm text-red-500">{error}</p>}
+          {error && status !== "mfa_required" && (
+            <p className="text-sm text-red-500">{error}</p>
+          )}
 
           <button
             type="submit"
@@ -109,6 +105,38 @@ export const LoginPage = () => {
             Register
           </Link>
         </p>
+        <div className="mt-4 flex justify-between text-sm text-gray-400">
+          <button
+            onClick={() => window.history.back()}
+            className="hover:text-[#FFDE70]"
+          >
+            ← Back
+          </button>
+          <Link
+            to="/"
+            className="flex items-center gap-1 text-sm font-medium text-gray-500 transition hover:text-[#FFDE70]"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+              className="h-5 w-5"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 
+      .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 
+      1.125-1.125h2.25c.621 0 1.125.504 
+      1.125 1.125V21h4.125c.621 0 1.125-.504 
+      1.125-1.125V9.75M8.25 21h8.25"
+              />
+            </svg>
+            Home
+          </Link>
+        </div>
       </div>
     </section>
   );

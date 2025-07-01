@@ -5,8 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
 import { SidebarTeamItem } from "./SidebarTeamItem";
 import type { RootState } from "../../state/store";
-import { setTeams } from "../../features/team/teamSlice";
-
+import { setTeams } from "../team/teamSlice";
 
 type SidebarTeamListProps = {
   isActive: boolean;
@@ -100,7 +99,7 @@ export const SidebarTeamList = ({
       </button>
 
       {showTeams && (
-        <div className="mt-2 space-y-1">
+        <div className="mt-2 space-y-1 pl-8">
           {teamList.length > 0 ? (
             teamList.map((team) => (
               <SidebarTeamItem

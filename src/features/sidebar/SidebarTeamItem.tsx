@@ -12,8 +12,9 @@ export const SidebarTeamItem = ({ id, name }: Props) => {
     <button
       onClick={() => navigate(`/mainpage/team/${id}`)}
       className="w-full text-left px-4 py-2 text-sm text-gray-300 rounded hover:bg-gray-700 transition"
+      title={name} // 🪄 Tooltip khi hover
     >
-      {name}
+      <span className="block truncate max-w-full">{name}</span>
     </button>
   );
 };
