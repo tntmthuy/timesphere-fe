@@ -50,11 +50,11 @@ export const KanbanBoard = ({ workspaceId }: Props) => {
   }, [workspaceId, token]);
 
   return (
-    <div className="flex h-full items-start gap-4 overflow-x-auto pb-6">
+    <div className="flex h-full min-w-full items-start gap-4 overflow-x-auto pb-6">
+      {" "}
       {columns.map((col) => (
         <KanbanColumn key={col.id} column={col} />
       ))}
-
       {adding ? (
         <AddColumnCard
           onAdd={() => {}} // bạn sẽ thêm createColumn sau
