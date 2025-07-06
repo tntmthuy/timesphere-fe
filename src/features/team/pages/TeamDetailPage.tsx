@@ -1,11 +1,9 @@
 import { useParams } from "react-router-dom";
-import { useEffect, useState, useRef } from "react";
-import axios, { AxiosError } from "axios";
+import { useEffect, useState } from "react";
+import axios from "axios";
 import { useAppSelector } from "../../../state/hooks";
-import { useDispatch } from "react-redux";
-import { updateTeamName } from "../teamSlice";
-import { TeamMemberCard } from "../components/TeamMemberCard";
-import { KanbanColumn } from "../components/KanbanColumn";
+import { KanbanBoard } from "../components/KanbanBoard";
+import { TeamHeader } from "../components/TeamHeader";
 
 type Member = {
   userId: string;
@@ -25,13 +23,9 @@ type Team = {
 export const TeamDetailPage = () => {
   const { id } = useParams();
   const token = useAppSelector((state) => state.auth.token);
-  const dispatch = useDispatch();
 
   const [team, setTeam] = useState<Team | null>(null);
   const [loading, setLoading] = useState(true);
-  const [newName, setNewName] = useState("");
-  const [isEditing, setIsEditing] = useState(false);
-  const inputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     if (!id || !token) return;
@@ -42,100 +36,47 @@ export const TeamDetailPage = () => {
       })
       .then((res) => {
         setTeam(res.data.data);
-        setNewName(res.data.data.teamName);
       })
       .catch((err) => console.error("Lỗi fetch:", err))
       .finally(() => setLoading(false));
   }, [id, token]);
-
-  useEffect(() => {
-    if (isEditing && inputRef.current) {
-      inputRef.current.focus();
-    }
-  }, [isEditing]);
-
-  const handleRename = async (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key !== "Enter" || !newName || newName === team?.teamName) return;
-
-    try {
-      const res = await axios.put(
-        `/api/teams/${team!.id}/name`,
-        { newName },
-        { headers: { Authorization: `Bearer ${token}` } },
-      );
-      setTeam(res.data.data);
-      dispatch(updateTeamName({ id: team!.id, newName })); // 🧠 Update Redux
-      setIsEditing(false);
-    } catch (err) {
-      const axiosErr = err as AxiosError;
-
-      if (axiosErr.response?.status === 403) {
-        alert(
-          "Bạn không có quyền đổi tên nhóm. Chỉ trưởng nhóm mới được phép thực hiện thao tác này.",
-        );
-      } else {
-        alert("Đổi tên thất bại. Vui lòng thử lại sau.");
-      }
-
-      console.error("Lỗi khi đổi tên:", axiosErr);
-    }
-  };
 
   if (loading) return <div className="p-6 text-white">Đang tải dữ liệu...</div>;
   if (!team)
     return <div className="p-6 text-red-400">Không tìm thấy nhóm!</div>;
 
   return (
-    <div className="min-h-full rounded-2xl bg-white p-8 shadow-xl">
-      {isEditing ? (
-        <input
-          ref={inputRef}
-          value={newName}
-          onChange={(e) => setNewName(e.target.value)}
-          onKeyDown={handleRename}
-          onBlur={() => setIsEditing(false)}
-          className="mb-2 border-b border-gray-300 bg-transparent text-2xl font-bold text-gray-900 transition-colors outline-none focus:border-gray-500"
-        />
-      ) : (
-        <div
-          className="group mb-2 flex cursor-pointer items-center gap-2 select-none"
-          onClick={() => setIsEditing(true)}
-        >
-          <h1 className="text-2xl font-bold text-gray-900">{team.teamName}</h1>
-          <span className="text-gray-400 opacity-0 transition-opacity group-hover:opacity-100">
-            🖊
-          </span>
+    <div className="flex h-full w-full flex-col bg-white p-8 shadow-xl">
+      {" "}
+      <TeamHeader
+        teamName={team.teamName}
+        description={team.description}
+        teamId={team.id}
+      />
+      <div className="flex flex-1 flex-col overflow-hidden">
+        <div className="flex max-w-[300px] items-center gap-2 pb-4">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke-width="1.5"
+            stroke="currentColor"
+            className="h-4 w-4"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M3.75 3v11.25A2.25 2.25 0 0 0 6 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0 1 18 16.5h-2.25m-7.5 0h7.5m-7.5 0-1 3m8.5-3 1 3m0 0 .5 1.5m-.5-1.5h-9.5m0 0-.5 1.5M9 11.25v1.5M12 9v3.75m3-6v6"
+            />
+          </svg>
+          <h2 className="leading-none font-bold text-gray-800">
+            Bảng công việc
+          </h2>
         </div>
-      )}
 
-      {team.description && (
-        <p className="mb-6 text-sm text-gray-600">{team.description}</p>
-      )}
-
-      <h2 className="mb-3 text-lg font-semibold">Thành viên</h2>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
-        {team.members.map((m) => (
-          <TeamMemberCard
-            key={m.userId}
-            fullName={m.fullName}
-            email={m.email}
-            teamRole={m.teamRole}
-          />
-        ))}
-      </div>
-
-      <h2 className="mt-8 mb-4 text-lg font-semibold text-gray-800">
-        Bảng công việc
-      </h2>
-      <div className="flex gap-4 overflow-x-auto pb-2">
-        <KanbanColumn
-          title="To Do"
-          initialTasks={[{ id: "1", title: "Viết báo cáo" }]}
-        />
-        <KanbanColumn
-          title="In Progress"
-          initialTasks={[{ id: "2", title: "Tìm hiểu chủ đề" }]}
-        />
+        <div className="flex flex-1 items-start gap-4 overflow-hidden">
+          <KanbanBoard workspaceId={team.id} />
+        </div>
       </div>
     </div>
   );

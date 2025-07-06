@@ -24,9 +24,6 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/verify" element={<VerifyCodePage />} />
 
-        {/* 🧪 Nếu còn muốn test riêng */}
-        {/* <Route path="/team-details" element={<TeamDetailPage />} /> */}
-
         {/* 🔐 Protected layout */}
         <Route
           path="/mainpage"

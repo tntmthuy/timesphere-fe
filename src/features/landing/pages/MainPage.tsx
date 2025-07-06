@@ -12,7 +12,7 @@ export const MainPage = () => {
       <Sidebar onNewTeam={() => setShowCreateTeamModal(true)} />
 
       {/* Nội dung bên phải */}
-      <div className="flex-1 overflow-y-auto bg-black p-6 text-gray-900">
+      <div className="flex-1 overflow-y-auto bg-black text-gray-900">
         <Outlet />
       </div>
 

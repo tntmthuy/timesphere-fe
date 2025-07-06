@@ -72,62 +72,58 @@ export const CreateTeamModal = ({ onClose }: Props) => {
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-5">
-          {/* Tên nhóm */}
-          <div>
-            <label className="block text-xs uppercase font-semibold text-gray-600 mb-1">
-              Tên nhóm <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              name="teamName"
-              value={form.teamName}
-              onChange={handleChange}
-              required
-              className="w-full border rounded px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FFDE70]"
-            />
-          </div>
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    {/* Cột trái: Tên nhóm + Mô tả */}
+    <div className="space-y-5">
+      <div>
+        <label className="block text-xs uppercase font-semibold text-gray-600 mb-1">
+          Tên nhóm <span className="text-red-500">*</span>
+        </label>
+        <input
+          type="text"
+          name="teamName"
+          value={form.teamName}
+          onChange={handleChange}
+          required
+          className="w-full border rounded px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FFDE70]"
+        />
+      </div>
 
-          {/* Mô tả */}
-          <div>
-            <label className="block text-xs uppercase font-semibold text-gray-600 mb-1">
-              Mô tả nhóm
-            </label>
-            <textarea
-              name="description"
-              value={form.description}
-              onChange={handleChange}
-              rows={3}
-              className="w-full border rounded px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FFDE70]"
-            />
-          </div>
+      <div>
+        <label className="block text-xs uppercase font-semibold text-gray-600 mb-1">
+          Mô tả nhóm
+        </label>
+        <textarea
+          name="description"
+          value={form.description}
+          onChange={handleChange}
+          rows={3}
+          className="w-full border rounded px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FFDE70]"
+        />
+      </div>
+    </div>
 
-          {/* Mời thành viên */}
-          <div>
-            <label className="block text-xs uppercase font-semibold text-gray-600 mb-1">
-              Mời thành viên
-            </label>
-            <SearchMemberInput />
-          </div>
+    {/* Cột phải: Mời thành viên */}
+    <div className="space-y-5">
+      <div>
+        <label className="block text-xs uppercase font-semibold text-gray-600 mb-1">
+          Mời thành viên
+        </label>
+        <SearchMemberInput />
+      </div>
+    </div>
+  </div>
 
-          {/* Submit */}
-          <div className="pt-2">
-            <button
-              type="submit"
-              className="w-full bg-black text-white font-semibold text-sm px-4 py-2 rounded hover:bg-[#FFDE70] hover:text-black transition"
-            >
-              Tạo nhóm
-            </button>
-            {/* {message && (
-              <p className="mt-3 text-sm text-center">
-                {message.startsWith("✅") ? (
-                  <span className="text-green-600">{message}</span>
-                ) : (
-                  <span className="text-red-600">{message}</span>
-                )}
-              </p>
-            )} */}
-          </div>
-        </form>
+  {/* Submit */}
+  <div className="pt-4">
+    <button
+      type="submit"
+      className="w-full bg-black text-white font-semibold text-sm px-4 py-2 rounded hover:bg-[#FFDE70] hover:text-black transition"
+    >
+      Tạo nhóm
+    </button>
+  </div>
+</form>
       </div>
     </div>
   );

@@ -4,10 +4,13 @@ import storage from 'redux-persist/lib/storage';
 
 import authReducer from '../features/auth/authSlice';
 import teamReducer from "../features/team/teamSlice";
+import kanbanReducer from "../features/team/kanbanSlice";
+
 
 const rootReducer = combineReducers({
   auth: authReducer,
   team: teamReducer,
+  kanban: kanbanReducer,
 });
 
 const persistConfig = {
