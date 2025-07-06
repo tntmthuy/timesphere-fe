@@ -1,33 +1,39 @@
-import { configureStore, combineReducers } from '@reduxjs/toolkit';
-import { persistReducer, persistStore } from 'redux-persist';
-import storage from 'redux-persist/lib/storage';
+import { configureStore, combineReducers } from "@reduxjs/toolkit";
+import { persistReducer, persistStore } from "redux-persist";
+import storage from "redux-persist/lib/storage";
 
-import authReducer from '../features/auth/authSlice';
+import authReducer from "../features/auth/authSlice";
 import teamReducer from "../features/team/teamSlice";
 import kanbanReducer from "../features/team/kanbanSlice";
 
-
+// 🔧 Gộp reducers
 const rootReducer = combineReducers({
   auth: authReducer,
   team: teamReducer,
   kanban: kanbanReducer,
 });
 
+// 🔒 Cấu hình persist
 const persistConfig = {
-  key: 'root',
+  key: "root",
   storage,
-  whitelist: ['auth'], // ✅ chỉ lưu auth, không lưu team
+  whitelist: ["auth"], // ✅ chỉ lưu auth, tránh lưu team/kanban
 };
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
 
+// 🏗️ Tạo store
 export const store = configureStore({
   reducer: persistedReducer,
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware({ serializableCheck: false }),
+    getDefaultMiddleware({
+      serializableCheck: false,
+    }),
 });
 
+// 🔐 Tạo persistor để dùng với <PersistGate />
 export const persistor = persistStore(store);
 
+// 🔷 Type cho toàn bộ app
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
