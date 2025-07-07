@@ -11,6 +11,7 @@ type UserSuggestion = {
 
 export const SearchMemberInput = () => {
   const token = useAppSelector((state) => state.auth.token);
+  const currentUserId = useAppSelector((state) => state.auth.user?.id);
   const [keyword, setKeyword] = useState("");
   const [suggestions, setSuggestions] = useState<UserSuggestion[]>([]);
   const [invited, setInvited] = useState<UserSuggestion[]>([]);
@@ -78,77 +79,102 @@ export const SearchMemberInput = () => {
 
       {/* 📍 Gợi ý người dùng */}
       {suggestions.length > 0 && (
-        <ul className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded border bg-white text-sm text-black shadow">
-          {suggestions.map((user) => (
-            <li
-              key={user.id}
-              onClick={() => handleAdd(user)}
-              className="cursor-pointer px-3 py-2 hover:bg-gray-100"
-            >
-              <span className="font-medium">{user.fullName}</span> –{" "}
-              {user.email}
-            </li>
-          ))}
+        <ul className="absolute z-10 mt-1 max-h-[192px] w-full overflow-auto rounded border bg-white text-sm text-black shadow">
+          {suggestions.map((user) => {
+            const isSelf = user.id === currentUserId;
+            const isInvited = invited.some((u) => u.id === user.id);
+
+            if (isSelf) return null; // ❌ Ẩn chính chủ
+            return (
+              <li
+                key={user.id}
+                onClick={() => {
+                  if (!isInvited) handleAdd(user);
+                }}
+                className={`px-3 py-2 text-sm ${
+                  isInvited
+                    ? "cursor-not-allowed text-gray-400"
+                    : "cursor-pointer text-black hover:bg-gray-100"
+                }`}
+                title={isInvited ? "Already invited" : ""}
+              >
+                <span className={isInvited ? "line-through" : "font-medium"}>
+                  {user.fullName}
+                </span>{" "}
+                – {user.email}
+              </li>
+            );
+          })}
         </ul>
       )}
 
       {/* 👥 Danh sách thành viên được mời */}
+      {/* 👥 Invited members list */}
       {invited.length > 0 && (
         <div className="mt-4">
-          <ul className="space-y-1">
-            <div className="mt-4">
-              <p className="mb-1 text-sm font-semibold text-gray-700">
-                💡 Thành viên được mời:
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {invited.map((u) => (
-                  <div
-                    key={u.id}
-                    className="flex items-center gap-2 rounded-full bg-gray-100 px-3 py-1 text-sm text-gray-800 shadow-sm"
-                  >
-                    <div className="flex items-center gap-2">
-                      {/* Avatar hoặc fallback icon */}
-                      {u.avatarUrl ? (
-                        <img
-                          src={u.avatarUrl}
-                          alt={u.fullName}
-                          className="h-6 w-6 rounded-full object-cover"
-                        />
-                      ) : (
-                        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gray-300 text-xs font-medium">
-                          {u.fullName?.charAt(0) || "?"}
-                        </div>
-                      )}
-                      <span className="max-w-[120px] truncate font-medium">
-                        {u.fullName}
-                      </span>
+          <p className="mb-1 flex items-center gap-1 text-[10px] font-semibold text-gray-700 uppercase">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              className="h-3 w-3 text-black"
+            >
+              <path
+                fillRule="evenodd"
+                clipRule="evenodd"
+                d="M4.5 3.75a3 3 0 0 0-3 3v10.5a3 3 0 0 0 3 3h15a3 3 0 0 0 3-3V6.75a3 3 0 0 0-3-3h-15Zm4.125 3a2.25 2.25 0 1 0 0 4.5 2.25 2.25 0 0 0 0-4.5Zm-3.873 8.703a4.126 4.126 0 0 1 7.746 0 .75.75 0 0 1-.351.92 7.47 7.47 0 0 1-3.522.877 7.47 7.47 0 0 1-3.522-.877.75.75 0 0 1-.351-.92ZM15 8.25a.75.75 0 0 0 0 1.5h3.75a.75.75 0 0 0 0-1.5H15ZM14.25 12a.75.75 0 0 1 .75-.75h3.75a.75.75 0 0 1 0 1.5H15a.75.75 0 0 1-.75-.75Zm.75 2.25a.75.75 0 0 0 0 1.5h3.75a.75.75 0 0 0 0-1.5H15Z"
+              />
+            </svg>
+            Invited members:
+          </p>
+          <div className="max-h-[112px] space-y-2 overflow-y-auto pr-1">
+            {" "}
+            {/* 56px * 2 rows */}
+            {invited.map((u) => (
+              <div
+                key={u.id}
+                className="flex w-full items-center justify-between gap-2 rounded-md bg-gray-100 px-4 py-2 text-sm text-gray-800 shadow-sm"
+              >
+                {/* Avatar + name */}
+                <div className="flex min-w-0 items-center gap-2">
+                  {u.avatarUrl ? (
+                    <img
+                      src={u.avatarUrl}
+                      alt={u.fullName}
+                      className="h-6 w-6 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gray-300 text-xs font-medium">
+                      {u.fullName?.charAt(0) || "?"}
                     </div>
-                    {/* Nút xoá */}
-                    <button
-                      onClick={() => handleRemove(u.id)}
-                      className="text-gray-400 transition hover:text-red-600"
-                      title="Gỡ khỏi danh sách"
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-4 w-4"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth={2}
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M6 18L18 6M6 6l12 12"
-                        />
-                      </svg>
-                    </button>
-                  </div>
-                ))}
+                  )}
+                  <span className="truncate font-medium">{u.fullName}</span>
+                </div>
+
+                {/* Remove button */}
+                <button
+                  onClick={() => handleRemove(u.id)}
+                  className="text-gray-400 transition hover:text-red-600"
+                  title="Remove"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-4 w-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={2}
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
               </div>
-            </div>
-          </ul>
+            ))}
+          </div>
         </div>
       )}
     </div>

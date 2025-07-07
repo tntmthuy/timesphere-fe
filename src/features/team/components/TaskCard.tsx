@@ -10,9 +10,10 @@ type TaskProps = {
       fullName: string;
     }[];
   };
+  onClick?: () => void;
 };
 
-export const TaskCard = ({ task }: TaskProps) => {
+export const TaskCard = ({ task, onClick }: TaskProps) => {
   const getPriorityColorClass = (priority: string) => {
     switch (priority) {
       case "HIGH":
@@ -22,7 +23,7 @@ export const TaskCard = ({ task }: TaskProps) => {
       case "LOW":
         return "bg-green-100 text-green-600";
       default:
-        return "bg-gray-100 text-gray-600";
+        return "bg-gray-300 text-gray-600";
     }
   };
   const getColorClass = (priority: string): string => {
@@ -38,7 +39,10 @@ export const TaskCard = ({ task }: TaskProps) => {
     }
   };
   return (
-    <div className="relative w-full rounded-lg border border-gray-100 bg-white p-4 text-sm shadow-[0_4px_16px_rgba(0,0,0,0.08)]">
+    <div
+      onClick={onClick}
+      className="relative w-full rounded-lg border border-gray-100 bg-white p-4 text-sm shadow-[0_4px_16px_rgba(0,0,0,0.08)]"
+    >
       <div
         className={`absolute top-0 left-0 h-full w-1 rounded-s ${getColorClass(task.priority)}`}
       />
@@ -59,12 +63,12 @@ export const TaskCard = ({ task }: TaskProps) => {
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 24 24"
           fill="currentColor"
-          className="w-4 h-4 text-gray-600"
+          className="h-4 w-4 text-gray-600"
         >
           <path
-            fill-rule="evenodd"
+            fillRule="evenodd"
             d="M2.625 6.75a1.125 1.125 0 1 1 2.25 0 1.125 1.125 0 0 1-2.25 0Zm4.875 0A.75.75 0 0 1 8.25 6h12a.75.75 0 0 1 0 1.5h-12a.75.75 0 0 1-.75-.75ZM2.625 12a1.125 1.125 0 1 1 2.25 0 1.125 1.125 0 0 1-2.25 0ZM7.5 12a.75.75 0 0 1 .75-.75h12a.75.75 0 0 1 0 1.5h-12A.75.75 0 0 1 7.5 12Zm-4.875 5.25a1.125 1.125 0 1 1 2.25 0 1.125 1.125 0 0 1-2.25 0Zm4.875 0a.75.75 0 0 1 .75-.75h12a.75.75 0 0 1 0 1.5h-12a.75.75 0 0 1-.75-.75Z"
-            clip-rule="evenodd"
+            clipRule="evenodd"
           />
         </svg>
 
@@ -86,16 +90,24 @@ export const TaskCard = ({ task }: TaskProps) => {
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 24 24"
           fill="currentColor"
-          className="w-4 h-4 text-gray-600"
+          className="h-4 w-4 text-gray-600"
         >
           <path
-            fill-rule="evenodd"
+            fillRule="evenodd"
             d="M6.75 2.25A.75.75 0 0 1 7.5 3v1.5h9V3A.75.75 0 0 1 18 3v1.5h.75a3 3 0 0 1 3 3v11.25a3 3 0 0 1-3 3H5.25a3 3 0 0 1-3-3V7.5a3 3 0 0 1 3-3H6V3a.75.75 0 0 1 .75-.75Zm13.5 9a1.5 1.5 0 0 0-1.5-1.5H5.25a1.5 1.5 0 0 0-1.5 1.5v7.5a1.5 1.5 0 0 0 1.5 1.5h13.5a1.5 1.5 0 0 0 1.5-1.5v-7.5Z"
-            clip-rule="evenodd"
+            clipRule="evenodd"
           />
         </svg>
 
-        <span>{new Date(task.dateDue).toLocaleDateString()}</span>
+        <span>
+          {task.dateDue && task.dateDue !== "1970-01-01"
+            ? new Intl.DateTimeFormat("en-GB", {
+                day: "2-digit",
+                month: "short",
+                year: "numeric",
+              }).format(new Date(task.dateDue))
+            : "No deadline"}
+        </span>
       </div>
 
       <div className="flex items-center gap-2 text-gray-700">
@@ -103,13 +115,13 @@ export const TaskCard = ({ task }: TaskProps) => {
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
           viewBox="0 0 24 24"
-          stroke-width="1.5"
+          strokeWidth="1.5"
           stroke="currentColor"
-          className="w-4 h-4 text-gray-600"
+          className="h-4 w-4 text-gray-600"
         >
           <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
+            strokeLinecap="round"
+            strokeLinejoin="round"
             d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"
           />
         </svg>

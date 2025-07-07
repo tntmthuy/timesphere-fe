@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { createTask, type TaskDto } from "../task"; 
+import { createTask, type TaskDto } from "../task";
 import { useAppSelector } from "../../../state/hooks";
 import toast from "react-hot-toast";
 
@@ -27,9 +27,10 @@ export const AddTaskInlineInput = ({ columnId, onAddTask }: Props) => {
       onAddTask(task);
       setValue("");
       setEditing(false);
+      toast.success("Task created successfully!");
     } catch (err) {
-      console.error("❌ Tạo task lỗi:", err);
-      toast.error("Không thể tạo task");
+      console.error("Failed to create task:", err);
+      toast.error("Unable to create task");
     }
   };
 

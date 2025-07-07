@@ -1,9 +1,18 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
+// 🧾 Kiểu user
+export interface User {
+  id: string;
+  fullName: string;
+  email: string;
+  avatarUrl: string | null;
+}
+
+// 💾 Kiểu state auth
 interface AuthState {
   token: string | null;
-  user: unknown;
+  user: User | null;
   status: "idle" | "loading" | "succeeded" | "failed" | "mfa_required" | "verified";
   error: string | null;
   mfaEnabled: boolean;
@@ -11,6 +20,7 @@ interface AuthState {
   email: string;
 }
 
+// 🧱 State khởi tạo
 const initialState: AuthState = {
   token: null,
   user: null,
@@ -21,15 +31,16 @@ const initialState: AuthState = {
   email: "",
 };
 
-// Thunk: login
+// 🚀 Thunk: login
 export const loginThunk = createAsyncThunk(
   "auth/login",
   async (payload: { email: string; password: string }, { rejectWithValue }) => {
     try {
       const res = await axios.post("/api/auth/authenticate", payload);
       const token = res.data.access_token;
+      const user = res.data.user;
       localStorage.setItem("token", token);
-      return { token, user: res.data.user ?? null };
+      return { token, user: user ?? null };
     } catch (err) {
       const message = axios.isAxiosError(err)
         ? err.response?.data?.message || "Đăng nhập thất bại"
@@ -40,7 +51,7 @@ export const loginThunk = createAsyncThunk(
   }
 );
 
-// Thunk: register
+// 🚀 Thunk: register
 export const registerThunk = createAsyncThunk(
   "auth/register",
   async (
@@ -60,21 +71,23 @@ export const registerThunk = createAsyncThunk(
   }
 );
 
-// Thunk: verify OTP
+// 🚀 Thunk: verify OTP
 export const verifyCodeThunk = createAsyncThunk(
   "auth/verifyCode",
   async (payload: { email: string; code: string }, { rejectWithValue }) => {
     try {
       const res = await axios.post("/api/auth/verify", payload);
       const token = res.data.access_token;
+      const user = res.data.user; // ✅ Nếu server trả user sau xác thực
       localStorage.setItem("token", token);
-      return token;
+      return { token, user: user ?? null }; // trả về object
     } catch {
       return rejectWithValue("Mã xác thực không hợp lệ");
     }
   }
 );
 
+// 🧩 Slice
 const authSlice = createSlice({
   name: "auth",
   initialState,
@@ -84,13 +97,13 @@ const authSlice = createSlice({
       Object.assign(state, initialState);
     },
     clearToken: (state) => {
-      localStorage.removeItem("token"); // ✅ chỉ xoá token, không reset toàn bộ
+      localStorage.removeItem("token");
       state.token = null;
     },
   },
   extraReducers: (builder) => {
     builder
-      // LOGIN
+      // ✅ Login
       .addCase(loginThunk.pending, (state) => {
         state.status = "loading";
         state.error = null;
@@ -105,7 +118,7 @@ const authSlice = createSlice({
         state.error = typeof action.payload === "string" ? action.payload : null;
       })
 
-      // REGISTER
+      // ✅ Register
       .addCase(registerThunk.fulfilled, (state, action) => {
         if (action.payload.mfaEnabled) {
           state.status = "mfa_required";
@@ -121,10 +134,11 @@ const authSlice = createSlice({
         state.error = typeof action.payload === "string" ? action.payload : null;
       })
 
-      // VERIFY OTP
+      // ✅ Verify MFA
       .addCase(verifyCodeThunk.fulfilled, (state, action) => {
-        state.status = "verified"; // ✅ Không phải 'succeeded'
-        state.token = action.payload;
+        state.status = "verified";
+        state.token = action.payload.token;
+        state.user = action.payload.user;
       })
       .addCase(verifyCodeThunk.rejected, (state, action) => {
         state.status = "failed";
