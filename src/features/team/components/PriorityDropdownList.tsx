@@ -1,14 +1,13 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 type Priority = "HIGH" | "MEDIUM" | "LOW" | null;
 
-const priorities: {
-  value: Priority;
-  label: string;
-  iconColor: string;
-  textColor: string;
-  bgColor: string;
-}[] = [
+type PriorityDropdownProps = {
+  selected: Priority;
+  onSelect: (priority: Priority) => void;
+};
+
+const priorities = [
   {
     value: null,
     label: "No priority",
@@ -39,14 +38,19 @@ const priorities: {
   },
 ];
 
-export const PriorityDropdown = () => {
-  const [selected, setSelected] = useState<Priority>(null);
+export const PriorityDropdown = ({
+  selected,
+  onSelect,
+}: PriorityDropdownProps) => {
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target as Node)
+      ) {
         setOpen(false);
       }
     };
@@ -54,7 +58,8 @@ export const PriorityDropdown = () => {
     return () => document.removeEventListener("click", handleClickOutside);
   }, []);
 
-  const selectedItem = priorities.find((p) => p.value === selected) ?? priorities[0];
+  const selectedItem =
+    priorities.find((p) => p.value === selected) ?? priorities[0];
 
   return (
     <div className="relative space-y-1" ref={dropdownRef}>
@@ -65,15 +70,14 @@ export const PriorityDropdown = () => {
       {/* 🔘 Pill button */}
       <button
         onClick={() => setOpen((prev) => !prev)}
-        className={`relative w-full rounded-full px-3 py-1 text-[10px] font-medium uppercase tracking-wide flex items-center justify-between cursor-pointer ${selectedItem.bgColor} ${selectedItem.textColor}`}
+        className={`relative flex w-full cursor-pointer items-center justify-between rounded-full px-3 py-1 text-[10px] font-medium tracking-wide uppercase ${selectedItem.bgColor} ${selectedItem.textColor}`}
       >
-        {/* 👈 Tag icon + label */}
         <span className="flex items-center gap-1">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="currentColor"
             viewBox="0 0 24 24"
-            className={`w-3 h-3 ${selectedItem.iconColor}`}
+            className={`h-3 w-3 ${selectedItem.iconColor}`}
           >
             <path
               fillRule="evenodd"
@@ -84,12 +88,11 @@ export const PriorityDropdown = () => {
           {selectedItem.label}
         </span>
 
-        {/* ▼ Mũi tên giữ nguyên */}
         <svg
           xmlns="http://www.w3.org/2000/svg"
           fill="currentColor"
           viewBox="0 0 24 24"
-          className="w-3 h-3 text-gray-400"
+          className="h-3 w-3 text-gray-400"
         >
           <path
             fillRule="evenodd"
@@ -109,17 +112,16 @@ export const PriorityDropdown = () => {
             <button
               key={item.label}
               onClick={() => {
-                setSelected(item.value);
+                onSelect(item.value as Priority); // ✅ ép đúng kiểu
                 setOpen(false);
               }}
-              className={`w-full flex items-center gap-2 px-3 py-1 text-[10px] font-medium uppercase tracking-wide ${item.bgColor} ${item.textColor} cursor-pointer transition transform hover:-translate-y-[2px] hover:shadow-md`}
+              className={`flex w-full items-center gap-2 px-3 py-1 text-[10px] font-medium tracking-wide uppercase ${item.bgColor} ${item.textColor} transform cursor-pointer transition hover:-translate-y-[2px] hover:shadow-md`}
             >
-              {/* Icon dấu thăng bên trái */}
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill="currentColor"
                 viewBox="0 0 24 24"
-                className={`w-3 h-3 ${item.iconColor}`}
+                className={`h-3 w-3 ${item.iconColor}`}
               >
                 <path
                   fillRule="evenodd"

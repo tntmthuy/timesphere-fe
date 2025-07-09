@@ -1,64 +1,61 @@
-type TaskProps = {
-  task: {
-    id: string;
-    taskTitle: string;
-    priority: string;
-    progressDisplay: string;
-    progress: number;
-    dateDue: string;
-    assignees: {
-      fullName: string;
-    }[];
-  };
+import type { TaskDto, Priority } from "../task";
+
+type TaskCardProps = {
+  task: TaskDto;
   onClick?: () => void;
 };
 
-export const TaskCard = ({ task, onClick }: TaskProps) => {
-  const getPriorityColorClass = (priority: string) => {
-    switch (priority) {
-      case "HIGH":
-        return "bg-red-100 text-red-600";
-      case "MEDIUM":
-        return "bg-blue-100 text-blue-600";
-      case "LOW":
-        return "bg-green-100 text-green-600";
-      default:
-        return "bg-gray-300 text-gray-600";
-    }
-  };
-  const getColorClass = (priority: string): string => {
-    switch (priority) {
-      case "HIGH":
-        return "bg-red-400";
-      case "MEDIUM":
-        return "bg-blue-400";
-      case "LOW":
-        return "bg-green-400";
-      default:
-        return "bg-gray-400";
-    }
-  };
+const getPriorityColorClass = (priority: Priority) => {
+  switch (priority) {
+    case "HIGH":
+      return "bg-red-100 text-red-600";
+    case "MEDIUM":
+      return "bg-blue-100 text-blue-600";
+    case "LOW":
+      return "bg-green-100 text-green-600";
+    default:
+      return "bg-gray-300 text-gray-600";
+  }
+};
+
+const getColorClass = (priority: Priority) => {
+  switch (priority) {
+    case "HIGH":
+      return "bg-red-400";
+    case "MEDIUM":
+      return "bg-blue-400";
+    case "LOW":
+      return "bg-green-400";
+    default:
+      return "bg-gray-400";
+  }
+};
+
+export const TaskCard = ({ task, onClick }: TaskCardProps) => {
   return (
     <div
       onClick={onClick}
       className="relative w-full rounded-lg border border-gray-100 bg-white p-4 text-sm shadow-[0_4px_16px_rgba(0,0,0,0.08)]"
     >
-      <div
-        className={`absolute top-0 left-0 h-full w-1 rounded-s ${getColorClass(task.priority)}`}
-      />
+      {/* Màu bên trái theo priority */}
+      <div className={`absolute top-0 left-0 h-full w-1 rounded-s ${getColorClass(task.priority)}`} />
+
+      {/* Tag priority */}
       <div className="mb-1">
         <span
           className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${getPriorityColorClass(task.priority)}`}
         >
-          {task.priority}
+          {task.priority ?? "NO PRIORITY"}
         </span>
       </div>
 
+      {/* Title */}
       <div className="flex items-center justify-between">
         <h3 className="font-semibold text-gray-800">{task.taskTitle}</h3>
       </div>
 
-      <div className="flex items-center gap-2 text-gray-700">
+      {/* Progress */}
+      <div className="flex items-center gap-2 text-gray-700 mt-2">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 24 24"
@@ -71,7 +68,6 @@ export const TaskCard = ({ task, onClick }: TaskProps) => {
             clipRule="evenodd"
           />
         </svg>
-
         <span>Progress</span>
       </div>
 
@@ -85,7 +81,8 @@ export const TaskCard = ({ task, onClick }: TaskProps) => {
         <span className="text-xs text-gray-600">{task.progressDisplay}</span>
       </div>
 
-      <div className="flex items-center gap-2 text-gray-700">
+      {/* Deadline */}
+      <div className="flex items-center gap-2 text-gray-700 mt-2">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 24 24"
@@ -98,7 +95,6 @@ export const TaskCard = ({ task, onClick }: TaskProps) => {
             clipRule="evenodd"
           />
         </svg>
-
         <span>
           {task.dateDue && task.dateDue !== "1970-01-01"
             ? new Intl.DateTimeFormat("en-GB", {
@@ -110,7 +106,8 @@ export const TaskCard = ({ task, onClick }: TaskProps) => {
         </span>
       </div>
 
-      <div className="flex items-center gap-2 text-gray-700">
+      {/* Assignee */}
+      <div className="flex items-center gap-2 text-gray-700 mt-2">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
@@ -125,7 +122,6 @@ export const TaskCard = ({ task, onClick }: TaskProps) => {
             d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"
           />
         </svg>
-
         <span>{task.assignees?.[0]?.fullName || "Unassigned"}</span>
       </div>
     </div>

@@ -93,7 +93,7 @@ export const KanbanColumn = ({ column }: KanbanColumnProps) => {
           <AddTaskInlineInput columnId={column.id} onAddTask={handleAddTask} />
         </div>
 
-        <div className="space-y-3 text-sm text-gray-800 cursor-pointer">
+        <div className="cursor-pointer space-y-3 text-sm text-gray-800">
           {tasks.map((task) => (
             <TaskCard
               key={task.id}
@@ -106,7 +106,17 @@ export const KanbanColumn = ({ column }: KanbanColumnProps) => {
 
       {/* 🪄 Task Detail Modal */}
       {selectedTask && (
-        <TaskDetailModal onClose={() => setSelectedTask(null)} />
+        <TaskDetailModal
+          task={selectedTask}
+          token={token}
+          onClose={() => setSelectedTask(null)}
+          onUpdated={(updated) => {
+            setTasks((prev) =>
+              prev.map((t) => (t.id === updated.id ? updated : t)),
+            );
+            setSelectedTask(updated); // 🔄 nếu cần giữ modal mở với dữ liệu mới
+          }}
+        />
       )}
     </>
   );

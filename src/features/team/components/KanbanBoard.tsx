@@ -6,25 +6,7 @@ import { api } from "../../../api/axios";
 import toast from "react-hot-toast";
 import { useAppSelector } from "../../../state/hooks";
 import type { AxiosError } from "axios";
-
-type KanbanColumnDto = {
-  id: string;
-  title: string;
-  position: number;
-  tasks: TaskDto[];
-};
-
-type TaskDto = {
-  id: string;
-  taskTitle: string;
-  priority: string;
-  progressDisplay: string;
-  progress: number;
-  dateDue: string;
-  assignees: {
-    fullName: string;
-  }[];
-};
+import type { KanbanColumnDto } from "../kanban"; // hoặc đúng path của bạn
 
 type Props = {
   workspaceId: string;

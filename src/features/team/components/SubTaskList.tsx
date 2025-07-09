@@ -4,14 +4,18 @@ import {
   forwardRef,
   type ForwardedRef,
 } from "react";
+import type { SubTask } from "../subtask";
+import { toggleSubtaskComplete } from "../subtask"; // ✅ import đúng hàm gọi API
+import { useAppSelector } from "../../../state/hooks";
+import toast from "react-hot-toast";
 
 export type SubTaskListHandle = {
   addAtTop: () => void;
 };
 
 type SubTaskListProps = {
-  subTasks: string[];
-  onChange?: (updated: string[]) => void;
+  subTasks: SubTask[];
+  onChange?: (updated: SubTask[]) => void;
   onFirstItemCreated?: () => void;
 };
 
@@ -20,9 +24,9 @@ export const SubTaskList = forwardRef(
     { subTasks, onChange, onFirstItemCreated }: SubTaskListProps,
     ref: ForwardedRef<SubTaskListHandle>,
   ) => {
-    const [items, setItems] = useState(subTasks);
-    const [completed, setCompleted] = useState<boolean[]>(Array(subTasks.length).fill(false));
+    const [items, setItems] = useState<SubTask[]>(subTasks);
     const [newInputIndex, setNewInputIndex] = useState<number | null>(null);
+    const token = useAppSelector((state) => state.auth.token);
 
     useImperativeHandle(ref, () => ({
       addAtTop() {
@@ -35,28 +39,48 @@ export const SubTaskList = forwardRef(
         onFirstItemCreated?.();
       }
 
+      const newSubTask: SubTask = {
+        id: crypto.randomUUID(),
+        title: text,
+        isComplete: false,
+        subtaskPosition: index < 0 ? 0 : index + 1,
+      };
+
       const updatedItems = [...items];
       const position = index < 0 ? 0 : index + 1;
-      updatedItems.splice(position, 0, text);
-
-      const updatedCompleted = [...completed];
-      updatedCompleted.splice(position, 0, false);
+      updatedItems.splice(position, 0, newSubTask);
 
       setItems(updatedItems);
-      setCompleted(updatedCompleted);
       setNewInputIndex(null);
       onChange?.(updatedItems);
     };
 
-    const toggleComplete = (i: number) => {
-      const updated = [...completed];
-      updated[i] = !updated[i];
-      setCompleted(updated);
+    const toggleCompleteById = async (id: string) => {
+      const updatedItems = items.map((item) =>
+        item.id === id ? { ...item, isComplete: !item.isComplete } : item,
+      );
+      setItems(updatedItems);
+      onChange?.(updatedItems);
+
+      try {
+        if (!token) {
+          toast.error("Bạn chưa đăng nhập hoặc thiếu token.");
+          return;
+        }
+
+        await toggleSubtaskComplete(id, token);
+      } catch (err) {
+        console.error("❌ Toggle subtask failed:", err);
+        toast.error("Không thể cập nhật trạng thái subtask");
+      }
     };
+
+    const sortedItems = [...items].sort(
+      (a, b) => a.subtaskPosition - b.subtaskPosition,
+    );
 
     return (
       <div className="mt-2 space-y-2">
-        {/* Input ở đầu */}
         {newInputIndex === -1 && (
           <div className="flex items-start gap-2">
             <div className="mt-2 h-4 w-4 rounded-full border-2 border-gray-300" />
@@ -75,17 +99,24 @@ export const SubTaskList = forwardRef(
           </div>
         )}
 
-        {/* Danh sách sub-task */}
         <div className="max-h-[5rem] space-y-2 overflow-y-auto">
-          {items.map((text, i) => (
-            <div key={i} className="flex items-start gap-2">
+          {sortedItems.map((sub) => (
+            <div key={sub.id} className="flex items-start gap-2">
               <button
-                onClick={() => toggleComplete(i)}
-                className="mt-1 h-4 w-4 flex items-center justify-center"
+                onClick={() => toggleCompleteById(sub.id)}
+                className="mt-1 flex h-4 w-4 items-center justify-center"
               >
-                {completed[i] ? (
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4 text-green-500">
-                    <path fillRule="evenodd" clipRule="evenodd" d="M2.25 12c0-5.385 
+                {sub.isComplete ? (
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    className="h-4 w-4 text-green-500"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      clipRule="evenodd"
+                      d="M2.25 12c0-5.385 
                       4.365-9.75 9.75-9.75s9.75 
                       4.365 9.75 9.75-4.365 
                       9.75-9.75 9.75S2.25 
@@ -94,7 +125,8 @@ export const SubTaskList = forwardRef(
                       4.53L9.53 12.22a.75.75 
                       0 0 0-1.06 1.06l2.25 
                       2.25a.75.75 0 0 0 
-                      1.14-.094l3.75-5.25Z" />
+                      1.14-.094l3.75-5.25Z"
+                    />
                   </svg>
                 ) : (
                   <div className="h-4 w-4 rounded-full border-2 border-gray-400" />
@@ -102,16 +134,15 @@ export const SubTaskList = forwardRef(
               </button>
               <span
                 className={`text-[12px] text-gray-800 ${
-                  completed[i] ? "line-through text-gray-400" : ""
+                  sub.isComplete ? "text-gray-400 line-through" : ""
                 }`}
               >
-                {text}
+                {sub.title}
               </span>
             </div>
           ))}
         </div>
 
-        {/* Nút Add sub-task dưới cùng */}
         {items.length > 0 && newInputIndex === null && (
           <button
             onClick={() => setNewInputIndex(items.length - 1)}
@@ -122,22 +153,21 @@ export const SubTaskList = forwardRef(
                 fillRule="evenodd"
                 clipRule="evenodd"
                 d="M12 2.25c-5.385 
-                  0-9.75 4.365-9.75 
-                  9.75s4.365 9.75 
-                  9.75 9.75 9.75-4.365 
-                  9.75-9.75S17.385 
-                  2.25 12 2.25ZM12.75 9a.75.75 
-                  0 0 0-1.5 0v2.25H9a.75.75 
-                  0 0 0 0 1.5h2.25V15a.75.75 
-                  0 0 0 1.5 0v-2.25H15a.75.75 
-                  0 0 0 0-1.5h-2.25V9Z"
+                0-9.75 4.365-9.75 
+                9.75s4.365 9.75 
+                9.75 9.75 9.75-4.365 
+                9.75-9.75S17.385 
+                2.25 12 2.25ZM12.75 9a.75.75 
+                0 0 0-1.5 0v2.25H9a.75.75 
+                0 0 0 0 1.5h2.25V15a.75.75 
+                0 0 0 1.5 0v-2.25H15a.75.75 
+                0 0 0 0-1.5h-2.25V9Z"
               />
             </svg>
             Add sub-task
           </button>
         )}
 
-        {/* Input dưới cùng */}
         {newInputIndex !== null && newInputIndex !== -1 && (
           <div className="flex items-start gap-2">
             <div className="mt-2 h-4 w-4 rounded-full border-2 border-gray-300" />
