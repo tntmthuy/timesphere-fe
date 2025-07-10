@@ -1,11 +1,13 @@
+// // src/features/team/components/TaskCard.tsx
+
 // src/features/team/components/TaskCard.tsx
-import { useDraggable } from "@dnd-kit/core";
+
+import { useSortable } from "@dnd-kit/sortable";
 import type { TaskDto, Priority } from "../task";
-import { useRef } from "react";
 
 type TaskCardProps = {
   task: TaskDto;
-  onClick?: (task: TaskDto) => void; // mở modal nếu dùng local
+  onClick?: (task: TaskDto) => void;
   dragData?: {
     type: string;
     columnId: string;
@@ -39,48 +41,26 @@ const getColorClass = (priority: Priority) => {
 };
 
 export const TaskCard = ({ task, onClick, dragData }: TaskCardProps) => {
-  //   console.log("🧠 TaskCard mounted for:", task.id);
-  // console.log("👉 dragData:", dragData);
-  const { setNodeRef, attributes, listeners } = useDraggable({
-    id: task.id,
-    data: dragData,
-  });
-  const dragTimeoutRef = useRef<number>(0);
-  const isDraggingRef = useRef(false);
-
-  const getProgressPercent = () => {
+  function getProgressPercent(task: TaskDto): string {
     const done = task.subTasks?.filter((s) => s.isComplete).length ?? 0;
     const total = task.subTasks?.length ?? 0;
     if (total === 0) return "0%";
     return `${Math.round((done / total) * 100)}%`;
-  };
+  }
 
+  const { setNodeRef, attributes, listeners } = useSortable({
+    id: task.id,
+    data: dragData,
+  });
   return (
     <div
-  ref={setNodeRef}
+      ref={setNodeRef}
       {...attributes}
-      onPointerDown={(e) => {
-        isDraggingRef.current = false;
-        dragTimeoutRef.current = window.setTimeout(() => {
-          isDraggingRef.current = true;
-          listeners?.onPointerDown?.(e); // khởi động drag sau delay
-        }, 200);
-      }}
-      onPointerUp={() => {
-        clearTimeout(dragTimeoutRef.current);
-        if (!isDraggingRef.current) {
-          onClick?.(task); // ✅ click nếu không drag
-        }
-      }}
-
-  // onClick={() => {
-  //   console.log("Click triggered"); // ✅ dùng để test
-  //   onClick?.(task);                // ✅ mở modal
-  // }}
-
+      {...listeners}
+      onDoubleClick={() => onClick?.(task)} 
       className="relative w-full rounded-lg border border-gray-100 bg-white p-4 text-sm shadow-[0_4px_16px_rgba(0,0,0,0.08)]"
     >
-      {/* Màu bên trái */}
+      {/* Màu bên trái theo priority */}
       <div
         className={`absolute top-0 left-0 h-full w-1 rounded-s ${getColorClass(task.priority)}`}
       />
@@ -101,8 +81,21 @@ export const TaskCard = ({ task, onClick, dragData }: TaskCardProps) => {
 
       {/* Progress */}
       <div className="mt-2 flex items-center gap-2 text-gray-700">
-        <span className="text-xs">Progress</span>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="currentColor"
+          className="h-4 w-4 text-gray-600"
+        >
+          <path
+            fillRule="evenodd"
+            d="M2.625 6.75a1.125 1.125 0 1 1 2.25 0 1.125 1.125 0 0 1-2.25 0Zm4.875 0A.75.75 0 0 1 8.25 6h12a.75.75 0 0 1 0 1.5h-12a.75.75 0 0 1-.75-.75ZM2.625 12a1.125 1.125 0 1 1 2.25 0 1.125 1.125 0 0 1-2.25 0ZM7.5 12a.75.75 0 0 1 .75-.75h12a.75.75 0 0 1 0 1.5h-12A.75.75 0 0 1 7.5 12Zm-4.875 5.25a1.125 1.125 0 1 1 2.25 0 1.125 1.125 0 0 1-2.25 0Zm4.875 0a.75.75 0 0 1 .75-.75h12a.75.75 0 0 1 0 1.5h-12a.75.75 0 0 1-.75-.75Z"
+            clipRule="evenodd"
+          />
+        </svg>
+        <span>Progress</span>
       </div>
+
       <div className="flex items-center gap-2">
         <div className="relative h-2 w-full rounded bg-gray-200">
           <div
@@ -110,12 +103,25 @@ export const TaskCard = ({ task, onClick, dragData }: TaskCardProps) => {
             style={{ width: `${task.progress * 100}%` }}
           />
         </div>
-        <span className="text-xs text-gray-600">{getProgressPercent()}</span>
+        <span className="text-xs text-gray-600">
+          {getProgressPercent(task)}
+        </span>
       </div>
 
       {/* Deadline */}
       <div className="mt-2 flex items-center gap-2 text-gray-700">
-        <span className="text-xs">Deadline</span>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="currentColor"
+          className="h-4 w-4 text-gray-600"
+        >
+          <path
+            fillRule="evenodd"
+            d="M6.75 2.25A.75.75 0 0 1 7.5 3v1.5h9V3A.75.75 0 0 1 18 3v1.5h.75a3 3 0 0 1 3 3v11.25a3 3 0 0 1-3 3H5.25a3 3 0 0 1-3-3V7.5a3 3 0 0 1 3-3H6V3a.75.75 0 0 1 .75-.75Zm13.5 9a1.5 1.5 0 0 0-1.5-1.5H5.25a1.5 1.5 0 0 0-1.5 1.5v7.5a1.5 1.5 0 0 0 1.5 1.5h13.5a1.5 1.5 0 0 0 1.5-1.5v-7.5Z"
+            clipRule="evenodd"
+          />
+        </svg>
         <span>
           {task.dateDue && task.dateDue !== "1970-01-01"
             ? new Intl.DateTimeFormat("en-GB", {
@@ -129,19 +135,33 @@ export const TaskCard = ({ task, onClick, dragData }: TaskCardProps) => {
 
       {/* Assignee */}
       <div className="mt-2 flex items-center gap-2 text-gray-700">
-        <span className="text-xs">Assignee:</span>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          strokeWidth="1.5"
+          stroke="currentColor"
+          className="h-4 w-4 text-gray-600"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"
+          />
+        </svg>
         <span>{task.assignees?.[0]?.fullName || "Unassigned"}</span>
       </div>
     </div>
   );
 };
 
+
 // import { useSortable } from "@dnd-kit/sortable";
 // import type { TaskDto, Priority } from "../task";
 
 // type TaskCardProps = {
 //   task: TaskDto;
-//   onClick?: () => void;
+//   onClick?: (task: TaskDto) => void;
 //   dragData?: {
 //     type: string;
 //     columnId: string;
@@ -191,7 +211,7 @@ export const TaskCard = ({ task, onClick, dragData }: TaskCardProps) => {
 //       ref={setNodeRef}
 //       {...attributes}
 //       {...listeners}
-//       onDoubleClick={onClick}
+//       onDoubleClick={() => onClick?.(task)} 
 //       className="relative w-full rounded-lg border border-gray-100 bg-white p-4 text-sm shadow-[0_4px_16px_rgba(0,0,0,0.08)]"
 //     >
 //       {/* Màu bên trái theo priority */}

@@ -1,3 +1,5 @@
+// // src/features/team/components/reorder/ReorderableList.tsx
+
 // src/features/team/components/reorder/ReorderableList.tsx
 
 import { useDroppable } from "@dnd-kit/core";
@@ -69,13 +71,14 @@ function ReorderableItem({
   columnId: string;
   children: React.ReactNode;
 }) {
-  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
-    id,
-    data: {
-      columnId,
-      type: columnId === "board" ? "Column" : "Task",
-    },
-  });
+  const { attributes, listeners, setNodeRef, transform, transition } =
+    useSortable({
+      id,
+      data: {
+        columnId,
+        type: "Task",
+      },
+    });
 
   const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),

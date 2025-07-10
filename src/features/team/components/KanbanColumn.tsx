@@ -1,35 +1,42 @@
 //src\features\team\components\KanbanColumn.tsx
-
+import { useSortable } from "@dnd-kit/sortable";
 import { useState, useEffect } from "react";
 import { AddTaskInlineInput } from "./AddTaskInlineInput";
 import { TaskCard } from "./TaskCard";
 import { EditableText } from "./EditableText";
-// import { TaskDetailModal } from "./TaskDetailModal";
 import type { TaskDto } from "../task";
 import { useAppSelector } from "../../../state/hooks";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { ReorderableList } from "./reorder/ReorderableList";
 import type { KanbanColumnDto } from "../kanban";
-import { useSortable } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
+import { useAppDispatch } from "../../../state/hooks";
+import { addTaskLocal } from "../kanbanSlice";
+
 
 type KanbanColumnProps = {
   column: KanbanColumnDto;
   isDragging?: boolean;
-  onUpdateTasks?: (tasks: TaskDto[]) => void;
-  onClickTask?: (task: TaskDto) => void; //vvvvvvvvvv
+  onClickTask?: (task: TaskDto) => void;
 };
 
 export const KanbanColumn = ({
   column,
-  onUpdateTasks,
   isDragging,
   onClickTask,
 }: KanbanColumnProps) => {
   const token = useAppSelector((state) => state.auth.token);
   const [title, setTitle] = useState(column.title);
-  // const [selectedTask, setSelectedTask] = useState<TaskDto | null>(null);
+
+  const {
+    setNodeRef,
+    attributes,
+    listeners,
+    isDragging: isColumnDragging,
+  } = useSortable({
+    id: column.id,
+    data: { type: "Column" },
+  });
 
   useEffect(() => {
     setTitle(column.title);
@@ -54,69 +61,61 @@ export const KanbanColumn = ({
     }
   };
 
-  const handleAddTask = (newTask: TaskDto) => {
-    onUpdateTasks?.([...column.tasks, newTask]);
-  };
+const dispatch = useAppDispatch();
 
-  // Trong component
-  const { attributes, listeners, setNodeRef, transform, transition } =
-    useSortable({
-      id: column.id,
-      data: { type: "Column" },
-    });
+const handleAddTask = (newTask: TaskDto) => {
+  dispatch(addTaskLocal({ columnId: column.id, task: newTask }));
+};
 
-  const style: React.CSSProperties = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-  };
 
   return (
-    <>
-      <div
-        ref={setNodeRef}
-        {...attributes}
-        {...listeners}
-        style={style}
-        className="w-[230px] flex-shrink-0 rounded-xl border border-gray-200 bg-white p-4 shadow-lg"
-      >
-        <div className="mb-2 flex items-center justify-between">
-          <EditableText
-            text={title}
-            as="h2"
-            tagClassName="text-sm font-bold text-black"
-            inputClassName="text-sm font-bold text-black"
-            onSubmit={updateColumnTitle}
-            placeholder="Tên cột"
-          />
-          <p className="text-xs font-semibold text-gray-700">
-            {column.tasks.length}
-          </p>
-        </div>
-
-        <div className="mb-2 pt-2 pb-2">
-          <AddTaskInlineInput columnId={column.id} onAddTask={handleAddTask} />
-        </div>
-
-        <ReorderableList<TaskDto>
-          items={column.tasks}
-          getId={(task) => task.id}
-          strategy="vertical"
-          columnId={column.id}
-          className="space-y-3"
-          isDragging={isDragging}
-          renderItem={(task) => (
-            <TaskCard
-              task={task}
-              dragData={{ type: "Task", columnId: column.id }}
-              // onClick={() => onClickTask?.(task)} // ✅ gọi khi người dùng nhấn
-              onClick={onClickTask} // ✅ truyền callback mở modal
-            />
-          )}
+    <div
+      ref={setNodeRef}
+      {...attributes}
+      {...listeners}
+      className={`w-[230px] flex-shrink-0 rounded-xl bg-white p-4 shadow-lg transition ${
+        isColumnDragging ? "ring-2 ring-yellow-400 border-yellow-400" : "border border-gray-200"
+      }`}
+    >
+      <div className="mb-2 flex items-center justify-between">
+        <EditableText
+          text={title}
+          as="h2"
+          tagClassName="text-sm font-bold text-black"
+          inputClassName="text-sm font-bold text-black"
+          onSubmit={updateColumnTitle}
+          placeholder="Tên cột"
         />
+        <p className="text-xs font-semibold text-gray-700">
+          {column.tasks.length}
+        </p>
       </div>
-    </>
+
+      <div className="mb-2 pt-2 pb-2">
+        <AddTaskInlineInput columnId={column.id} onAddTask={handleAddTask} />
+      </div>
+
+      <ReorderableList<TaskDto>
+        items={column.tasks}
+        getId={(task) => task.id}
+        strategy="vertical"
+        columnId={column.id}
+        className="space-y-3"
+        isDragging={isDragging}
+        renderItem={(task) => (
+          <TaskCard
+            key={task.id}
+            task={task}
+            dragData={{ type: "Task", columnId: column.id }}
+            onClick={onClickTask}
+          />
+        )}
+      />
+    </div>
   );
 };
+
+////src\features\team\components\KanbanColumn.tsx
 
 // import { useState, useEffect } from "react";
 // import { AddTaskInlineInput } from "./AddTaskInlineInput";
@@ -133,14 +132,14 @@ export const KanbanColumn = ({
 // type KanbanColumnProps = {
 //   column: KanbanColumnDto;
 //   isDragging?: boolean;
-//   onUpdateTasks?: (tasks: TaskDto[]) => void;
+//   onUpdateTask?: (task: TaskDto) => void;
 //   onClickTask?: (task: TaskDto) => void; //vvvvvvvvvv
 
 // };
 
 // export const KanbanColumn = ({
 //   column,
-//   onUpdateTasks,
+//   onUpdateTask,
 //   isDragging,
 //   onClickTask,
 // }: KanbanColumnProps) => {
@@ -172,7 +171,7 @@ export const KanbanColumn = ({
 //   };
 
 //   const handleAddTask = (newTask: TaskDto) => {
-//     onUpdateTasks?.([...column.tasks, newTask]);
+//     onUpdateTask?.( newTask);
 //   };
 
 //   return (
@@ -205,6 +204,7 @@ export const KanbanColumn = ({
 //           isDragging={isDragging}
 //           renderItem={(task) => (
 //             <TaskCard
+//             key={task.id}
 //               task={task}
 //               dragData={{ type: "Task", columnId: column.id }}
 //               // onClick={() => onClickTask?.(task)} // ✅ gọi khi người dùng nhấn

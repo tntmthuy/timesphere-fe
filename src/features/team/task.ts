@@ -24,6 +24,7 @@ export type TaskDto = {
     fullName: string;
   }[];
   subTasks?: SubTask[];
+  columnId: string;
 };
 
 export const createTask = async (
