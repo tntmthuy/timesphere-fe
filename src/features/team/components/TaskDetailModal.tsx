@@ -60,7 +60,7 @@ export const TaskDetailModal = ({
       });
 
       const updated = res.data.data as TaskDto;
-      toast.success("✅ Task cập nhật thành công");
+      toast.success("Task cập nhật thành công");
       onUpdated?.(updated);
 
       setTitle(updated.taskTitle);

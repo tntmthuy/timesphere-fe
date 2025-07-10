@@ -32,6 +32,12 @@ const getColorClass = (priority: Priority) => {
 };
 
 export const TaskCard = ({ task, onClick }: TaskCardProps) => {
+  function getProgressPercent(task: TaskDto): string {
+  const done = task.subTasks?.filter((s) => s.isComplete).length ?? 0;
+  const total = task.subTasks?.length ?? 0;
+  if (total === 0) return "0%";
+  return `${Math.round((done / total) * 100)}%`;
+}
   return (
     <div
       onClick={onClick}
@@ -45,7 +51,7 @@ export const TaskCard = ({ task, onClick }: TaskCardProps) => {
         <span
           className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${getPriorityColorClass(task.priority)}`}
         >
-          {task.priority ?? "NO PRIORITY"}
+          {task.priority ?? ""}
         </span>
       </div>
 
@@ -78,7 +84,7 @@ export const TaskCard = ({ task, onClick }: TaskCardProps) => {
             style={{ width: `${task.progress * 100}%` }}
           />
         </div>
-        <span className="text-xs text-gray-600">{task.progressDisplay}</span>
+        <span className="text-xs text-gray-600">{getProgressPercent(task)}</span>
       </div>
 
       {/* Deadline */}
