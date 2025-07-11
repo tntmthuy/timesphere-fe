@@ -34,7 +34,7 @@ export const CreateTeamModal = ({ onClose }: Props) => {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      toast.success("✅ Tạo nhóm thành công!");
+      toast.success("Success! A new team is now ready.");
       setForm({ teamName: "", description: "" });
       onClose(); // Tùy bạn: đóng modal luôn nếu muốn
     } catch (error) {
@@ -96,6 +96,7 @@ export const CreateTeamModal = ({ onClose }: Props) => {
                 <input
                   type="text"
                   name="teamName"
+                  placeholder="Team name"
                   value={form.teamName}
                   onChange={handleChange}
                   required
@@ -109,6 +110,7 @@ export const CreateTeamModal = ({ onClose }: Props) => {
                 </label>
                 <textarea
                   name="description"
+                  placeholder="Add a description..."
                   value={form.description}
                   onChange={handleChange}
                   rows={3}

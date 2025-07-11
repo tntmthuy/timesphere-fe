@@ -8,6 +8,9 @@ import type { SubTask } from "../subtask";
 import { toggleSubtaskComplete } from "../subtask"; // ✅ import đúng hàm gọi API
 import { useAppSelector } from "../../../state/hooks";
 import toast from "react-hot-toast";
+import { useAppDispatch } from "../../../state/hooks";
+import { createSubtaskThunk } from "../kanbanSlice";
+import axios from "axios";
 
 export type SubTaskListHandle = {
   addAtTop: () => void;
@@ -15,18 +18,21 @@ export type SubTaskListHandle = {
 
 type SubTaskListProps = {
   subTasks: SubTask[];
+  taskId: string; // ✅ thêm dòng này để biết cha là ai
+  hideCompleted?: boolean;
   onChange?: (updated: SubTask[]) => void;
   onFirstItemCreated?: () => void;
 };
 
 export const SubTaskList = forwardRef(
   (
-    { subTasks, onChange, onFirstItemCreated }: SubTaskListProps,
+    { subTasks, taskId, hideCompleted, onChange, onFirstItemCreated }: SubTaskListProps,
     ref: ForwardedRef<SubTaskListHandle>,
   ) => {
     const [items, setItems] = useState<SubTask[]>(subTasks);
     const [newInputIndex, setNewInputIndex] = useState<number | null>(null);
     const token = useAppSelector((state) => state.auth.token);
+    const dispatch = useAppDispatch();
 
     useImperativeHandle(ref, () => ({
       addAtTop() {
@@ -34,25 +40,45 @@ export const SubTaskList = forwardRef(
       },
     }));
 
-    const handleAdd = (text: string, index: number) => {
+    const handleAdd = async (text: string, index: number) => {
+      if (!token) {
+        toast.error("Session expired. Please log in again.");
+        return;
+      }
+
       if (items.length === 0) {
         onFirstItemCreated?.();
       }
 
-      const newSubTask: SubTask = {
-        id: crypto.randomUUID(),
-        title: text,
-        isComplete: false,
-        subtaskPosition: index < 0 ? 0 : index + 1,
-      };
+      try {
+        const action = await dispatch(
+          createSubtaskThunk({
+            parentTaskId: taskId, // ✅ chính xác là task cha
+            title: text,
+          }),
+        );
 
-      const updatedItems = [...items];
-      const position = index < 0 ? 0 : index + 1;
-      updatedItems.splice(position, 0, newSubTask);
+        if (createSubtaskThunk.fulfilled.match(action)) {
+          const subtask = action.payload.subtask;
 
-      setItems(updatedItems);
-      setNewInputIndex(null);
-      onChange?.(updatedItems);
+          const updatedItems = [...items];
+          const position = index < 0 ? 0 : index + 1;
+          updatedItems.splice(position, 0, subtask);
+
+          updatedItems.sort((a, b) => a.subtaskPosition - b.subtaskPosition); // ✅ đảm bảo thứ tự
+
+          setItems(updatedItems);
+          setNewInputIndex(null);
+          onChange?.(updatedItems);
+        }
+      } catch (err) {
+        if (axios.isAxiosError(err) && err.response?.status === 403) {
+          toast.error("You don’t have permission to add subtasks.");
+        } else {
+          toast.error("Subtask creation failed.");
+        }
+        console.error("🔥 Subtask creation failed", err);
+      }
     };
 
     const toggleCompleteById = async (id: string) => {
@@ -64,20 +90,28 @@ export const SubTaskList = forwardRef(
 
       try {
         if (!token) {
-          toast.error("Bạn chưa đăng nhập hoặc thiếu token.");
+          toast.error("Session expired. Please log in again.");
           return;
         }
 
         await toggleSubtaskComplete(id, token);
       } catch (err) {
-        console.error("❌ Toggle subtask failed:", err);
-        toast.error("Không thể cập nhật trạng thái subtask");
+        if (axios.isAxiosError(err) && err.response?.status === 403) {
+          toast.error("You don’t have permission to update this subtask.");
+        } else {
+          toast.error("Failed to toggle subtask.");
+        }
+        console.error("Toggle subtask failed:", err);
       }
     };
 
     const sortedItems = [...items].sort(
       (a, b) => a.subtaskPosition - b.subtaskPosition,
     );
+
+    const visibleItems = hideCompleted
+      ? sortedItems.filter((s) => !s.isComplete)
+      : sortedItems;
 
     return (
       <div className="mt-2 space-y-2">
@@ -100,18 +134,18 @@ export const SubTaskList = forwardRef(
         )}
 
         <div className="max-h-[5rem] space-y-2 overflow-y-auto">
-          {sortedItems.map((sub) => (
-            <div key={sub.id} className="flex items-start gap-2">
+          {visibleItems.map((sub) => (
+            <div key={sub.id} className="flex items-center gap-2">
               <button
                 onClick={() => toggleCompleteById(sub.id)}
-                className="mt-1 flex h-4 w-4 items-center justify-center"
+                className="flex h-4 w-4 items-center justify-center"
               >
                 {sub.isComplete ? (
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 24 24"
                     fill="currentColor"
-                    className="h-4 w-4 text-green-500"
+                    className="h-4 w-4 translate-y-[1px] text-green-500"
                   >
                     <path
                       fillRule="evenodd"

@@ -1,4 +1,5 @@
 import { useRef, useEffect, useState, type JSX } from "react";
+import toast from "react-hot-toast";
 
 type EditableTextProps = {
   text: string;
@@ -9,6 +10,7 @@ type EditableTextProps = {
   onSubmit: (newText: string) => void;
   as?: keyof JSX.IntrinsicElements;
   disabled?: boolean; // ✅ thêm prop disabled
+  allowEmpty?: boolean; // ✅ thêm để phân biệt giữa title và mô tả
 };
 
 export const EditableText = ({
@@ -20,6 +22,7 @@ export const EditableText = ({
   onSubmit,
   as = "span",
   disabled = false,
+  allowEmpty,
 }: EditableTextProps) => {
   const [editing, setEditing] = useState(false);
   const [value, setValue] = useState(text);
@@ -35,9 +38,31 @@ export const EditableText = ({
   }, [text]);
 
   const handleSubmit = async (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key !== "Enter") return;
-    console.log("✏️ onSubmit từ EditableText:", value);
-    if (value.trim() && value !== text) await onSubmit(value.trim());
+  if (e.key !== "Enter") return;
+
+  const cleaned = value.trim();
+
+  if (!allowEmpty && cleaned === "") {
+    toast.error("This field cannot be empty");
+    return;
+  }
+
+  if (cleaned === text.trim()) {
+    setEditing(false); // không cần gọi nếu không thay đổi
+    return;
+  }
+
+  try {
+    await onSubmit(cleaned); // ✅ gọi đúng 1 lần
+  } catch (err) {
+    console.error("EditableText submit failed", err);
+  } finally {
+    setEditing(false);
+  }
+};
+
+  const handleBlur = () => {
+    setValue(text); // ✅ reset lại như cũ nếu không nhấn Enter
     setEditing(false);
   };
 
@@ -54,8 +79,8 @@ export const EditableText = ({
           value={value}
           onChange={(e) => setValue(e.target.value)}
           onKeyDown={handleSubmit}
-          onBlur={() => setEditing(false)}
-          className={`w-full border-b border-gray-300 bg-transparent outline-none transition-colors focus:border-gray-500 ${inputClassName}`}
+          onBlur={handleBlur}
+          className={`w-full border-b border-gray-300 bg-transparent transition-colors outline-none focus:border-gray-500 ${inputClassName}`}
           placeholder={placeholder}
           disabled={disabled}
         />
@@ -70,7 +95,7 @@ export const EditableText = ({
                 viewBox="0 0 24 24"
                 strokeWidth={1.5}
                 stroke="currentColor"
-                className="w-4 h-4"
+                className="h-4 w-4"
               >
                 <path
                   strokeLinecap="round"

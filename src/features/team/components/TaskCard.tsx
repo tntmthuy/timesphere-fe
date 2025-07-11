@@ -1,5 +1,3 @@
-// // src/features/team/components/TaskCard.tsx
-
 // src/features/team/components/TaskCard.tsx
 
 import { useSortable } from "@dnd-kit/sortable";

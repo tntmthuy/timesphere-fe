@@ -6,6 +6,8 @@ import axios from "axios";
 import type { TaskDto } from "./task";
 import type { KanbanColumnDto } from "./kanban";
 import type { RootState } from "../../state/store";
+import type { SubTask } from "./subtask";
+import toast from "react-hot-toast";
 
 export interface KanbanColumn {
   id: string;
@@ -47,21 +49,81 @@ export const fetchBoardThunk = createAsyncThunk(
 
 export const createColumnThunk = createAsyncThunk(
   "kanban/createColumn",
-  async (payload: { workspaceId: string; title: string }, { rejectWithValue }) => {
-    try {
-      const res = await api.post("/api/kanban/column", payload);
-      return res.data.data; // data từ `KanbanColumnMapper.toDto`
-    } catch (err: unknown) {
-    if (axios.isAxiosError(err)) {
-        const message = err.response?.data?.message || "Tạo cột thất bại";
-        return rejectWithValue(message);
-    }
-    return rejectWithValue("Tạo cột thất bại");
-    }
+  async (
+    payload: { workspaceId: string; title: string },
+    { getState, rejectWithValue }
+  ) => {
+    const token = (getState() as RootState).auth.token;
 
+    try {
+      const res = await api.post("/api/kanban/column", payload, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      return res.data.data;
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err)) {
+        const code = err.response?.status;
+        if (code === 403) return rejectWithValue("NO_PERMISSION");
+        if (code === 401) return rejectWithValue("UNAUTHORIZED");
+        return rejectWithValue("FAILED_TO_CREATE");
+      }
+      return rejectWithValue("UNKNOWN_ERROR");
+    }
   }
 );
 
+export const createSubtaskThunk = createAsyncThunk(
+  "kanban/createSubtask",
+  async (
+    payload: { parentTaskId: string; title: string },
+    { getState, rejectWithValue }
+  ) => {
+    const token = (getState() as RootState).auth.token;
+
+    try {
+      const res = await axios.post("/api/kanban/task/subtask", payload, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      return {
+        parentTaskId: payload.parentTaskId,
+        subtask: res.data.data as SubTask,
+      };
+    } catch {
+      toast.error("You don’t have permission to add subtasks.");
+      return rejectWithValue("Không thể tạo subtask");
+    }
+  }
+);
+
+export const updateSubtaskTitleThunk = createAsyncThunk(
+  "kanban/updateSubtaskTitle",
+  async (
+    payload: { subtaskId: string; title: string },
+    { getState, rejectWithValue }
+  ) => {
+    const token = (getState() as RootState).auth.token;
+
+    try {
+      const res = await axios.patch(
+        `/api/kanban/task/subtask/${payload.subtaskId}`,
+        { title: payload.title },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      return res.data.data as SubTask;
+    } catch {
+      return rejectWithValue("Failed to rename subtask.");
+    }
+  }
+);
+
+//
 const kanbanSlice = createSlice({
   name: "kanban",
   initialState,
@@ -156,17 +218,63 @@ if (toCol.tasks.length === 0) {
         state.isLoading = false;
       })
       .addCase(fetchBoardThunk.pending, (state) => {
-  state.isLoading = true;
-  state.error = null;
-})
-.addCase(fetchBoardThunk.fulfilled, (state, action) => {
-  state.columns = action.payload; // ✅ gán vào Redux
-  state.isLoading = false;
-})
-.addCase(fetchBoardThunk.rejected, (state, action) => {
-  state.error = action.payload as string;
-  state.isLoading = false;
-});
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(fetchBoardThunk.fulfilled, (state, action) => {
+        state.columns = action.payload; // ✅ gán vào Redux
+        state.isLoading = false;
+      })
+      .addCase(fetchBoardThunk.rejected, (state, action) => {
+        state.error = action.payload as string;
+        state.isLoading = false;
+      })
+      .addCase(createSubtaskThunk.fulfilled, (state, action) => {
+        const { parentTaskId, subtask } = action.payload;
+
+        // ✅ Cập nhật trong columns
+        for (const col of state.columns) {
+          const task = col.tasks.find((t) => t.id === parentTaskId);
+          if (task) {
+            task.subTasks = [...(task.subTasks || []), subtask];
+            task.subTasks.sort((a, b) => a.subtaskPosition - b.subtaskPosition); // ✅ sort
+            break;
+          }
+        }
+
+        // ✅ Cập nhật trong tasks toàn cục
+        const globalTask = state.tasks.find((t) => t.id === parentTaskId);
+        if (globalTask) {
+          globalTask.subTasks = [...(globalTask.subTasks || []), subtask];
+          globalTask.subTasks.sort((a, b) => a.subtaskPosition - b.subtaskPosition); // ✅ sort
+        }
+      })
+      .addCase(updateSubtaskTitleThunk.fulfilled, (state, action) => {
+        const updated = action.payload;
+
+        // ✅ Cập nhật subtask trong mọi task chứa nó
+        for (const col of state.columns) {
+          for (const task of col.tasks) {
+            if (task.subTasks) {
+              const idx = task.subTasks.findIndex((s) => s.id === updated.id);
+              if (idx !== -1) {
+                task.subTasks[idx] = updated;
+              }
+            }
+          }
+        }
+
+        // ✅ Nếu đang dùng state.tasks toàn cục
+        for (const t of state.tasks) {
+          if (t.subTasks) {
+            const idx = t.subTasks.findIndex((s) => s.id === updated.id);
+            if (idx !== -1) {
+              t.subTasks[idx] = updated;
+            }
+          }
+        }
+      })
+      ;
   },
 });
 
@@ -178,67 +286,3 @@ export const {
 } = kanbanSlice.actions;
 
 export default kanbanSlice.reducer;
-
-// 
-
-// import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-// import { api } from "../../api/axios";
-// import axios from "axios";
-
-// export interface KanbanColumn {
-//   id: string;
-//   title: string;
-//   position: number;
-// }
-
-// interface KanbanState {
-//   columns: KanbanColumn[];
-//   isLoading: boolean;
-//   error: string | null;
-// }
-
-// const initialState: KanbanState = {
-//   columns: [],
-//   isLoading: false,
-//   error: null,
-// };
-
-// export const createColumnThunk = createAsyncThunk(
-//   "kanban/createColumn",
-//   async (payload: { workspaceId: string; title: string }, { rejectWithValue }) => {
-//     try {
-//       const res = await api.post("/api/kanban/column", payload);
-//       return res.data.data; // data từ `KanbanColumnMapper.toDto`
-//     } catch (err: unknown) {
-//     if (axios.isAxiosError(err)) {
-//         const message = err.response?.data?.message || "Tạo cột thất bại";
-//         return rejectWithValue(message);
-//     }
-//     return rejectWithValue("Tạo cột thất bại");
-//     }
-
-//   }
-// );
-
-// const kanbanSlice = createSlice({
-//   name: "kanban",
-//   initialState,
-//   reducers: {},
-//   extraReducers: (builder) => {
-//     builder
-//       .addCase(createColumnThunk.pending, (state) => {
-//         state.isLoading = true;
-//         state.error = null;
-//       })
-//       .addCase(createColumnThunk.fulfilled, (state, action) => {
-//         state.columns.push(action.payload);
-//         state.isLoading = false;
-//       })
-//       .addCase(createColumnThunk.rejected, (state, action) => {
-//         state.error = action.payload as string;
-//         state.isLoading = false;
-//       });
-//   },
-// });
-
-// export default kanbanSlice.reducer;

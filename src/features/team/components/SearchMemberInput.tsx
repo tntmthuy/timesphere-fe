@@ -73,7 +73,7 @@ export const SearchMemberInput = () => {
         type="text"
         value={keyword}
         onChange={(e) => setKeyword(e.target.value)}
-        placeholder="Tìm theo tên hoặc email..."
+        placeholder="Invite a teammate"
         className="w-full rounded border px-3 py-2 text-sm"
       />
 

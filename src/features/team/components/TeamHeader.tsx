@@ -3,6 +3,7 @@ import { useAppSelector } from "../../../state/hooks";
 import { useDispatch } from "react-redux";
 import { updateTeamName } from "../teamSlice";
 import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 
 type Props = {
   teamName: string;
@@ -56,7 +57,7 @@ export const TeamHeader = ({ teamName, description, teamId }: Props) => {
         setDesc(payload.description);
       }
     } catch (err) {
-      alert("Bạn không có quyền cập nhật nhóm.");
+      toast.error("You don't have permission to update this group.");
       console.error("Lỗi cập nhật:", err);
     }
   };
@@ -71,7 +72,7 @@ export const TeamHeader = ({ teamName, description, teamId }: Props) => {
           tagClassName="text-2xl font-bold text-gray-900"
           inputClassName="text-2xl font-bold text-gray-900"
           onSubmit={(val) => updateTeamInfo({ newName: val })}
-          placeholder="Tên nhóm"
+          placeholder="Team name"
         />
         <div className="flex items-center gap-3">
           <button className="rounded-md bg-yellow-200 px-3 py-2 text-sm font-medium text-yellow-800 hover:bg-[#fbe89e]">
@@ -102,7 +103,7 @@ export const TeamHeader = ({ teamName, description, teamId }: Props) => {
         tagClassName="text-sm text-gray-600" // 🔽 dùng text-sm thay vì text-base
         inputClassName="text-sm text-gray-600"
         onSubmit={(val) => updateTeamInfo({ description: val })}
-        placeholder="Thêm mô tả nhóm..."
+        placeholder="Add a description..."
       />
     </div>
   );

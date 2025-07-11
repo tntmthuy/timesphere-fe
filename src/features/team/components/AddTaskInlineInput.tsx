@@ -33,13 +33,22 @@ export const AddTaskInlineInput = ({ columnId, onAddTask }: Props) => {
       toast.error("Unable to create task");
     }
   };
+const handleBlur = () => {
+  const trimmed = value.trim();
 
+  if (trimmed) {
+    handleSubmit(); // gọi tạo task nếu có nội dung
+  } else {
+    setEditing(false); // ❌ không tạo task trống
+    setValue("");      // ✅ reset luôn
+  }
+};
   return editing ? (
     <input
       ref={inputRef}
       value={value}
       onChange={(e) => setValue(e.target.value)}
-      onBlur={handleSubmit}
+      onBlur={handleBlur}
       onKeyDown={(e) => {
         if (e.key === "Enter") handleSubmit();
         if (e.key === "Escape") {
@@ -47,7 +56,7 @@ export const AddTaskInlineInput = ({ columnId, onAddTask }: Props) => {
           setEditing(false);
         }
       }}
-      placeholder="Nhập tên task..."
+      placeholder="Write task title..."
       className="w-full rounded-md border px-3 py-2 text-sm"
     />
   ) : (
