@@ -110,12 +110,30 @@ export const KanbanBoard = ({ workspaceId }: Props) => {
       ?.columnId;
     const sortableInfo = (over.data?.current as SortableData)?.sortable;
     const targetPosition = sortableInfo?.index ?? 0;
-    const toColumnId = sortableInfo?.containerId ?? String(over.id);
+    // const toColumnId = sortableInfo?.containerId ?? String(over.id);
+    // Ưu tiên lấy id đúng từ danh sách column
+    let toColumnId = sortableInfo?.containerId;
+
+    // Nếu không tìm thấy, thử lấy over.id
+    const hasValidContainer = columns.some((col) => col.id === toColumnId);
+    if (!hasValidContainer) {
+      toColumnId = String(over.id);
+    }
+
+    const toCol = columns.find((c) => c.id === toColumnId);
+    if (!toCol) {
+      console.warn("⚠️ Column không tồn tại. Xem lại containerId:", toColumnId);
+      return;
+    }
+
     if (!fromColumnId || !toColumnId) return;
     console.log("🐣 Task drag from column:", fromColumnId);
     console.log("🧲 Drop target info:", sortableInfo);
     console.log("📦 Drop to column:", toColumnId, "→ index:", targetPosition);
-    const toCol = columns.find((c) => c.id === toColumnId);
+
+    console.log("🧮 OVER ID:", over.id);
+    console.log("🎯 SORTABLE containerId:", sortableInfo?.containerId);
+
     if (!toCol) return;
     const taskCount = toCol.tasks.length;
     const safeTargetPosition = Math.min(taskCount, targetPosition);
@@ -190,7 +208,7 @@ export const KanbanBoard = ({ workspaceId }: Props) => {
           ))}
           {adding ? (
             <AddColumnCard
-            workspaceId={workspaceId}
+              workspaceId={workspaceId}
               onAdd={createColumn}
               onCancel={() => setAdding(false)}
             />
