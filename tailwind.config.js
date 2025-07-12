@@ -3,10 +3,10 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        popi: ['Poppins', 'sans-serif'],
-        doto: ['Doto', 'sans-serif'],
+        popi: ["Poppins", "sans-serif"],
+        doto: ["Doto", "sans-serif"],
       },
     },
   },
-  plugins: [],
+  plugins: [require("tailwind-scrollbar")],
 };

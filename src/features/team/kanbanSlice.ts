@@ -115,12 +115,26 @@ export const updateSubtaskTitleThunk = createAsyncThunk(
           },
         }
       );
-
-      return res.data.data as SubTask;
+      console.log("📥 Subtask update response:", res.data);
+      return {
+        id: payload.subtaskId,
+        title: payload.title,
+      } as SubTask;
     } catch {
       return rejectWithValue("Failed to rename subtask.");
     }
   }
+);
+
+export const deleteSubtaskThunk = createAsyncThunk(
+  "kanban/deleteSubtask",
+  async (subtaskId: string, { getState }) => {
+    const token = (getState() as RootState).auth.token;
+    await api.delete(`/api/kanban/task/subtask/${subtaskId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return subtaskId;
+  },
 );
 
 //
@@ -202,6 +216,7 @@ if (toCol.tasks.length === 0) {
     state.tasks[globalIndex] = task;
   }
 }
+
   },
   extraReducers: (builder) => {
     builder
@@ -251,6 +266,10 @@ if (toCol.tasks.length === 0) {
       })
       .addCase(updateSubtaskTitleThunk.fulfilled, (state, action) => {
         const updated = action.payload;
+if (!updated || !updated.id) {
+    console.error("💥 Subtask update payload bị undefined hoặc thiếu id:", updated);
+    return;
+  }
 
         // ✅ Cập nhật subtask trong mọi task chứa nó
         for (const col of state.columns) {
@@ -274,6 +293,22 @@ if (toCol.tasks.length === 0) {
           }
         }
       })
+      .addCase(deleteSubtaskThunk.fulfilled, (state, action) => {
+        const subtaskId = action.payload;
+
+        // ✅ Xóa khỏi columns
+        for (const col of state.columns) {
+          for (const task of col.tasks) {
+            task.subTasks = task.subTasks?.filter((s) => s.id !== subtaskId);
+          }
+        }
+
+        // ✅ Xóa khỏi tasks toàn cục nếu bạn dùng state.tasks
+        for (const task of state.tasks) {
+          task.subTasks = task.subTasks?.filter((s) => s.id !== subtaskId);
+        }
+      })
+      
       ;
   },
 });

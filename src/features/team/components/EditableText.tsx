@@ -38,28 +38,28 @@ export const EditableText = ({
   }, [text]);
 
   const handleSubmit = async (e: React.KeyboardEvent<HTMLInputElement>) => {
-  if (e.key !== "Enter") return;
+    if (e.key !== "Enter") return;
 
-  const cleaned = value.trim();
+    const cleaned = value.trim();
 
-  if (!allowEmpty && cleaned === "") {
-    toast.error("This field cannot be empty");
-    return;
-  }
+    if (!allowEmpty && cleaned === "") {
+      toast.error("This field cannot be empty");
+      return;
+    }
 
-  if (cleaned === text.trim()) {
-    setEditing(false); // không cần gọi nếu không thay đổi
-    return;
-  }
+    if (cleaned === text.trim()) {
+      setEditing(false); // không cần gọi nếu không thay đổi
+      return;
+    }
 
-  try {
-    await onSubmit(cleaned); // ✅ gọi đúng 1 lần
-  } catch (err) {
-    console.error("EditableText submit failed", err);
-  } finally {
-    setEditing(false);
-  }
-};
+    try {
+      await onSubmit(cleaned); // ✅ gọi đúng 1 lần
+    } catch (err) {
+      console.error("EditableText submit failed", err);
+    } finally {
+      setEditing(false);
+    }
+  };
 
   const handleBlur = () => {
     setValue(text); // ✅ reset lại như cũ nếu không nhấn Enter
@@ -80,7 +80,7 @@ export const EditableText = ({
           onChange={(e) => setValue(e.target.value)}
           onKeyDown={handleSubmit}
           onBlur={handleBlur}
-          className={`w-full border-b border-gray-300 bg-transparent transition-colors outline-none focus:border-gray-500 ${inputClassName}`}
+          className={`w-full rounded-md border border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-700 placeholder-gray-400 transition-all duration-200 outline-none focus:border-gray-400 focus:ring-0 ${inputClassName}`}
           placeholder={placeholder}
           disabled={disabled}
         />
