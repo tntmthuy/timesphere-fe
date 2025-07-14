@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../../../state/hooks";
 import { registerThunk } from "../authSlice";
+import { logoutThunk } from "../logoutThunks";
 
 export const RegisterPage = () => {
   const dispatch = useAppDispatch();
@@ -21,8 +22,12 @@ export const RegisterPage = () => {
   );
 
   useEffect(() => {
-  localStorage.removeItem("token"); // 👈 clear token cũ
-}, []);
+  const resetSession = async () => {
+    await dispatch(logoutThunk());
+    navigate("/register"); // ✅ đảm bảo session bị đá rồi quay lại đúng route
+  };
+  resetSession();
+}, [dispatch, navigate]);
 
   useEffect(() => {
     if (status === "succeeded" && !mfaEnabled) {
@@ -72,6 +77,7 @@ export const RegisterPage = () => {
                 type="text"
                 id="firstname"
                 name="firstname"
+                placeholder="Your firstname"
                 value={form.firstname}
                 onChange={handleChange}
                 className="w-full rounded border border-black px-4 py-2 text-sm"
@@ -85,6 +91,7 @@ export const RegisterPage = () => {
                 type="text"
                 id="lastname"
                 name="lastname"
+                placeholder="Your lastname"
                 value={form.lastname}
                 onChange={handleChange}
                 className="w-full rounded border border-black px-4 py-2 text-sm"
@@ -100,6 +107,7 @@ export const RegisterPage = () => {
               type="email"
               id="email"
               name="email"
+              placeholder="Your email"
               value={form.email}
               onChange={handleChange}
               className="w-full rounded border border-black px-4 py-2 text-sm"
@@ -114,6 +122,7 @@ export const RegisterPage = () => {
               type="password"
               id="password"
               name="password"
+              placeholder="Enter your password"
               value={form.password}
               onChange={handleChange}
               className="w-full rounded border border-black px-4 py-2 text-sm"
@@ -136,7 +145,7 @@ export const RegisterPage = () => {
             className="w-full border border-black rounded bg-[#FFDE70] px-6 py-2 font-medium text-black hover:bg-black hover:text-white"
             disabled={status === "loading"}
           >
-            Register
+            Next Step
           </button>
         </form>
 
@@ -147,6 +156,35 @@ export const RegisterPage = () => {
             Log in
           </Link>
         </p>
+        <div className="mt-4 flex justify-between text-sm text-gray-400">
+  <button onClick={() => window.history.back()} className="hover:text-[#FFDE70]">
+    ← Back
+  </button>
+  <Link
+    to="/"
+    className="flex items-center gap-1 text-sm font-medium text-gray-500 transition hover:text-[#FFDE70]"
+  >
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      strokeWidth={1.5}
+      stroke="currentColor"
+      className="h-5 w-5"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 
+        .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 
+        1.125-1.125h2.25c.621 0 1.125.504 
+        1.125 1.125V21h4.125c.621 0 1.125-.504 
+        1.125-1.125V9.75M8.25 21h8.25"
+      />
+    </svg>
+    Home
+  </Link>
+</div>
       </div>
     </section>
   );

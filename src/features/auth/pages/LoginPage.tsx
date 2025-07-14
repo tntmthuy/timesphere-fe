@@ -1,32 +1,45 @@
 // src/features/auth/pages/LoginPage.tsx
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { useAppDispatch, useAppSelector } from "../../../state/hooks";
-import { loginThunk } from "../authSlice";
+import { useAppDispatch } from "../../../state/hooks";
+import { fetchUserProfileThunk, loginThunk } from "../authSlice";
 
 export const LoginPage = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
   const [form, setForm] = useState({ email: "", password: "" });
-  const { token, status, error } = useAppSelector((state) => state.auth);
+  // const { status, error } = useAppSelector((state) => state.auth);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [formError, setFormError] = useState("");
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    dispatch(loginThunk(form));
+    try {
+      await dispatch(loginThunk(form)).unwrap();
+      await dispatch(fetchUserProfileThunk()).unwrap();
+      navigate("/mainpage");
+    } catch (err) {
+      if (err === "MFA_REQUIRED") {
+        navigate("/verify", { state: { email: form.email } });
+      } else {
+        console.warn("⛔️ Login thất bại:", err);
+
+        // ✨ Gán lỗi rõ ràng không ảnh hưởng thunk
+        if (err === "Invalid credentials or account not found.") {
+          if (form.email.includes("@") && form.password.length >= 6) {
+            setFormError("Email or password is incorrect.");
+          } else {
+            setFormError("Please check your login details.");
+          }
+        }
+      }
+    }
   };
 
-  useEffect(() => {
-    if (status === "mfa_required") {
-      navigate("/verify-code", { state: { email: form.email } });
-    } else if (token && status === "succeeded") {
-      navigate("/mainpage");
-    }
-  }, [token, status, navigate, form.email]);
   return (
     <section className="flex min-h-screen items-center justify-center bg-[#FFDE70] px-4">
       <div className="w-full max-w-md space-y-6 rounded-xl border border-black bg-white p-8 shadow-lg">
@@ -50,6 +63,9 @@ export const LoginPage = () => {
               placeholder="Email"
               className="w-full rounded border border-black px-4 py-2 text-sm outline-none focus:ring-1 focus:ring-black"
             />
+            {formError && (
+              <p className="mt-1 text-sm text-red-500">{formError}</p>
+            )}
           </div>
 
           <div>
@@ -81,9 +97,9 @@ export const LoginPage = () => {
           {status === "loading" && (
             <p className="text-sm text-gray-500">Đang đăng nhập...</p>
           )}
-          {error && status !== "mfa_required" && (
+          {/* {error && status !== "mfa_required" && (
             <p className="text-sm text-red-500">{error}</p>
-          )}
+          )} */}
 
           <button
             type="submit"

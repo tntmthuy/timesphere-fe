@@ -41,15 +41,22 @@ export const loginThunk = createAsyncThunk(
     try {
       const res = await axios.post("/api/auth/authenticate", payload);
       const token = res.data.access_token;
-      const user = res.data.user;
       localStorage.setItem("token", token);
-      return { token, user: user ?? null };
+      return { token }; // ✅ chỉ trả token
     } catch (err) {
-      const message = axios.isAxiosError(err)
-        ? err.response?.data?.message || "Đăng nhập thất bại"
-        : "Lỗi không xác định";
-      if (message === "MFA_REQUIRED") return rejectWithValue("MFA_REQUIRED");
-      return rejectWithValue(message);
+      if (axios.isAxiosError(err)) {
+  const backendMessage = err.response?.data?.message;
+
+  if (backendMessage === "MFA_REQUIRED") {
+    return rejectWithValue("MFA_REQUIRED");
+  }
+
+  // ✅ FE có thể bắt được lỗi này rõ ràng
+  return rejectWithValue("Invalid credentials or account not found.");
+}
+
+// ❌ Nếu không phải Axios error
+return rejectWithValue("Something went wrong. Please try again.");
     }
   }
 );
@@ -210,7 +217,6 @@ const authSlice = createSlice({
       .addCase(loginThunk.fulfilled, (state, action) => {
         state.status = "succeeded";
         state.token = action.payload.token;
-        state.user = action.payload.user;
       })
       .addCase(loginThunk.rejected, (state, action) => {
         state.status = action.payload === "MFA_REQUIRED" ? "mfa_required" : "failed";
@@ -225,7 +231,7 @@ const authSlice = createSlice({
           state.mfaEnabled = true;
           state.email = action.payload.email;
         } else {
-          state.status = "succeeded";
+          state.status = "idle";
         }
       })
       .addCase(registerThunk.rejected, (state, action) => {
@@ -235,7 +241,7 @@ const authSlice = createSlice({
 
       // ✅ Verify MFA
       .addCase(verifyCodeThunk.fulfilled, (state, action) => {
-        state.status = "verified";
+        state.status = "succeeded"; // ✅ dùng chung status login
         state.token = action.payload.token;
         state.user = action.payload.user;
       })
@@ -259,6 +265,12 @@ const authSlice = createSlice({
       .addCase(updateProfileInfoThunk.fulfilled, (state, action) => {
         state.user = action.payload;
       })
+      .addCase(fetchUserProfileThunk.rejected, (state) => {
+  state.token = null;
+  state.user = null;
+  state.status = "failed";
+  localStorage.removeItem("token");
+})
       ;
   },
 });

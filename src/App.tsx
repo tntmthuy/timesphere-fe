@@ -10,11 +10,21 @@ import { FocusPage } from "./features/focus/pages/FocusPage";
 import { DashboardPage } from "./features/dashboard/pages/DashboardPage";
 import { TeamDetailPage } from "./features/team/pages/TeamDetailPage";
 import { Toaster } from "react-hot-toast";
+import { useAppDispatch } from "./state/hooks";
+import { fetchUserProfileThunk } from "./features/auth/authSlice";
+import { useEffect } from "react";
 
 function App() {
+   const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) dispatch(fetchUserProfileThunk());
+  }, [dispatch]);
+
   return (
     <>
-      <AuthWatcher />
+      {/* <AuthWatcher /> */}
       {/* <Toaster position="top-center" toastOptions={{ duration: 4000 }} /> */}
       <Toaster
         position="top-center"
@@ -99,7 +109,11 @@ function App() {
           path="/mainpage"
           element={
             <ProtectedRoute>
+              <>
+              <AuthWatcher />
               <MainPage />
+              </>
+              
             </ProtectedRoute>
           }
         >

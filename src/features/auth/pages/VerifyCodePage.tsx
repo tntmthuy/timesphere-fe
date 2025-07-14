@@ -16,7 +16,7 @@ export const VerifyCodePage = () => {
   }, [email, navigate]);
 
   useEffect(() => {
-  if (status === "verified") {
+  if (status === "succeeded") {
     dispatch(clearToken()); // chỉ xoá token, không reset state
     navigate("/login");
   }
