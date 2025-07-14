@@ -1,7 +1,10 @@
 //src\features\team\teamSlice.ts
 
-import { createSlice } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
+import axios from "axios";
+import type { TeamMemberDTO } from "./member";
+import type { RootState } from "../../state/store";
 
 // 👥 Thành viên mỗi team
 type TeamMember = {
@@ -19,12 +22,39 @@ export type Team = {
 type TeamState = {
   teams: Team[];
   teamRole: "OWNER" | "MEMBER" | null;
+  searchResults: TeamMemberDTO[]; // 👈 lưu thành viên từ BE
+searchError: string | null;
 };
 
 const initialState: TeamState = {
   teams: [],
   teamRole: null,
+  searchResults: [], 
+  searchError: null, 
 };
+
+export const searchMembersInTeamThunk = createAsyncThunk(
+  "team/searchMembers",
+  async (
+    { teamId, keyword }: { teamId: string; keyword: string },
+    { getState, rejectWithValue }
+  ) => {
+    const token = (getState() as RootState).auth.token;
+
+    try {
+      const res = await axios.get(`/api/teams/${teamId}/members/search`, {
+        params: { keyword },
+        headers: { Authorization: `Bearer ${token}` }, // 👈 chuẩn gu
+      });
+      return res.data.data;
+    } catch (err) {
+      if (axios.isAxiosError(err) && err.response?.status === 403) {
+        return rejectWithValue("UNAUTHORIZED");
+      }
+      return rejectWithValue("SEARCH_FAILED");
+    }
+  }
+);
 
 const teamSlice = createSlice({
   name: "team",
@@ -51,6 +81,17 @@ const teamSlice = createSlice({
       state.teamRole = action.payload;
     },
   },
+  extraReducers: (builder) => {
+  builder
+    .addCase(searchMembersInTeamThunk.fulfilled, (state, action) => {
+      state.searchResults = action.payload;
+      state.searchError = null;
+    })
+    .addCase(searchMembersInTeamThunk.rejected, (state, action) => {
+      state.searchResults = [];
+      state.searchError = action.payload as string;
+    });
+}
 });
 
 export const { setTeams, updateTeamName, setTeamRole } = teamSlice.actions;

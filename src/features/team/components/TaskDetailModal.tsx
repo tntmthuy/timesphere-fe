@@ -21,6 +21,7 @@ type TaskDetailModalProps = {
   task: TaskDto;
   token: string | null;
   onClose: () => void;
+  teamId: string;
 };
 
 const formatDateLocal = (date: Date): string => {
@@ -32,6 +33,7 @@ export const TaskDetailModal = ({
   task,
   token,
   onClose,
+  teamId,
 }: TaskDetailModalProps) => {
   const dispatch = useAppDispatch();
   const subTaskRef = useRef<SubTaskListHandle>(null);
@@ -284,7 +286,7 @@ export const TaskDetailModal = ({
               }}
             />
 
-            <AssigneePicker />
+            <AssigneePicker teamId={teamId} />
           </div>
         </div>
       </div>

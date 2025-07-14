@@ -1,7 +1,7 @@
 // src/features/auth/pages/LoginPage.tsx
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { useAppDispatch } from "../../../state/hooks";
+import { useAppDispatch, useAppSelector } from "../../../state/hooks";
 import { fetchUserProfileThunk, loginThunk } from "../authSlice";
 
 export const LoginPage = () => {
@@ -9,7 +9,7 @@ export const LoginPage = () => {
   const navigate = useNavigate();
 
   const [form, setForm] = useState({ email: "", password: "" });
-  // const { status, error } = useAppSelector((state) => state.auth);
+  const { status } = useAppSelector((state) => state.auth);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });

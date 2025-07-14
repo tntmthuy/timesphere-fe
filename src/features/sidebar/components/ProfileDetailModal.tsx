@@ -22,7 +22,9 @@ export const ProfileDetailModal = () => {
   const [firstname, setFirstname] = useState(user!.firstname);
   const [lastname, setLastname] = useState(user!.lastname);
   const [gender, setGender] = useState(
-    user!.gender.toLowerCase() as "male" | "female" | "unsure",
+    user?.gender
+      ? (user.gender.toLowerCase() as "male" | "female" | "unsure")
+      : "unsure",
   );
 
   //State change pasword
@@ -109,7 +111,7 @@ export const ProfileDetailModal = () => {
               toast.error("Failed to change password.");
               break;
           }
-          // ✅ Reset field 
+          // ✅ Reset field
           setCurrentPassword("");
           setNewPassword("");
           setConfirmationPassword("");
@@ -136,7 +138,7 @@ export const ProfileDetailModal = () => {
             />
           ) : (
             <div className="flex h-32 w-32 items-center justify-center rounded-full bg-gray-300 font-semibold text-white">
-              {`${user.firstname} ${user.lastname}`}
+              {user.firstname?.charAt(0) ?? "?"}
             </div>
           )}
           <div className="mt-2 flex w-32 justify-center">

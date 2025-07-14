@@ -55,7 +55,7 @@ export const ProfileInfoFields = ({
           </label>
           <label className="flex items-center gap-2 cursor-pointer rounded-md px-3 py-2 text-gray-800 transition hover:text-black">
             <input type="radio" name="gender" value="unsure" checked={gender === "unsure"} onChange={() => setGender("unsure")} />
-            🌈
+            Other
           </label>
         </div>
       </div>

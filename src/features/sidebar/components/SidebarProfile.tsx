@@ -8,6 +8,7 @@ export const SidebarProfile = () => {
   const dispatch = useAppDispatch(); // ✅ khai báo dispatch
   const user = useSelector((state: RootState) => state.auth.user);
 
+  
   useEffect(() => {
     dispatch(fetchUserProfileThunk());
   }, [dispatch]);
@@ -27,7 +28,8 @@ export const SidebarProfile = () => {
             />
           ) : (
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#B3B1B0] text-sm font-bold text-white">
-              {`${user.firstname} ${user.lastname}`}
+              {user.firstname?.charAt(0) ?? "?"}
+
             </div>
           )}
           <div className="flex flex-col">

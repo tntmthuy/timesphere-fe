@@ -267,6 +267,7 @@ export const KanbanBoard = ({ workspaceId, activeTab }: Props) => {
       {activeTab === "Board" && <TrashDropZone />}
       {selectedTask && (
         <TaskDetailModal
+        teamId={workspaceId}
           task={selectedTask}
           token={token}
           onClose={() => setSelectedTask(null)}
