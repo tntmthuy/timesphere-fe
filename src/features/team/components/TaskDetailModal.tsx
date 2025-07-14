@@ -286,7 +286,7 @@ export const TaskDetailModal = ({
               }}
             />
 
-            <AssigneePicker teamId={teamId} />
+            <AssigneePicker teamId={teamId} task={task} />
           </div>
         </div>
       </div>

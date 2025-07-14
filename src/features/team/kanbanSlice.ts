@@ -146,16 +146,23 @@ const kanbanSlice = createSlice({
     updateTaskLocal: (state, action: PayloadAction<TaskDto>) => {
   const updated = action.payload;
 
-  // ✅ cập nhật mảng tasks riêng nếu bạn dùng nó
+  // ✅ clone lại mảng tasks (nếu có riêng)
   state.tasks = state.tasks.map((t) =>
-    t.id === updated.id ? { ...t, ...updated } : t,
+    t.id === updated.id ? { ...t, ...updated } : t
   );
 
-  // ✅ cập nhật luôn trong columns để TaskCard ngoài re-render
-  for (const col of state.columns) {
-    const index = col.tasks.findIndex((t) => t.id === updated.id);
+  // ✅ clone lại column chứa task đang cập nhật
+  for (let i = 0; i < state.columns.length; i++) {
+    const tasks = state.columns[i].tasks;
+    const index = tasks.findIndex((t) => t.id === updated.id);
     if (index !== -1) {
-      col.tasks[index] = updated;
+      const newTasks = [...tasks];
+      newTasks[index] = { ...tasks[index], ...updated };
+
+      state.columns[i] = {
+        ...state.columns[i],
+        tasks: newTasks,
+      };
       break;
     }
   }

@@ -23,13 +23,15 @@ type TeamState = {
   teams: Team[];
   teamRole: "OWNER" | "MEMBER" | null;
   searchResults: TeamMemberDTO[]; // 👈 lưu thành viên từ BE
-searchError: string | null;
+  assignees: TeamMemberDTO[];
+  searchError: string | null;
 };
 
 const initialState: TeamState = {
   teams: [],
   teamRole: null,
   searchResults: [], 
+  assignees: [],
   searchError: null, 
 };
 
@@ -56,6 +58,50 @@ export const searchMembersInTeamThunk = createAsyncThunk(
   }
 );
 
+//tìm assignees
+export const fetchAssigneesOfTaskThunk = createAsyncThunk(
+  "team/fetchAssignees",
+  async (taskId: string, { getState, rejectWithValue }) => {
+    const token = (getState() as RootState).auth.token;
+
+    try {
+      const res = await axios.get(`/api/kanban/task/${taskId}/assignees`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      return res.data.data; // 👈 mảng assignee
+    } catch {
+      return rejectWithValue("FAILED_TO_FETCH_ASSIGNEES");
+    }
+  }
+);
+
+//gán task 
+export const assignMemberToTaskThunk = createAsyncThunk(
+  "task/assignMember",
+  async (
+    { taskId, memberId }: { taskId: string; memberId: string },
+    { getState, rejectWithValue }
+  ) => {
+    const token = (getState() as RootState).auth.token;
+
+    try {
+      const res = await axios.put(
+        `/api/kanban/task/${taskId}/assign`,
+        { memberIds: [memberId] },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      return res.data.data; // ✅ Task sau khi gán xong
+    } catch {
+      return rejectWithValue("ASSIGN_FAILED");
+    }
+  }
+);
+
+//Slice
 const teamSlice = createSlice({
   name: "team",
   initialState,
@@ -90,7 +136,15 @@ const teamSlice = createSlice({
     .addCase(searchMembersInTeamThunk.rejected, (state, action) => {
       state.searchResults = [];
       state.searchError = action.payload as string;
-    });
+    })
+    .addCase(fetchAssigneesOfTaskThunk.fulfilled, (state, action) => {
+      state.assignees = action.payload;
+    })
+    .addCase(assignMemberToTaskThunk.fulfilled, (state, action) => {
+      state.assignees = action.payload.assignees; // ✅ cập nhật danh sách người được giao
+    })
+
+    ;
 }
 });
 
