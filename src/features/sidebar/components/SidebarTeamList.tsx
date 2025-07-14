@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
-import { useAppSelector } from "../../state/hooks";
+import { useAppSelector } from "../../../state/hooks";
 import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
 import { SidebarTeamItem } from "./SidebarTeamItem";
-import type { RootState } from "../../state/store";
-import { setTeams } from "../team/teamSlice";
+import type { RootState } from "../../../state/store";
+import { setTeams } from "../../team/teamSlice";
 
 type SidebarTeamListProps = {
   isActive: boolean;

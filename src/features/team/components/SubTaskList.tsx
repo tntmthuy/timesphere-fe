@@ -141,21 +141,21 @@ export const SubTaskList = forwardRef(
           </div>
         )}
 
-        <div className="max-h-[5rem] space-y-2 overflow-y-auto pr-4">
+        <div className=" space-y-2 pr-4">
           {visibleItems.map((sub) => (
             <div key={sub.id} className="group flex items-start gap-2">
               {/* Khối nội dung bên trái */}
               <div className="flex flex-1 gap-2">
                 <button
                   onClick={() => toggleCompleteById(sub.id)}
-                  className="flex h-4 w-4 items-center justify-center"
+                  className="flex h-5 w-5 items-center justify-center"
                 >
                   {sub.isComplete ? (
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 0 24 24"
                       fill="currentColor"
-                      className="h-4 w-4 translate-y-[1px] text-green-500"
+                      className="translate-y-[1px] text-gray-500"
                     >
                       <path
                         fillRule="evenodd"
@@ -186,13 +186,6 @@ export const SubTaskList = forwardRef(
                     onChange?.(updatedItems);
                   }}
                 />
-                {/* <span
-                  className={`text-[12px] text-gray-800 ${
-                    sub.isComplete ? "text-gray-400 line-through" : ""
-                  }`}
-                >
-                  {sub.title}
-                </span> */}
               </div>
 
               {/* khối phải */}

@@ -91,6 +91,7 @@ export const createSubtaskThunk = createAsyncThunk(
         subtask: res.data.data as SubTask,
       };
     } catch {
+      toast.dismiss();
       toast.error("You don’t have permission to add subtasks.");
       return rejectWithValue("Không thể tạo subtask");
     }

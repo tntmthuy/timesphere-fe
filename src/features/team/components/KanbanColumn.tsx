@@ -55,6 +55,7 @@ export const KanbanColumn = ({
         { headers: { Authorization: `Bearer ${token}` } },
       );
       setTitle(res.data.data?.title ?? cleanTitle);
+      toast.dismiss();
       toast.success("New column added.");
     } catch {
       toast.error("Failed to create.");

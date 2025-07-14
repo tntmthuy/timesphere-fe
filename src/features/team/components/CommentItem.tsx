@@ -11,9 +11,9 @@ export const CommentItem = ({
   content: string;
   authorName?: string;
   avatarUrl?: string;
-  commentId: number;
-  activeMenuId: number | null;
-  setActiveMenuId: (id: number | null) => void;
+  commentId: string;
+  activeMenuId: string | null;
+  setActiveMenuId: (id: string | null) => void;
 }) => {
   const [expanded, setExpanded] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -36,7 +36,7 @@ export const CommentItem = ({
   const isMenuOpen = activeMenuId === commentId;
 
   return (
-    <div className="relative rounded border border-gray-200 bg-gray-50 px-3 py-2 text-[12px] text-gray-800 space-y-1">
+    <div className="relative space-y-1 rounded border border-gray-200 bg-gray-50 px-3 py-2 text-[12px] text-gray-800">
       {/* 🧑👤 Hàng đầu: avatar + tên + icon ba chấm */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -45,7 +45,9 @@ export const CommentItem = ({
             alt="Avatar"
             className="h-5 w-5 rounded-full object-cover"
           />
-          <span className="text-[11px] font-semibold text-gray-600">{authorName}</span>
+          <span className="text-[11px] font-semibold text-gray-600">
+            {authorName}
+          </span>
         </div>
 
         {/* 📍 Icon ba chấm */}
@@ -71,12 +73,17 @@ export const CommentItem = ({
         {isMenuOpen && (
           <div
             ref={menuRef}
-            className="absolute right-2 top-7 z-10 max-w-[70px] rounded bg-white shadow border border-gray-200 text-[12px] text-gray-700"
+            className="absolute top-7 right-2 z-10 max-w-[70px] rounded border border-gray-200 bg-white text-[12px] text-gray-700 shadow"
           >
-            <button className="w-full px-3 py-1 hover:bg-gray-100 text-left">Edit</button>
-            <button className="w-full px-3 py-1 hover:bg-gray-100 text-left">Update</button>
-            <button className="w-full px-3 py-1 hover:bg-gray-100 text-left">Move</button>
-
+            <button className="w-full px-3 py-1 text-left hover:bg-gray-100">
+              Edit
+            </button>
+            <button className="w-full px-3 py-1 text-left hover:bg-gray-100">
+              Update
+            </button>
+            <button className="w-full px-3 py-1 text-left hover:bg-gray-100">
+              Move
+            </button>
           </div>
         )}
       </div>

@@ -13,7 +13,7 @@ export const SidebarItem = ({ label, path, isActive, icon }: SidebarItemProps) =
     <Link
       to={path}
       className={`group relative flex items-center gap-3 rounded px-4 py-2 text-xs font-semibold tracking-wider uppercase transition-colors pl-4 ${
-        isActive ? "bg-[#1E1E1E] text-white" : "text-gray-400 hover:text-white"
+        isActive ? "bg-[#1E1E1E] text-white" : "text-gray-400 hover:text-white hover:bg-gray-800"
       }`}
     >
       <span

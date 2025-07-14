@@ -7,12 +7,14 @@ import storage from "redux-persist/lib/storage";
 import authReducer from "../features/auth/authSlice";
 import teamReducer from "../features/team/teamSlice";
 import kanbanReducer from "../features/team/kanbanSlice";
+import commentReducer from "../features/team/commentSlice";
 
 // 🔧 Gộp reducers
 const rootReducer = combineReducers({
   auth: authReducer,
   team: teamReducer,
   kanban: kanbanReducer,
+  comments: commentReducer,
 });
 
 // 🔒 Cấu hình persist

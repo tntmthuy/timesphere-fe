@@ -1,11 +1,14 @@
+//src\features\auth\authSlice.ts
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
 // 🧾 Kiểu user
 export interface User {
   id: string;
-  fullName: string;
+  firstname: string;
+  lastname: string;
   email: string;
+  gender: "male" | "female" | "unsure";
   avatarUrl: string | null;
 }
 
@@ -87,6 +90,102 @@ export const verifyCodeThunk = createAsyncThunk(
   }
 );
 
+
+//Profile
+export const fetchUserProfileThunk = createAsyncThunk(
+  "auth/fetchUserProfile",
+  async (_, { rejectWithValue }) => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.get("/api/user/profile", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      return res.data.data;
+    } catch {
+      return rejectWithValue("Không lấy được thông tin người dùng");
+    }
+  }
+);
+// up lên cloud + patch avatar
+export const updateAvatarThunk = createAsyncThunk(
+  "auth/updateAvatar",
+  async (file: File, { rejectWithValue }) => {
+    try {
+      const token = localStorage.getItem("token");
+
+      const formData = new FormData();
+      formData.append("file", file);
+
+      // 📤 Upload ảnh
+      const uploadRes = await axios.post("/api/upload?folder=avatars", formData, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const url = uploadRes.data.url;
+
+      // 🧾 PATCH avatar
+      const patchRes = await axios.patch("/api/user/avatar", { avatarUrl: url }, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      return patchRes.data.data;
+    } catch {
+      return rejectWithValue("Không cập nhật được avatar");
+    }
+  }
+);
+
+//update info
+export const updateProfileInfoThunk = createAsyncThunk(
+  "auth/updateProfileInfo",
+  async (
+    payload: {
+      firstname: string;
+      lastname: string;
+      gender: "MALE" | "FEMALE" | "UNSURE";
+    },
+    { rejectWithValue }
+  ) => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.patch("/api/user/profile", payload, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      return res.data.data;
+    } catch {
+      return rejectWithValue("Không cập nhật được thông tin cá nhân");
+    }
+  }
+);
+
+//change password
+export const changePasswordThunk = createAsyncThunk(
+  "auth/changePassword",
+  async (
+    payload: {
+      currentPassword: string;
+      newPassword: string;
+      confirmationPassword: string;
+    },
+    { rejectWithValue }
+  ) => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.patch("/api/user/change-password", payload, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      return res.data.message; // "Đổi mật khẩu thành công!"
+    } catch (err) {
+      const msg = axios.isAxiosError(err)
+        ? err.response?.data?.message || "Password change failed."
+        : "Unknown error.";
+      return rejectWithValue(msg);
+    }
+  }
+);
+
 // 🧩 Slice
 const authSlice = createSlice({
   name: "auth",
@@ -143,7 +242,24 @@ const authSlice = createSlice({
       .addCase(verifyCodeThunk.rejected, (state, action) => {
         state.status = "failed";
         state.error = typeof action.payload === "string" ? action.payload : null;
-      });
+      })
+      .addCase(fetchUserProfileThunk.fulfilled, (state, action) => {
+        state.user = {
+        id: action.payload.id,
+        firstname: action.payload.firstname,
+        lastname: action.payload.lastname,
+        email: action.payload.email,
+        gender: action.payload.gender,
+        avatarUrl: action.payload.avatarUrl,
+      };
+      })
+      .addCase(updateAvatarThunk.fulfilled, (state, action) => {
+        state.user = action.payload; // hoặc state.user.avatarUrl = action.payload.avatarUrl;
+      })
+      .addCase(updateProfileInfoThunk.fulfilled, (state, action) => {
+        state.user = action.payload;
+      })
+      ;
   },
 });
 

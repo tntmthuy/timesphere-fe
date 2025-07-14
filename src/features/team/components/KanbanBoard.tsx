@@ -131,6 +131,7 @@ export const KanbanBoard = ({ workspaceId, activeTab }: Props) => {
           },
         );
         dispatch(moveColumnLocal({ columnId: String(active.id), toIndex }));
+        toast.dismiss();
         toast.success("Moved column!");
       } catch {
         toast.error("You don’t have permission to move column.");
@@ -193,10 +194,11 @@ export const KanbanBoard = ({ workspaceId, activeTab }: Props) => {
           targetPosition: safeTargetPosition,
         }),
       );
-
+      toast.dismiss();
       toast.success("Task moved.");
     } catch (err) {
       console.error("❌ Không thể cập nhật task:", err);
+      toast.dismiss();
       toast.error("You don’t have permission to move task.");
     }
   };
@@ -207,11 +209,13 @@ export const KanbanBoard = ({ workspaceId, activeTab }: Props) => {
 
     try {
       await dispatch(createColumnThunk({ workspaceId, title: clean })).unwrap();
+      toast.dismiss();
       toast.success("New column added.");
       setAdding(false);
     } catch (err: unknown) {
       const axiosErr = err as AxiosError;
       if (axiosErr.response?.status === 403) {
+        toast.dismiss();
         toast.error("Permission denied.");
       } else {
         toast.error("Failed to create.");

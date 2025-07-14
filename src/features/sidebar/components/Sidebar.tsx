@@ -1,8 +1,11 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { useAppDispatch } from "../../state/hooks";
-import { logoutThunk } from "../auth/logoutThunks";
+import { useAppDispatch } from "../../../state/hooks";
+import { logoutThunk } from "../../auth/logoutThunks";
 import { SidebarItem } from "./SidebarItem";
 import { SidebarTeamList } from "./SidebarTeamList";
+import { SidebarProfile } from "./SidebarProfile";
+import { useState } from "react";
+import { ProfileDetailModal } from "./ProfileDetailModal";
 
 type SidebarProps = {
   onNewTeam: () => void;
@@ -12,6 +15,7 @@ export const Sidebar = ({ onNewTeam }: SidebarProps) => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const location = useLocation();
+  const [showProfileModal, setShowProfileModal] = useState(false);
 
   const teamSlugs = ["frontend-squad", "ux-warriors"];
   const pathname = location.pathname;
@@ -37,15 +41,27 @@ export const Sidebar = ({ onNewTeam }: SidebarProps) => {
 
   return (
     <aside className="flex min-h-screen w-64 flex-col justify-between bg-black px-4 py-6 text-white">
-      <div>
+      <div className="space-y-2">
         {/* nữa tách ra thành component profile */}
-        <div className="mb-8 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-full bg-[#B3B1B0]" />
-            <span className="text-sm font-medium">Profile</span>
-          </div>
+        <div
+          className="cursor-pointer rounded-md p-2 transition hover:bg-gray-800 hover:text-white"
+          onClick={() => setShowProfileModal(true)}
+        >
+          <SidebarProfile />
         </div>
-
+        {showProfileModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+            <div className="relative w-[600px] rounded-md bg-white shadow-lg">
+              <ProfileDetailModal />
+              <button
+                onClick={() => setShowProfileModal(false)}
+                className="absolute top-3 right-3 text-lg font-black text-gray-800 hover:text-gray-700"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+        )}
         <nav className="space-y-1">
           <SidebarItem
             label="Focus"

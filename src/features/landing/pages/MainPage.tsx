@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Sidebar } from "../../sidebar/Sidebar";
+import { Sidebar } from "../../sidebar/components/Sidebar";
 import { Outlet } from "react-router-dom";
 import { CreateTeamModal } from "../../team/components/CreateTeamModal";
 

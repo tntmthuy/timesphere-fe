@@ -80,32 +80,49 @@ export const SearchMemberInput = () => {
       {/* 📍 Gợi ý người dùng */}
       {suggestions.length > 0 && (
         <ul className="absolute z-10 mt-1 max-h-[192px] w-full overflow-auto rounded border bg-white text-sm text-black shadow">
-          {suggestions.map((user) => {
-            const isSelf = user.id === currentUserId;
-            const isInvited = invited.some((u) => u.id === user.id);
+  {suggestions.map((user) => {
+    const isSelf = user.id === currentUserId;
+    const isInvited = invited.some((u) => u.id === user.id);
 
-            if (isSelf) return null; // ❌ Ẩn chính chủ
-            return (
-              <li
-                key={user.id}
-                onClick={() => {
-                  if (!isInvited) handleAdd(user);
-                }}
-                className={`px-3 py-2 text-sm ${
-                  isInvited
-                    ? "cursor-not-allowed text-gray-400"
-                    : "cursor-pointer text-black hover:bg-gray-100"
-                }`}
-                title={isInvited ? "Already invited" : ""}
-              >
-                <span className={isInvited ? "line-through" : "font-medium"}>
-                  {user.fullName}
-                </span>{" "}
-                – {user.email}
-              </li>
-            );
-          })}
-        </ul>
+    if (isSelf) return null;
+
+    return (
+      <li
+        key={user.id}
+        onClick={() => {
+          if (!isInvited) handleAdd(user);
+        }}
+        className={`flex items-start gap-3 px-3 py-2 text-sm ${
+          isInvited
+            ? "cursor-not-allowed text-gray-400"
+            : "cursor-pointer hover:bg-gray-100"
+        }`}
+        title={isInvited ? "Already invited" : ""}
+      >
+        {/* 🖼️ Avatar trái */}
+        {user.avatarUrl ? (
+          <img
+            src={user.avatarUrl}
+            alt={user.fullName}
+            className="h-8 w-8 rounded-full object-cover shrink-0"
+          />
+        ) : (
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-300 text-xs font-medium shrink-0">
+            {user.fullName?.charAt(0) || "?"}
+          </div>
+        )}
+
+        {/* 📋 Info phải: tên + email */}
+        <div className="flex flex-col flex-grow">
+          <span className={`text-[13px] font-medium leading-tight ${isInvited ? "line-through" : ""}`}>
+            {user.fullName}
+          </span>
+          <span className="text-[11px] text-gray-500">{user.email}</span>
+        </div>
+      </li>
+    );
+  })}
+</ul>
       )}
 
       {/* 👥 Danh sách thành viên được mời */}

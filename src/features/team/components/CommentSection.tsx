@@ -1,61 +1,62 @@
+//src\features\team\components\CommentSection.tsx
 import { useState } from "react";
 import { CommentItem } from "./CommentItem";
 import { CommentInput } from "./CommentInput";
+import type { TaskCommentDTO } from "../comment"; // ✅ import đúng kiểu từ BE
 
-type Comment = {
-  id: number;
-  content: string;
+type CommentSectionProps = {
+  isCollapsed?: boolean;
+  hideInput?: boolean;
+  comments: TaskCommentDTO[]; // ✅ chuẩn kiểu từ BE
+  input?: string;
+  onChangeInput?: (text: string) => void;
+  onSubmit?: () => void;
 };
 
-export const CommentSection = () => {
-  const [comments, setComments] = useState<Comment[]>([]);
-  const [input, setInput] = useState("");
-  const [activeMenuId, setActiveMenuId] = useState<number | null>(null);
-
-  const handleSubmit = () => {
-    const trimmed = input.trim();
-    if (trimmed) {
-      const newComment: Comment = {
-        id: Date.now(),
-        content: trimmed,
-      };
-      setComments((prev) => [...prev, newComment]);
-      setInput("");
-    }
-  };
+export const CommentSection = ({
+  isCollapsed = false,
+  hideInput = false,
+  comments,
+  input = "",
+  onChangeInput,
+  onSubmit,
+}: CommentSectionProps) => {
+  const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
 
   return (
     <div className="space-y-3">
-      <label className="text-[10px] font-semibold text-gray-600 uppercase">
-        Comment
-      </label>
+      {/* 📋 Comment list — ẩn khi collapsed */}
+      {!isCollapsed && (
+        <div className="space-y-2 pr-1">
+          {comments.length === 0 ? (
+            <p className="text-[12px] text-gray-500 italic">No comment yet.</p>
+          ) : (
+            comments.map((c) => (
+              <CommentItem
+                key={c.id}
+                content={c.content}
+                authorName={c.createdByName}
+                avatarUrl={c.createdByAvatar}
+                activeMenuId={activeMenuId}
+                setActiveMenuId={setActiveMenuId}
+                commentId={c.id}
+              />
+            ))
+          )}
+        </div>
+      )}
 
-      {/* 📋 Danh sách comment có toggle */}
-      <div className="max-h-[200px] space-y-2 overflow-y-auto">
-        {comments.length === 0 ? (
-          <p className="text-[12px] text-gray-500 italic">No comment yet.</p>
-        ) : (
-          comments.map((c) => (
-            <CommentItem
-              key={c.id}
-              content={c.content}
-              authorName="Thùy"
-              avatarUrl="/avatar-thuy.png"
-              activeMenuId={activeMenuId}
-              setActiveMenuId={setActiveMenuId}
-              commentId={c.id}
-            />
-          ))
-        )}
-      </div>
-
-      {/* ✍️ Input bình luận */}
-      <CommentInput
-        avatarUrl="/avatar-thuy.png"
-        value={input}
-        onChange={setInput}
-        onSubmit={handleSubmit}
-      />
+      {/* ✍️ Input bình luận — render khi không bị ẩn */}
+      {!hideInput && (
+        <div className="sticky bottom-0 bg-white pt-2">
+          <CommentInput
+            avatarUrl="/images/trash.jpg"
+            value={input}
+            onChange={onChangeInput ?? (() => {})}
+            onSubmit={onSubmit ?? (() => {})}
+          />
+        </div>
+      )}
     </div>
   );
 };

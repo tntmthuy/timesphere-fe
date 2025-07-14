@@ -28,6 +28,7 @@ export const AddColumnCard = ({ workspaceId, onCancel }: AddColumnCardProps) => 
       );
 
       if (createColumnThunk.fulfilled.match(action)) {
+        toast.dismiss();
         toast.success("Column created.");
         setTitle("");
         onCancel(); // ✅ đóng modal hoặc UI thêm

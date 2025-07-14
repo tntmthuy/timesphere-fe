@@ -109,7 +109,6 @@ function App() {
 
           {/* Trang xem chi tiết nhóm */}
           <Route path="team/:id" element={<TeamDetailPage />} />
-
         </Route>
       </Routes>
     </>
