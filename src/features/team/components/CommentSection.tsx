@@ -45,7 +45,7 @@ export const CommentSection = ({
                   commentId={c.id}
                   visibility={c.visibility}
                   createdAt={c.createdAt}
-                  attachments={c.attachedFiles}
+                  attachments={c.attachments}
                 />
               );
             })

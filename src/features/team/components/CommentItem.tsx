@@ -58,7 +58,7 @@ export const CommentItem = ({
     expanded || !isLong ? content : content.slice(0, 200) + "...";
 
   const isMenuOpen = activeMenuId === commentId;
-
+  // console.log("📎 Comment attachments:", attachments);
   return (
     <div className="relative space-y-1 rounded border border-gray-200 bg-gray-50 px-3 py-2 text-[12px] text-gray-800">
       {/* 🧑👤 Hàng đầu: avatar + tên + icon ba chấm */}
@@ -132,6 +132,7 @@ export const CommentItem = ({
           </div>
         )}
       </div>
+
       {attachments.length > 0 && (
         <div className="space-y-1 text-sm text-gray-700">
           {attachments.map((file) => (

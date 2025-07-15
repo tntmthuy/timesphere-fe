@@ -15,7 +15,7 @@ export type TaskCommentDTO = {
   updatedAt: string;
   visibility: "PUBLIC" | "PRIVATE";
   visibleToUserIds: string[];
-  attachedFiles?: AttachedFileDTO[];
+  attachments?: AttachedFileDTO[];
 };
 
 export type AttachedFileDTO = {

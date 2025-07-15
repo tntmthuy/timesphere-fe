@@ -296,7 +296,7 @@ export const TaskDetailModal = ({
                 isCollapsed={isCommentCollapsed}
                 hideInput
               />
-            </div>
+            </div>  
 
             {/* 🔽 Input bình luận nằm sát đáy */}
             <div className="sticky bottom-0 z-10 bg-white pt-2">

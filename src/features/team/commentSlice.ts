@@ -18,7 +18,10 @@ export const fetchTaskComments = createAsyncThunk(
     const res = await axios.get(`/api/comment/task/${taskId}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
-    return res.data.data as TaskCommentDTO[];
+    return (res.data.data as TaskCommentDTO[]).map((c: TaskCommentDTO) => ({
+  ...c,
+  attachedFiles: c.attachments,
+}));
   }
 );
 
@@ -64,6 +67,7 @@ const commentSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder.addCase(fetchTaskComments.fulfilled, (state, action) => {
+      // console.log("📦 Fetched comments:", action.payload);
       const taskId = action.meta.arg.taskId;
       state.byTask[taskId] = action.payload;
     });
