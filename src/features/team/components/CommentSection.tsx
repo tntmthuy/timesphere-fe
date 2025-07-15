@@ -31,19 +31,24 @@ export const CommentSection = ({
           {comments.length === 0 ? (
             <p className="text-[12px] text-gray-500 italic">No comment yet.</p>
           ) : (
-            comments.map((c) => (
-              <CommentItem
-                key={c.id}
-                content={c.content}
-                authorName={c.createdByName}
-                avatarUrl={c.createdByAvatar}
-                activeMenuId={activeMenuId}
-                setActiveMenuId={setActiveMenuId}
-                commentId={c.id}
-                visibility={c.visibility}
-                createdAt={c.createdAt}
-              />
-            ))
+            comments.map((c) => {
+              // console.log("📎 Comment files:", c.attachedFiles); // ⬅️ thêm dòng này
+
+              return (
+                <CommentItem
+                  key={c.id}
+                  content={c.content}
+                  authorName={c.createdByName}
+                  avatarUrl={c.createdByAvatar}
+                  activeMenuId={activeMenuId}
+                  setActiveMenuId={setActiveMenuId}
+                  commentId={c.id}
+                  visibility={c.visibility}
+                  createdAt={c.createdAt}
+                  attachments={c.attachedFiles}
+                />
+              );
+            })
           )}
         </div>
       )}

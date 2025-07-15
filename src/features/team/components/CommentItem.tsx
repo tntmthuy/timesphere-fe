@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import type { AttachedFileDTO } from "../comment";
 
 const formatDate = (iso: string) => {
   const date = new Date(iso);
@@ -11,15 +12,22 @@ const formatDate = (iso: string) => {
   });
 };
 
+const isImageFile = (file: AttachedFileDTO) => {
+  const imageTypes = ["jpg", "jpeg", "png", "gif", "bmp", "webp", "svg"];
+  const ext = file.name.split(".").pop()?.toLowerCase();
+  return ext && imageTypes.includes(ext);
+};
+
 export const CommentItem = ({
   content,
   authorName,
-  avatarUrl = "/avatar-thuy.png",
+  avatarUrl,
   commentId,
   activeMenuId,
   setActiveMenuId,
   visibility,
   createdAt,
+  attachments = [],
 }: {
   content: string;
   authorName?: string;
@@ -29,6 +37,7 @@ export const CommentItem = ({
   setActiveMenuId: (id: string | null) => void;
   visibility?: "PUBLIC" | "PRIVATE"; // ⬅️ thêm dòng này
   createdAt?: string;
+  attachments?: AttachedFileDTO[];
 }) => {
   const [expanded, setExpanded] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -123,7 +132,49 @@ export const CommentItem = ({
           </div>
         )}
       </div>
+      {attachments.length > 0 && (
+        <div className="space-y-1 text-sm text-gray-700">
+          {attachments.map((file) => (
+            <div key={file.name} className="flex items-center gap-2 truncate">
+              {isImageFile(file) ? (
+                // 🖼 Icon ảnh
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth="1.5"
+                  stroke="currentColor"
+                  className="h-4 w-4 text-gray-500"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="m2.25 15.75 5.159-5.159a2.25 ..."
+                  />
+                </svg>
+              ) : (
+                // 📄 Icon tài liệu
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth="1.5"
+                  stroke="currentColor"
+                  className="h-4 w-4 text-gray-500"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M19.5 14.25v-2.625a3.375 ..."
+                  />
+                </svg>
+              )}
 
+              <span className="max-w-[180px] truncate">{file.name}</span>
+            </div>
+          ))}
+        </div>
+      )}
       {/* 💬 Nội dung bình luận */}
       <div
         className={`break-words whitespace-pre-wrap ${

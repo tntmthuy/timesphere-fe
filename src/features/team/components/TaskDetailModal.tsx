@@ -15,7 +15,7 @@ import toast from "react-hot-toast";
 import { SubTaskHeader } from "./SubTaskHeader";
 import { CommentInput } from "./CommentInput";
 import { createCommentThunk, fetchTaskComments } from "../commentSlice";
-import type { TaskCommentDTO } from "../comment";
+import type { AttachedFileDTO, TaskCommentDTO } from "../comment";
 import { searchMembersInTeamThunk } from "../teamSlice";
 // import type { RootState } from "../../../state/store";
 // import { useSelector } from "react-redux";
@@ -129,6 +129,26 @@ export const TaskDetailModal = ({
       }),
     );
   };
+  //upload
+  const uploadFiles = async (
+    files: File[],
+    token: string,
+  ): Promise<AttachedFileDTO[]> => {
+    const form = new FormData();
+    files.forEach((file) => form.append("files", file));
+    form.append("folder", "comments");
+
+    const res = await axios.post("/api/upload/multiple", form, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    console.log("👀 Upload response raw", res.data);
+    console.log("✅ Returning", res.data.data);
+    return res.data;
+  };
 
   //comment
   useEffect(() => {
@@ -137,19 +157,16 @@ export const TaskDetailModal = ({
     }
   }, [task.id, token, dispatch]); // ✅ thêm dispatch ở đây
 
+  const currentUser = useAppSelector((state) => state.auth.user);
   const [input, setInput] = useState("");
+  const [attachments, setAttachments] = useState<AttachedFileDTO[]>([]);
   const comments: TaskCommentDTO[] = useAppSelector(
     (state) => state.comments.byTask[task.id] ?? [],
   );
 
-  // useEffect(() => {
-  //   if (comments.length > 0 && !isCommentCollapsed) return;
-  //   setIsCommentCollapsed(false);
-  // }, [comments.length, isCommentCollapsed]);
-
   const handleSubmit = () => {
     if (!token || input.trim() === "") return;
-
+    console.log("Sending comment with", attachments);
     dispatch(
       createCommentThunk({
         taskId: task.id,
@@ -157,6 +174,7 @@ export const TaskDetailModal = ({
         visibleToUserIds,
         visibility: visibleToUserIds.length > 0 ? "PRIVATE" : "PUBLIC", // ⬅️ logic auto
         token,
+        attachments,
       }),
     );
 
@@ -283,7 +301,7 @@ export const TaskDetailModal = ({
             {/* 🔽 Input bình luận nằm sát đáy */}
             <div className="sticky bottom-0 z-10 bg-white pt-2">
               <CommentInput
-                avatarUrl="/images/trash.jpg"
+                avatarUrl={currentUser?.avatarUrl ?? undefined}
                 value={input}
                 onChange={setInput}
                 onSubmit={handleSubmit}
@@ -299,6 +317,11 @@ export const TaskDetailModal = ({
                 onAddNotifyUser={(id) =>
                   setVisibleToUserIds((prev) => [...prev, id])
                 }
+                onAttachRawFiles={async (files) => {
+                  const uploaded = await uploadFiles(files, token!); // ⬅️ gọi API
+                  console.log("Uploaded attachments", uploaded);
+                  setAttachments(uploaded); // ✅ đúng kiểu AttachedFileDTO[]
+                }}
               />
             </div>
           </div>

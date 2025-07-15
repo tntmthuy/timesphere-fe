@@ -15,5 +15,17 @@ export type TaskCommentDTO = {
   updatedAt: string;
   visibility: "PUBLIC" | "PRIVATE";
   visibleToUserIds: string[];
-  attachments: string[];
+  attachedFiles?: AttachedFileDTO[];
+};
+
+export type AttachedFileDTO = {
+  id: string | null;
+  name: string;
+  url: string;
+  mimeType: string; // ⬅️ đổi từ fileType cho rõ nghĩa
+  uiType: "IMAGE" | "PDF" | "WORD" | "EXCEL" | "ARCHIVE" | "OTHER"; // ⬅️ dùng cho icon UI
+  size: number;
+  displaySize: string;
+  downloadName?: string; // ⬅️ nếu muốn đổi tên khi tải về
+  isPreviewable?: boolean; // ⬅️ dùng để kiểm tra có thể hiển thị thumbnail
 };

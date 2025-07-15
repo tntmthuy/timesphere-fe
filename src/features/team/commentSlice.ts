@@ -1,7 +1,16 @@
-// src\features\team\commentSlice.ts
+//src\features\team\commentSlice.ts
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
-import type { TaskCommentDTO } from "./comment";
+import type { AttachedFileDTO, TaskCommentDTO } from "./comment";
+
+type CreateCommentPayload = {
+  taskId: string;
+  content: string;
+  visibility?: "PUBLIC" | "PRIVATE";
+  visibleToUserIds?: string[];
+  attachments?: AttachedFileDTO[];
+  token: string;
+};
 
 export const fetchTaskComments = createAsyncThunk(
   "comments/fetchTaskComments",
@@ -13,45 +22,36 @@ export const fetchTaskComments = createAsyncThunk(
   }
 );
 
-//gửi comment
 export const createCommentThunk = createAsyncThunk(
   "comments/createComment",
   async (
-    {
+    payload: CreateCommentPayload,
+    { rejectWithValue }
+  ) => {
+    const {
       taskId,
       content,
-      visibility = "PUBLIC", // 👈 mặc định PUBLIC
+      visibility = "PUBLIC",
       visibleToUserIds = [],
       attachments = [],
       token,
-    }: {
-      taskId: string;
-      content: string;
-      visibility?: "PUBLIC" | "PRIVATE";
-      visibleToUserIds?: string[];
-      attachments?: []; // nếu bạn có AttachmentDTO thì dùng type rõ hơn
-      token: string;
-    },
-    { rejectWithValue }
-  ) => {
+    } = payload;
+
     try {
       const res = await axios.post(
         "/api/comment/task",
-        {
-          taskId,
-          content,
-          visibility,
-          visibleToUserIds,
-          attachments,
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+        { taskId, content, visibility, visibleToUserIds, attachments },
+        { headers: { Authorization: `Bearer ${token}` } }
       );
 
       return res.data.data as TaskCommentDTO;
-    } catch {
-      return rejectWithValue("Không thể gửi bình luận");
+    } catch (error) {
+      const message =
+        axios.isAxiosError(error) && error.response?.data?.message
+          ? error.response.data.message
+          : "Không thể gửi bình luận";
+
+      return rejectWithValue(message);
     }
   }
 );
@@ -75,7 +75,7 @@ const commentSlice = createSlice({
         state.byTask[taskId] = [];
       }
 
-      state.byTask[taskId].unshift(newComment); // ✅ thêm vào đầu mảng
+      state.byTask[taskId].unshift(newComment);
     });
   },
 });
