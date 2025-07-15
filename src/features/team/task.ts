@@ -1,7 +1,7 @@
 // task.ts
 import axios from "axios";
 import type { SubTask } from "./subtask";
-import type { TeamMemberDTO } from "./member";
+import type { AssigneeDTO } from "./member";
 
 export type Priority = "HIGH" | "MEDIUM" | "LOW" | null;
 
@@ -21,7 +21,7 @@ export type TaskDto = {
   progressDisplay: string;
   progress: number;
   dateDue: string;
-  assignees: TeamMemberDTO[];
+  assignees: AssigneeDTO[];
   subTasks?: SubTask[];
   columnId: string;
 };

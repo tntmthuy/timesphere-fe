@@ -14,8 +14,11 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import { SubTaskHeader } from "./SubTaskHeader";
 import { CommentInput } from "./CommentInput";
-import { fetchTaskComments } from "../commentSlice";
+import { createCommentThunk, fetchTaskComments } from "../commentSlice";
 import type { TaskCommentDTO } from "../comment";
+import { searchMembersInTeamThunk } from "../teamSlice";
+// import type { RootState } from "../../../state/store";
+// import { useSelector } from "react-redux";
 
 type TaskDetailModalProps = {
   task: TaskDto;
@@ -50,6 +53,16 @@ export const TaskDetailModal = ({
   const [dueDate, setDueDate] = useState(
     task.dateDue ? new Date(task.dateDue) : null,
   );
+
+  //gợi ý member
+  const [notifyKeyword, setNotifyKeyword] = useState("");
+  const [visibleToUserIds, setVisibleToUserIds] = useState<string[]>([]);
+  useEffect(() => {
+    if (notifyKeyword.trim() !== "") {
+      dispatch(searchMembersInTeamThunk({ teamId, keyword: notifyKeyword }));
+    }
+  }, [notifyKeyword, teamId, dispatch]);
+  const searchResults = useAppSelector((state) => state.team.searchResults);
 
   const calculateProgress = (subs: SubTask[]): number => {
     if (subs.length === 0) return 0;
@@ -124,20 +137,30 @@ export const TaskDetailModal = ({
     }
   }, [task.id, token, dispatch]); // ✅ thêm dispatch ở đây
 
-  const [input, setInput] = useState(""); // ✅ lưu nội dung input bình luận
-  // const [comments, setComments] = useState<Comment[]>([]);
+  const [input, setInput] = useState("");
   const comments: TaskCommentDTO[] = useAppSelector(
     (state) => state.comments.byTask[task.id] ?? [],
   );
 
-  const handleSubmit = () => {
-    const trimmed = input.trim();
-    if (trimmed) {
-      // TODO: Gửi lên BE tại đây
-      toast.success("Đã gửi bình luận!");
+  // useEffect(() => {
+  //   if (comments.length > 0 && !isCommentCollapsed) return;
+  //   setIsCommentCollapsed(false);
+  // }, [comments.length, isCommentCollapsed]);
 
-      setInput("");
-    }
+  const handleSubmit = () => {
+    if (!token || input.trim() === "") return;
+
+    dispatch(
+      createCommentThunk({
+        taskId: task.id,
+        content: input,
+        visibleToUserIds,
+        visibility: visibleToUserIds.length > 0 ? "PRIVATE" : "PUBLIC", // ⬅️ logic auto
+        token,
+      }),
+    );
+
+    setInput("");
   };
 
   return (
@@ -264,6 +287,18 @@ export const TaskDetailModal = ({
                 value={input}
                 onChange={setInput}
                 onSubmit={handleSubmit}
+                notifyKeyword={notifyKeyword}
+                onNotifyChange={setNotifyKeyword}
+                onRemoveNotifyUser={(id) =>
+                  setVisibleToUserIds((prev) =>
+                    prev.filter((uid) => uid !== id),
+                  )
+                }
+                searchResults={searchResults}
+                selectedUserIds={visibleToUserIds}
+                onAddNotifyUser={(id) =>
+                  setVisibleToUserIds((prev) => [...prev, id])
+                }
               />
             </div>
           </div>
@@ -286,7 +321,7 @@ export const TaskDetailModal = ({
               }}
             />
 
-            <AssigneePicker teamId={teamId} task={task} />
+            <AssigneePicker teamId={teamId} taskId={task.id} />
           </div>
         </div>
       </div>

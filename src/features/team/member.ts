@@ -7,3 +7,11 @@ export type TeamMemberDTO = {
   email: string;
   avatarUrl: string | null;
 };
+
+export type AssigneeDTO = {
+  id: string;
+  userId: string;
+  fullName: string;
+  avatarUrl: string | null;
+  teamRole: "OWNER" | "MEMBER";
+};

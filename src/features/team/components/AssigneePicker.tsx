@@ -4,22 +4,28 @@ import { useAppDispatch, useAppSelector } from "../../../state/hooks";
 import {
   assignMemberToTaskThunk,
   searchMembersInTeamThunk,
+  unassignMemberFromTaskThunk,
 } from "../../team/teamSlice";
 import toast from "react-hot-toast";
 import { updateTaskLocal } from "../kanbanSlice";
-import type { TaskDto } from "../task";
+import { store } from "../../../state/store";
+// import type { TaskDto } from "../task";
 
 type Props = {
   teamId: string;
-  task: TaskDto;
+  taskId: string;
 };
-export const AssigneePicker = ({ teamId, task }: Props) => {
+
+export const AssigneePicker = ({ teamId, taskId }: Props) => {
   const dispatch = useAppDispatch();
+  const task = useAppSelector((state) =>
+    state.kanban.tasks.find((t) => t.id === taskId),
+  );
+
   const { searchResults, searchError } = useAppSelector((state) => state.team);
   const [keyword, setKeyword] = useState("");
   const [isFocused, setIsFocused] = useState(false);
-  console.log("🧾 Assignees:", task.assignees);
-  console.log("🔍 Search results:", searchResults);
+
   const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     console.log("teamId used for search:", teamId);
@@ -58,27 +64,36 @@ export const AssigneePicker = ({ teamId, task }: Props) => {
             searchResults
               .filter(
                 (member) =>
-                  !task.assignees?.some((a) => a.userId === member.userId),
+                  !task?.assignees?.some((a) => a.userId === member.userId),
               )
               .slice(0, 3)
               .map((member) => (
                 <li
                   key={member.memberId}
                   onMouseDown={() => {
-                    dispatch(
-                      assignMemberToTaskThunk({
-                        taskId: task.id,
-                        memberId: String(member.memberId),
-                      }),
-                    )
-                      .unwrap()
-                      .then((updatedTask) => {
-                        dispatch(updateTaskLocal(updatedTask)); // ⬅️ cập nhật lại task vào kanbanSlice
-                        toast.success("Đã gán thành viên!");
-                      })
-                      .catch(() => toast.error("Gán thất bại"));
+                    if (task) {
+                      dispatch(
+                        assignMemberToTaskThunk({
+                          taskId: task.id,
+                          memberId: String(member.memberId),
+                        }),
+                      )
+                        .unwrap()
+                        .then((updatedTask) => {
+                          dispatch(updateTaskLocal(updatedTask));
+                          toast.success("Đã gán thành viên!");
 
-                    setKeyword("");
+                          const updatedFromSlice = store
+                            .getState()
+                            .kanban.tasks.find((t) => t.id === updatedTask.id);
+                          console.log(
+                            "✅ Task đã cập nhật:",
+                            updatedFromSlice?.assignees,
+                          );
+                        });
+
+                      setKeyword("");
+                    }
                   }}
                   className="flex cursor-pointer items-center gap-3 px-4 py-2 hover:bg-gray-50"
                 >
@@ -120,9 +135,22 @@ export const AssigneePicker = ({ teamId, task }: Props) => {
 
                 {/* ❌ Nút chỉ để hiển thị */}
                 <button
-                  disabled
-                  className="cursor-default rounded px-2 py-1 text-xs text-gray-300 hover:text-red-400"
-                  title="Unassign (UI-only)"
+                  onClick={() => {
+                    dispatch(
+                      unassignMemberFromTaskThunk({
+                        taskId: task.id,
+                        memberId: member.id, // 👈 dùng ID của assignee
+                      }),
+                    )
+                      .unwrap()
+                      .then((updatedTask) => {
+                        dispatch(updateTaskLocal(updatedTask)); // ✅ cập nhật lại task vào slice
+                        toast.success("Đã gỡ thành viên!");
+                      })
+                      .catch(() => toast.error("Gỡ thất bại"));
+                  }}
+                  className="rounded px-2 py-1 text-xs text-gray-400 hover:text-red-500"
+                  title="Unassign"
                 >
                   ✕
                 </button>

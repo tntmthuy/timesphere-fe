@@ -1,17 +1,34 @@
 //src\features\team\components\CommentInput.tsx
 import { useRef, useEffect } from "react";
+import type { TeamMemberDTO } from "../member";
+
+type CommentInputProps = {
+  avatarUrl?: string;
+  value: string;
+  onChange: (text: string) => void;
+  onSubmit: () => void;
+
+  // 👇 Thêm các prop mới để xử lý notify
+  notifyKeyword: string;
+  onNotifyChange: (text: string) => void;
+  searchResults: TeamMemberDTO[];
+  selectedUserIds: string[];
+  onAddNotifyUser: (id: string) => void;
+  onRemoveNotifyUser: (id: string) => void;
+};
 
 export const CommentInput = ({
   avatarUrl,
   value,
   onChange,
   onSubmit,
-}: {
-  avatarUrl?: string;
-  value: string;
-  onChange: (text: string) => void;
-  onSubmit: () => void;
-}) => {
+  notifyKeyword,
+  onNotifyChange,
+  searchResults,
+  selectedUserIds,
+  onAddNotifyUser,
+  onRemoveNotifyUser,
+}: CommentInputProps) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // 🎯 Auto resize height theo nội dung, max 4 dòng
@@ -29,26 +46,77 @@ export const CommentInput = ({
 
   return (
     <div className="flex items-start gap-3">
-      {/* 🧑 Avatar ngoài khung */}
-      {/* <img
-        src={avatarUrl ?? "/placeholder-avatar.png"}
-        alt="Avatar"
-        className="mt-[6px] h-6 w-6 rounded-full object-cover"
-      /> */}
-
       {/* 💬 Khung input đầy đủ */}
       <div className="flex flex-grow flex-col items-start rounded border border-gray-300 bg-white px-3 py-2 focus-within:ring-1 focus-within:ring-black">
-        {/* 🔔 Vùng Notify nằm riêng một dòng */}
-        <div className="mb-2 flex items-center gap-2 text-sm text-gray-700">
-          <button
-            className="rounded border border-gray-300 px-2 py-1 hover:bg-gray-50"
-            onClick={() => {
-              /* mở modal chọn người hoặc dropdown */
-            }}
-          >
+        {/* 💬 Notify + Input cùng dòng */}
+        <div className="mb-2 flex w-full items-start gap-1 text-sm text-gray-700">
+          <span className="inline-block rounded bg-gray-200 px-2 py-1 font-semibold text-black">
             Notify
-          </button>
-          <span className="text-gray-500">Nobody</span>
+          </span>
+          <div className="flex max-w-[150px] gap-2 overflow-x-auto">
+            {selectedUserIds.map((id) => {
+              const member = searchResults.find((m) => m.userId === id);
+              return (
+                <div
+                  key={id}
+                  className="flex shrink-0 items-center gap-1 rounded bg-gray-100 px-2 py-1"
+                >
+                  <img
+                    src={member?.avatarUrl ?? "/placeholder-avatar.png"}
+                    alt={member?.fullName}
+                    className="h-5 w-5 rounded-full object-cover"
+                  />
+                  <span className="text-sm text-gray-800">
+                    {member?.fullName}
+                  </span>
+                  <button
+                    onClick={() => onRemoveNotifyUser(id)}
+
+                    className="text-gray-500 hover:text-red-500"
+                  >
+                    ×
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+          {/* 🔍 Khung input + gợi ý */}
+          <div className="relative flex-grow">
+            <input
+              type="text"
+              value={notifyKeyword}
+              onChange={(e) => onNotifyChange(e.target.value)}
+              placeholder="Nobody"
+              className="border-none px-3 py-2 text-sm text-gray-700 outline-none focus:ring-0 focus:outline-none"
+            />
+
+            {/* 🧠 Gợi ý 1 kết quả ngay dưới input */}
+            {notifyKeyword.trim() !== "" && (
+              <ul className="absolute top-full left-0 z-50 inline-block max-w-[240px] min-w-[100px] rounded border border-gray-300 bg-white shadow">
+                {" "}
+                {searchResults
+                  .filter((m) => !selectedUserIds.includes(m.userId))
+                  .slice(0, 1)
+                  .map((member) => (
+                    <li
+                      key={member.userId}
+                      onMouseDown={() => {
+                        onAddNotifyUser(member.userId);
+                        onNotifyChange("");
+                      }}
+                      className="flex cursor-pointer items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    >
+                      <img
+                        src={member.avatarUrl ?? "/placeholder-avatar.png"}
+                        alt={member.fullName}
+                        className="h-5 w-5 rounded-full object-cover"
+                      />
+                      <span>{member.fullName}</span>
+                    </li>
+                  ))}
+              </ul>
+            )}
+          </div>
         </div>
 
         {/* ✏️ Khung nhập + icon gửi nằm cùng dòng */}
@@ -56,7 +124,7 @@ export const CommentInput = ({
           <img
             src={avatarUrl ?? "/placeholder-avatar.png"}
             alt="Avatar"
-            className=" h-6 w-6 rounded-full object-cover"
+            className="h-6 w-6 rounded-full object-cover"
           />
           <textarea
             ref={textareaRef}

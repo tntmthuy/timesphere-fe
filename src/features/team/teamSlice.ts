@@ -101,6 +101,28 @@ export const assignMemberToTaskThunk = createAsyncThunk(
   }
 );
 
+//hủy assign
+export const unassignMemberFromTaskThunk = createAsyncThunk(
+  "task/unassignMember",
+  async (
+    { taskId, memberId }: { taskId: string; memberId: string },
+    { getState, rejectWithValue }
+  ) => {
+    const token = (getState() as RootState).auth.token;
+
+    try {
+      const res = await axios.put(
+        `/api/kanban/task/${taskId}/unassign`,
+        { memberIds: [memberId] },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      return res.data.data; // ✅ Updated Task
+    } catch {
+      return rejectWithValue("UNASSIGN_FAILED");
+    }
+  }
+);
+
 //Slice
 const teamSlice = createSlice({
   name: "team",

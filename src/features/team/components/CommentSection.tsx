@@ -1,7 +1,7 @@
 //src\features\team\components\CommentSection.tsx
 import { useState } from "react";
 import { CommentItem } from "./CommentItem";
-import { CommentInput } from "./CommentInput";
+// import { CommentInput } from "./CommentInput";
 import type { TaskCommentDTO } from "../comment"; // ✅ import đúng kiểu từ BE
 
 type CommentSectionProps = {
@@ -15,11 +15,11 @@ type CommentSectionProps = {
 
 export const CommentSection = ({
   isCollapsed = false,
-  hideInput = false,
+  // hideInput = false,
   comments,
-  input = "",
-  onChangeInput,
-  onSubmit,
+  // input = "",
+  // onChangeInput,
+  // onSubmit,
 }: CommentSectionProps) => {
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
 
@@ -40,6 +40,8 @@ export const CommentSection = ({
                 activeMenuId={activeMenuId}
                 setActiveMenuId={setActiveMenuId}
                 commentId={c.id}
+                visibility={c.visibility}
+                createdAt={c.createdAt}
               />
             ))
           )}
@@ -47,7 +49,7 @@ export const CommentSection = ({
       )}
 
       {/* ✍️ Input bình luận — render khi không bị ẩn */}
-      {!hideInput && (
+      {/* {!hideInput && (
         <div className="sticky bottom-0 bg-white pt-2">
           <CommentInput
             avatarUrl="/images/trash.jpg"
@@ -56,7 +58,7 @@ export const CommentSection = ({
             onSubmit={onSubmit ?? (() => {})}
           />
         </div>
-      )}
+      )} */}
     </div>
   );
 };

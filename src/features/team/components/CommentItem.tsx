@@ -1,12 +1,25 @@
 import { useState, useEffect, useRef } from "react";
 
+const formatDate = (iso: string) => {
+  const date = new Date(iso);
+  return date.toLocaleString("vi-VN", {
+    hour: "2-digit",
+    minute: "2-digit",
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+};
+
 export const CommentItem = ({
   content,
-  authorName = "Thùy",
+  authorName,
   avatarUrl = "/avatar-thuy.png",
   commentId,
   activeMenuId,
   setActiveMenuId,
+  visibility,
+  createdAt,
 }: {
   content: string;
   authorName?: string;
@@ -14,6 +27,8 @@ export const CommentItem = ({
   commentId: string;
   activeMenuId: string | null;
   setActiveMenuId: (id: string | null) => void;
+  visibility?: "PUBLIC" | "PRIVATE"; // ⬅️ thêm dòng này
+  createdAt?: string;
 }) => {
   const [expanded, setExpanded] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -48,26 +63,47 @@ export const CommentItem = ({
           <span className="text-[11px] font-semibold text-gray-600">
             {authorName}
           </span>
+          {visibility === "PRIVATE" && (
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              className="size-3 text-gray-400"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M12 1.5a5.25 5.25 0 0 0-5.25 5.25v3a3 3 0 0 0-3 3v6.75a3 3 0 0 0 3 3h10.5a3 3 0 0 0 3-3v-6.75a3 3 0 0 0-3-3v-3c0-2.9-2.35-5.25-5.25-5.25Zm3.75 8.25v-3a3.75 3.75 0 1 0-7.5 0v3h7.5Z"
+                clip-rule="evenodd"
+              />
+            </svg>
+          )}
         </div>
 
         {/* 📍 Icon ba chấm */}
-        <button onClick={() => setActiveMenuId(commentId)}>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="currentColor"
-            className="h-5 w-5 text-gray-400"
-          >
-            <path
-              fillRule="evenodd"
-              clipRule="evenodd"
-              d="M10.5 6a1.5 1.5 0 1 1 3 0 1.5 
+        <div className="flex items-center">
+          {createdAt && (
+            <p className="text-[10px] text-gray-500 italic">
+              {formatDate(createdAt)}
+            </p>
+          )}
+          <button onClick={() => setActiveMenuId(commentId)}>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              className="h-5 w-5 text-gray-400"
+            >
+              <path
+                fillRule="evenodd"
+                clipRule="evenodd"
+                d="M10.5 6a1.5 1.5 0 1 1 3 0 1.5 
               1.5 0 0 1-3 0Zm0 6a1.5 1.5 0 1 1 
               3 0 1.5 1.5 0 0 1-3 0Zm0 6a1.5 
               1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Z"
-            />
-          </svg>
-        </button>
+              />
+            </svg>
+          </button>
+        </div>
 
         {/* 🧩 Popup menu */}
         {isMenuOpen && (

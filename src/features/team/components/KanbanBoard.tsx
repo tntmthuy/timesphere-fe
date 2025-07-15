@@ -146,12 +146,9 @@ export const KanbanBoard = ({ workspaceId, activeTab }: Props) => {
       ?.columnId;
     const sortableInfo = (over.data?.current as SortableData)?.sortable;
     const targetPosition = sortableInfo?.index ?? 0;
-    // const toColumnId = sortableInfo?.containerId ?? String(over.id);
-    // Ưu tiên lấy id đúng từ danh sách column
     let toColumnId = sortableInfo?.containerId;
 
-    // Nếu không tìm thấy, thử lấy over.id
-    const hasValidContainer = columns.some((col) => col.id === toColumnId);
+        const hasValidContainer = columns.some((col) => col.id === toColumnId);
     if (!hasValidContainer) {
       toColumnId = String(over.id);
     }
