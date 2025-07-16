@@ -4,6 +4,8 @@ import React from "react";
 import { deleteCommentThunk } from "../commentSlice";
 import toast from "react-hot-toast";
 import { useAppDispatch } from "../../../state/hooks";
+import ImagePreviewModal from "./previewimg/ImagePreviewModal"; // đường dẫn tuỳ theo vị trí file
+import ImageGalleryPreviewModal from "./previewimg/ImageGalleryPreviewModal";
 
 const formatDate = (iso: string) => {
   const date = new Date(iso);
@@ -78,6 +80,13 @@ const CommentItem = ({
 
   //loading
   const [isDeleting, setIsDeleting] = useState(false);
+
+  //preview image modal state
+  const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
+
+  //preview n image
+  const [galleryImages, setGalleryImages] = useState<string[]>([]);
+  const [initialIndex, setInitialIndex] = useState(0);
 
   return (
     <div className="relative space-y-1 rounded border border-gray-200 bg-gray-50 px-3 py-2 text-[12px] text-gray-800">
@@ -168,35 +177,39 @@ const CommentItem = ({
       {attachments.length > 0 && (
         <div className="space-y-2">
           {/* 📄 Hàng file ➤ cuộn ngang */}
-          {otherFiles.length > 0 && (
-            <div className="flex gap-2 overflow-x-auto">
-              {otherFiles.map((file) => (
-                <div
-                  key={file.name}
-                  className="flex shrink-0 items-center gap-1 rounded-xl bg-gray-300 px-2 py-1 hover:bg-gray-200"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth="1.5"
-                    stroke="currentColor"
-                    className="size-4 text-gray-500"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"
-                    />
-                  </svg>
+          {otherFiles.map((file) => (
+  <a
+    key={file.name}
+    href={file.url}
+    target="_blank"
+    rel="noopener noreferrer"
+    className="flex shrink-0 items-center gap-1 rounded-xl bg-gray-300 px-2 py-1 hover:bg-gray-200 cursor-pointer"
+  >
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      strokeWidth="1.5"
+      stroke="currentColor"
+      className="size-4 text-gray-500"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"
+      />
+    </svg>
 
-                  <span className="truncate font-mono text-xs">
-                    {file.name}
-                  </span>
-                </div>
-              ))}
-            </div>
-          )}
+    <span className="truncate font-mono text-xs">
+      {file.name}
+    </span>
+
+    {/* 📎 Nút tải về riêng */}
+    <span className="ml-1 text-[10px] text-blue-500 underline">
+      Download
+    </span>
+  </a>
+))}
 
           {/* 🖼 Hàng ảnh ➤ cuộn ngang */}
           {imageFiles.length > 0 && (
@@ -207,8 +220,31 @@ const CommentItem = ({
                   src={file.url}
                   alt={file.name}
                   className="h-20 w-auto max-w-[200px] shrink-0 rounded border object-cover"
+                  onClick={() => {
+                    if (imageFiles.length === 1) {
+                      setPreviewImageUrl(file.url); // dùng modal đơn
+                    } else {
+                      setGalleryImages(imageFiles.map((f) => f.url)); // dùng gallery
+                      setInitialIndex(
+                        imageFiles.findIndex((f) => f.url === file.url),
+                      );
+                    }
+                  }}
                 />
               ))}
+              {previewImageUrl && (
+                <ImagePreviewModal
+                  url={previewImageUrl}
+                  onClose={() => setPreviewImageUrl(null)}
+                />
+              )}
+              {galleryImages.length > 0 && (
+                <ImageGalleryPreviewModal
+                  images={galleryImages}
+                  initialIndex={initialIndex}
+                  onClose={() => setGalleryImages([])}
+                />
+              )}
             </div>
           )}
         </div>
