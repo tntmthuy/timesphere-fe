@@ -24,6 +24,7 @@ export type AttachedFileDTO = {
   url: string;
   mimeType: string; // ⬅️ đổi từ fileType cho rõ nghĩa
   uiType: "IMAGE" | "PDF" | "WORD" | "EXCEL" | "ARCHIVE" | "OTHER"; // ⬅️ dùng cho icon UI
+  type?: "IMAGE" | "PDF" | "WORD" | "EXCEL" | "ARCHIVE" | "OTHER";
   size: number;
   displaySize: string;
   downloadName?: string; // ⬅️ nếu muốn đổi tên khi tải về

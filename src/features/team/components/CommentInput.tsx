@@ -1,14 +1,17 @@
 //src\features\team\components\CommentInput.tsx
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect } from "react";
 import type { TeamMemberDTO } from "../member";
+import toast from "react-hot-toast";
+import type { AttachedFileDTO } from "../comment";
 // import toast from "react-hot-toast";
 // import type { AttachedFileDTO } from "../comment";
 
 type CommentInputProps = {
   avatarUrl?: string;
   value: string;
+  attachments: AttachedFileDTO[];
   onChange: (text: string) => void;
-  onSubmit: () => void;
+  onSubmit: (files: File[]) => void;
 
   // 👇 Thêm các prop mới để xử lý notify
   notifyKeyword: string;
@@ -18,20 +21,20 @@ type CommentInputProps = {
   onAddNotifyUser: (id: string) => void;
   onRemoveNotifyUser: (id: string) => void;
   onAttachRawFiles?: (files: File[]) => void; // dùng khi vừa chọn file
-  // onUploadFiles?: (files: File[]) => Promise<AttachedFileDTO[]>;
-  // onAttachFiles?: (attachments: AttachedFileDTO[]) => void; // dùng sau khi upload
+  selectedFiles: File[];
+  setSelectedFiles: React.Dispatch<React.SetStateAction<File[]>>;
+  onClearFiles?: () => void;
+  isSending?: boolean;
 };
 
 //nhận biết đuôi là ảnh
-const isImageFile = (file: File) => {
-  const imageTypes = ["jpg", "jpeg", "png", "gif", "bmp", "webp", "svg"];
-  const ext = file.name.split(".").pop()?.toLowerCase();
-  return ext && imageTypes.includes(ext);
-};
+// const isImageFile = (file: AttachedFileDTO) => file.uiType === "IMAGE";
+const isRawImageFile = (file: File) => file.type.startsWith("image/");
 
 export const CommentInput = ({
   avatarUrl,
   value,
+  attachments,
   onChange,
   onSubmit,
   notifyKeyword,
@@ -40,7 +43,10 @@ export const CommentInput = ({
   selectedUserIds,
   onAddNotifyUser,
   onRemoveNotifyUser,
-  onAttachRawFiles,
+  setSelectedFiles,
+  selectedFiles,
+  onClearFiles,
+  isSending,
 }: CommentInputProps) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -58,7 +64,13 @@ export const CommentInput = ({
   }, [value]);
 
   //xử lý tệp
-  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  // const files = selectedFiles;
+
+  useEffect(() => {
+    if (attachments.length === 0) {
+      setSelectedFiles([]); // ✅ clear nếu cha reset
+    }
+  }, [attachments, setSelectedFiles]);
 
   return (
     <div className="flex items-start gap-3">
@@ -136,7 +148,7 @@ export const CommentInput = ({
 
         {/* Xử lý nhập dữ liệu */}
         {/* 📄 Hiển thị danh sách file đã chọn */}
-        <div className="space-y-1 text-sm text-gray-700">
+        <div className="w-full space-y-1 text-sm text-gray-700">
           {selectedFiles.slice(0, 5).map((file) => (
             <div
               key={file.name}
@@ -144,7 +156,7 @@ export const CommentInput = ({
             >
               {/* 📎 Icon + tên file */}
               <div className="flex items-center gap-1 truncate">
-                {isImageFile(file) ? (
+                {isRawImageFile(file) ? (
                   // 🖼 Icon cho ảnh
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -187,7 +199,7 @@ export const CommentInput = ({
                     />
                   </svg>
                 )}
-                <span className="max-w-[180px] truncate">{file.name}</span>
+                <span className="w-full truncate">{file.name}</span>
               </div>
 
               {/* ✖ Nút xoá */}
@@ -215,18 +227,22 @@ export const CommentInput = ({
 
           <textarea
             ref={textareaRef}
-            value={value}
+            // value={value}
             onChange={(e) => {
               onChange(e.target.value); // ✅ Gọi logic xử lý nội dung (cho textarea, input text)
-              e.target.value = ""; // ✅ Reset giá trị sau khi chọn ➤ cho phép chọn lại cùng nội dung
+              // e.target.value = ""; // ✅ Reset giá trị sau khi chọn ➤ cho phép chọn lại cùng nội dung
             }}
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
-                onSubmit();
+                onSubmit(selectedFiles);
+                onClearFiles?.();
               }
             }}
-            placeholder="Write a comment..."
+            placeholder={isSending ? "Sending..." : "Write a comment..."}
+            disabled={isSending}
+            value={isSending ? "" : value}
+
             rows={1}
             className="flex-grow resize-none overflow-y-auto border-none text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none"
             style={{
@@ -264,16 +280,33 @@ export const CommentInput = ({
             multiple
             className="hidden"
             onChange={(e) => {
+              const MAX_SIZE = 1024 * 1024;
               const files = Array.from(e.target.files ?? []);
-              setSelectedFiles((prev) => [...prev, ...files]);
-              onAttachRawFiles?.(files); // ✅ truyền ra ngoài để cha upload
+              const validFiles = files.filter((f) => f.size <= MAX_SIZE);
+              const oversizedFiles = files.filter((f) => f.size > MAX_SIZE);
+
+              if (oversizedFiles.length > 0) {
+                toast.error("Each file must be no larger than 1MB.");
+              }
+
+              const combined = [...selectedFiles, ...validFiles];
+              if (combined.length > 5) {
+                toast.error("You can upload up to 5 files only.");
+                e.target.value = "";
+                return;
+              }
+
+              setSelectedFiles(combined); // ✅ chỉ lưu tạm
               e.target.value = "";
+
+              // ❌ XÓA dòng này để không upload sớm
+              // onAttachRawFiles?.(validFiles);
             }}
           />
 
           {/* 🟡 Nút gửi */}
           <button
-            onClick={onSubmit}
+            onClick={() => onSubmit(selectedFiles)}
             className="text-yellow-500 transition hover:text-yellow-600"
           >
             <svg

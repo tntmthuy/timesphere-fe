@@ -1,5 +1,5 @@
 //src\features\team\components\TaskDetailModal.tsx
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../../state/hooks";
 import { updateTaskLocal } from "../kanbanSlice";
 import { SubTaskList, type SubTaskListHandle } from "./SubTaskList";
@@ -14,8 +14,12 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import { SubTaskHeader } from "./SubTaskHeader";
 import { CommentInput } from "./CommentInput";
-import { createCommentThunk, fetchTaskComments } from "../commentSlice";
-import type { AttachedFileDTO, TaskCommentDTO } from "../comment";
+import {
+  createCommentThunk,
+  fetchTaskComments,
+  makeSelectCommentsByTask,
+} from "../commentSlice";
+import type { AttachedFileDTO } from "../comment";
 import { searchMembersInTeamThunk } from "../teamSlice";
 // import type { RootState } from "../../../state/store";
 // import { useSelector } from "react-redux";
@@ -129,6 +133,7 @@ export const TaskDetailModal = ({
       }),
     );
   };
+
   //upload
   const uploadFiles = async (
     files: File[],
@@ -145,9 +150,10 @@ export const TaskDetailModal = ({
       },
     });
 
-    console.log("👀 Upload response raw", res.data);
-    console.log("✅ Returning", res.data.data);
-    return res.data;
+    // console.log("👀 Upload response raw", res.data);
+    const uploaded = Array.isArray(res.data) ? res.data : [];
+    // console.log("✅ Returning", uploaded);
+    return uploaded;
   };
 
   //comment
@@ -160,25 +166,49 @@ export const TaskDetailModal = ({
   const currentUser = useAppSelector((state) => state.auth.user);
   const [input, setInput] = useState("");
   const [attachments, setAttachments] = useState<AttachedFileDTO[]>([]);
-  const comments: TaskCommentDTO[] = useAppSelector(
-    (state) => state.comments.byTask[task.id] ?? [],
+  const selectComments = useMemo(
+    () => makeSelectCommentsByTask(task.id),
+    [task.id],
   );
+  const comments = useAppSelector(selectComments);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [isSending, setIsSending] = useState(false);
+  const handleSubmit = async (filesToUpload: File[]) => {
+    setIsSending(true);
+    if (!token || input.trim() === "") {
+      toast.error("Bạn cần nhập nội dung.");
+      return;
+    }
 
-  const handleSubmit = () => {
-    if (!token || input.trim() === "") return;
-    console.log("Sending comment with", attachments);
+    let uploaded: AttachedFileDTO[] = [];
+
+    if (filesToUpload.length > 0) {
+      try {
+        uploaded = await uploadFiles(filesToUpload, token);
+        setAttachments(uploaded);
+      } catch {
+        toast.error("Không thể upload file. Vui lòng thử lại.");
+        return;
+      }
+    }
+
     dispatch(
       createCommentThunk({
         taskId: task.id,
         content: input,
         visibleToUserIds,
-        visibility: visibleToUserIds.length > 0 ? "PRIVATE" : "PUBLIC", // ⬅️ logic auto
+        visibility: visibleToUserIds.length > 0 ? "PRIVATE" : "PUBLIC",
         token,
-        attachments,
+        attachments: uploaded,
       }),
-    );
-
-    setInput("");
+    )
+      .unwrap()
+      .then(() => {
+        setInput("");
+        setAttachments([]);
+        setSelectedFiles([]);
+      })
+      .finally(() => setIsSending(false));
   };
 
   return (
@@ -292,17 +322,20 @@ export const TaskDetailModal = ({
               </div>
 
               <CommentSection
+                taskId={task.id}
                 comments={comments}
+                token={token!}
                 isCollapsed={isCommentCollapsed}
                 hideInput
               />
-            </div>  
+            </div>
 
             {/* 🔽 Input bình luận nằm sát đáy */}
             <div className="sticky bottom-0 z-10 bg-white pt-2">
               <CommentInput
                 avatarUrl={currentUser?.avatarUrl ?? undefined}
                 value={input}
+                attachments={attachments}
                 onChange={setInput}
                 onSubmit={handleSubmit}
                 notifyKeyword={notifyKeyword}
@@ -318,11 +351,26 @@ export const TaskDetailModal = ({
                   setVisibleToUserIds((prev) => [...prev, id])
                 }
                 onAttachRawFiles={async (files) => {
-                  const uploaded = await uploadFiles(files, token!); // ⬅️ gọi API
-                  console.log("Uploaded attachments", uploaded);
-                  setAttachments(uploaded); // ✅ đúng kiểu AttachedFileDTO[]
+                  try {
+                    const uploaded = await uploadFiles(files, token!);
+                    if (uploaded.length > 5) {
+                      toast.error("Bạn chỉ có thể đính kèm tối đa 5 file.");
+                      return;
+                    }
+                    // console.log("Uploaded attachments", uploaded);
+                    setAttachments(uploaded);
+                  } catch {
+                    toast.error("Không thể upload file. Vui lòng thử lại.");
+                  }
                 }}
+                selectedFiles={selectedFiles}
+                setSelectedFiles={setSelectedFiles}
+                onClearFiles={() => setAttachments([])}
+                isSending={isSending}
               />
+              {/* {isSending && (
+                <p className="text-[12px] text-gray-500 italic">Sending...</p>
+              )} */}
             </div>
           </div>
 
