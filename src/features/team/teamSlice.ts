@@ -1,25 +1,26 @@
 //src\features\team\teamSlice.ts
 
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSelector, createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
 import axios from "axios";
-import type { TeamMemberDTO } from "./member";
+import type { TeamMemberDTO, TeamResponse } from "./member";
 import type { RootState } from "../../state/store";
 
 // 👥 Thành viên mỗi team
-type TeamMember = {
-  userId: string;
-  role: "OWNER" | "MEMBER";
-};
+// type TeamMember = {
+//   userId: string;
+//   role: "OWNER" | "MEMBER";
+// };
 
 // 🏢 Cấu trúc team
 export type Team = {
   id: string;
   teamName: string;
-  members: TeamMember[];
+  members: TeamMemberDTO[];
 };
 
 type TeamState = {
+  teamDetail: TeamResponse | null;
   teams: Team[];
   teamRole: "OWNER" | "MEMBER" | null;
   searchResults: TeamMemberDTO[]; // 👈 lưu thành viên từ BE
@@ -28,6 +29,7 @@ type TeamState = {
 };
 
 const initialState: TeamState = {
+  teamDetail: null,
   teams: [],
   teamRole: null,
   searchResults: [], 
@@ -123,6 +125,22 @@ export const unassignMemberFromTaskThunk = createAsyncThunk(
   }
 );
 
+// danh sách member
+export const fetchTeamDetailThunk = createAsyncThunk(
+  "team/fetchTeamDetail",
+  async (teamId: string, { getState, rejectWithValue }) => {
+    const token = (getState() as RootState).auth.token;
+    try {
+      const res = await axios.get(`/api/teams/${teamId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      return res.data.data; // ✅ Trả về kiểu TeamResponse
+    } catch {
+      return rejectWithValue("FAILED_TO_FETCH_TEAM_DETAIL");
+    }
+  }
+);
+
 //Slice
 const teamSlice = createSlice({
   name: "team",
@@ -164,11 +182,18 @@ const teamSlice = createSlice({
     })
     .addCase(assignMemberToTaskThunk.fulfilled, (state, action) => {
       state.assignees = action.payload.assignees; // ✅ cập nhật danh sách người được giao
-    })
-
-    ;
+    });
+    builder.addCase(fetchTeamDetailThunk.fulfilled, (state, action) => {
+      state.teamDetail = action.payload;
+    });
 }
 });
+
+// Selector trả về mảng thành viên
+export const selectTeamMembers = createSelector(
+  (state: RootState) => state.team.teamDetail,
+  (teamDetail) => teamDetail?.members || []
+);
 
 export const { setTeams, updateTeamName, setTeamRole } = teamSlice.actions;
 export default teamSlice.reducer;

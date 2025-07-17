@@ -150,9 +150,7 @@ export const TaskDetailModal = ({
       },
     });
 
-    // console.log("👀 Upload response raw", res.data);
     const uploaded = Array.isArray(res.data) ? res.data : [];
-    // console.log("✅ Returning", uploaded);
     return uploaded;
   };
 

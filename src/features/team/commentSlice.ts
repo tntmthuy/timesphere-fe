@@ -74,10 +74,15 @@ export const deleteCommentThunk = createAsyncThunk(
     { rejectWithValue }
   ) => {
     try {
-      await axios.delete(`/api/comment/${commentId}`, {
+      const res = await axios.delete(`/api/comment/${commentId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      return { commentId, taskId }; // ✅ giờ taskId đã có trong scope
+
+      return {
+        commentId,
+        taskId,
+        updatedAttachments: res.data.attachments, // 👈 nếu BE trả lại file mới
+      };
     } catch (error) {
       const message =
         axios.isAxiosError(error) && error.response?.data?.message
@@ -124,15 +129,16 @@ const commentSlice = createSlice({
       state.byTask[taskId].unshift(newComment);
     });
     builder.addCase(deleteCommentThunk.fulfilled, (state, action) => {
-      const { commentId, taskId } = action.payload;
+      const { commentId, taskId, updatedAttachments } = action.payload;
       if (state.byTask[taskId]) {
         state.byTask[taskId] = state.byTask[taskId].filter((c) => c.id !== commentId);
       }
+      state.attachments = updatedAttachments; // 👈 cập nhật file luôn
     });
     builder.addCase(fetchTeamAttachments.fulfilled, (state, action) => {
-  // Gợi ý: lưu vào state mới tên là `attachments`
-  state.attachments = action.payload;
-});
+      // Gợi ý: lưu vào state mới tên là `attachments`
+      state.attachments = action.payload;
+    });
   },
 });
 

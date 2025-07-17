@@ -1,17 +1,10 @@
+import { useAppSelector } from "../../../state/hooks";
+import { selectTeamMembers } from "../teamSlice";
 import { TeamMemberCard } from "./TeamMemberCard";
 
-type Member = {
-  userId: string;
-  fullName: string;
-  email: string;
-  teamRole: "OWNER" | "MEMBER";
-};
+export const TeamMemberList = () => {
+  const members = useAppSelector(selectTeamMembers);
 
-type Props = {
-  members: Member[];
-};
-
-export const TeamMemberList = ({ members }: Props) => {
   return (
     <>
       <h2 className="mb-3 text-lg font-semibold">Thành viên</h2>
@@ -22,6 +15,7 @@ export const TeamMemberList = ({ members }: Props) => {
             fullName={m.fullName}
             email={m.email}
             teamRole={m.teamRole}
+            avatarUrl={m.avatarUrl}
           />
         ))}
       </div>

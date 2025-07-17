@@ -6,6 +6,7 @@ export type TeamMemberDTO = {
   fullName: string;
   email: string;
   avatarUrl: string | null;
+  teamRole: "OWNER" | "MEMBER";
 };
 
 export type AssigneeDTO = {
@@ -14,4 +15,14 @@ export type AssigneeDTO = {
   fullName: string;
   avatarUrl: string | null;
   teamRole: "OWNER" | "MEMBER";
+};
+
+export type TeamResponse = {
+  id: string;
+  teamName: string;
+  description: string;
+  members: TeamMemberDTO[];
+  createdById: string;
+  createdByEmail: string;
+  createdByFullName: string;
 };

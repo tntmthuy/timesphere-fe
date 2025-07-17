@@ -57,7 +57,7 @@ export const TeamFileList = () => {
   if (!attachments.length)
     return (
       <div className="w-full p-4 text-sm text-gray-600">
-        📁 Chưa có tệp nào được upload trong team này.
+        📂 Looks like this team doesn't have any shared files yet.
       </div>
     );
 
