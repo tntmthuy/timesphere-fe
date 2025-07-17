@@ -179,7 +179,7 @@ export const TaskDetailModal = ({
   const handleSubmit = async (filesToUpload: File[]) => {
     setIsSending(true);
     if (!token || input.trim() === "") {
-      toast.error("Bạn cần nhập nội dung.");
+      toast.error("Please enter a message before submitting.");
       return;
     }
 
@@ -190,7 +190,7 @@ export const TaskDetailModal = ({
         uploaded = await uploadFiles(filesToUpload, token);
         setAttachments(uploaded);
       } catch {
-        toast.error("Không thể upload file. Vui lòng thử lại.");
+        toast.error("Upload failed. Please try again later.");
         return;
       }
     }
@@ -371,9 +371,6 @@ export const TaskDetailModal = ({
                 onClearFiles={() => setAttachments([])}
                 isSending={isSending}
               />
-              {/* {isSending && (
-                <p className="text-[12px] text-gray-500 italic">Sending...</p>
-              )} */}
             </div>
           </div>
 

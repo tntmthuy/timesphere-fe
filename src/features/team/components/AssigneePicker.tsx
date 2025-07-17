@@ -147,9 +147,9 @@ export const AssigneePicker = ({ teamId, taskId }: Props) => {
                       .unwrap()
                       .then((updatedTask) => {
                         dispatch(updateTaskLocal(updatedTask)); // ✅ cập nhật lại task vào slice
-                        toast.success("Đã gỡ thành viên!");
+                        toast.success("Member has been successfully removed!");
                       })
-                      .catch(() => toast.error("Gỡ thất bại"));
+                      .catch(() => toast.error("You don't have permission."));
                   }}
                   className="rounded px-2 py-1 text-xs text-gray-400 hover:text-red-500"
                   title="Unassign"
