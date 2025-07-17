@@ -20,6 +20,7 @@ export const makeSelectCommentsByTask = (taskId: string) =>
     (byTask) => byTask[taskId] ?? []
   );
 
+//comment of task
 export const fetchTaskComments = createAsyncThunk(
   "comments/fetchTaskComments",
   async ({ taskId, token }: { taskId: string; token: string }) => {
@@ -30,6 +31,7 @@ export const fetchTaskComments = createAsyncThunk(
   }
 );
 
+//create comment
 export const createCommentThunk = createAsyncThunk(
   "comments/createComment",
   async (
@@ -86,11 +88,23 @@ export const deleteCommentThunk = createAsyncThunk(
   }
 );
 
+//lấy file nguyên team
+export const fetchTeamAttachments = createAsyncThunk(
+  "comments/fetchTeamAttachments",
+  async ({ teamId, token }: { teamId: string; token: string }) => {
+    const res = await axios.get(`/api/teams/${teamId}/attachments`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return res.data as AttachedFileDTO[];
+  }
+);
+
 //Slice
 const commentSlice = createSlice({
   name: "comments",
   initialState: {
     byTask: {} as Record<string, TaskCommentDTO[]>,
+    attachments: [] as AttachedFileDTO[],
   },
   reducers: {},
   extraReducers: (builder) => {
@@ -115,7 +129,10 @@ const commentSlice = createSlice({
         state.byTask[taskId] = state.byTask[taskId].filter((c) => c.id !== commentId);
       }
     });
-
+    builder.addCase(fetchTeamAttachments.fulfilled, (state, action) => {
+  // Gợi ý: lưu vào state mới tên là `attachments`
+  state.attachments = action.payload;
+});
   },
 });
 

@@ -29,4 +29,9 @@ export type AttachedFileDTO = {
   displaySize: string;
   downloadName?: string; // ⬅️ nếu muốn đổi tên khi tải về
   isPreviewable?: boolean; // ⬅️ dùng để kiểm tra có thể hiển thị thumbnail
+
+  uploadedByName: string;         // ✅ mới ➤ tên người upload
+  uploadedByAvatar?: string;      // ✅ mới ➤ avatar nếu có
+  createdAt: string;              // ✅ mới ➤ ngày gửi file
+  taskTitle?: string;             // ✅ mới ➤ nếu muốn hiển thị file thuộc task nào
 };
