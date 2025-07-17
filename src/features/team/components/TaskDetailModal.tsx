@@ -89,7 +89,12 @@ export const TaskDetailModal = ({
       title: updates.title ?? title,
       description: updates.description ?? description,
       priority: updates.priority ?? priority,
-      dateDue: updates.dateDue ?? (dueDate ? formatDateLocal(dueDate) : null),
+      dateDue:
+        updates.dateDue !== undefined
+          ? updates.dateDue
+          : dueDate
+            ? formatDateLocal(dueDate)
+            : null,
       subTasks,
     };
 
@@ -379,7 +384,7 @@ export const TaskDetailModal = ({
               onChange={(date) => {
                 setDueDate(date);
                 const formatted = date ? formatDateLocal(date) : null;
-                performSave({ dateDue: formatted }); // ✅ gọn, đúng, không bị nested
+                performSave({ dateDue: formatted });
               }}
             />
             <PriorityDropdown
