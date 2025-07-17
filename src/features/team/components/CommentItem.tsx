@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import type { AttachedFileDTO } from "../comment";
 import React from "react";
-import { deleteCommentThunk } from "../commentSlice";
+import { deleteCommentThunk, fetchTeamAttachments } from "../commentSlice";
 import toast from "react-hot-toast";
 import { useAppDispatch } from "../../../state/hooks";
 import ImagePreviewModal from "./previewimg/ImagePreviewModal"; // đường dẫn tuỳ theo vị trí file
@@ -31,6 +31,7 @@ const CommentItem = ({
   createdAt,
   attachments = [],
   taskId,
+  teamId,
   token,
 }: {
   content: string;
@@ -43,6 +44,7 @@ const CommentItem = ({
   createdAt?: string;
   attachments?: AttachedFileDTO[];
   taskId: string;
+  teamId: string;
   token: string;
 }) => {
   const [expanded, setExpanded] = useState(false);
@@ -156,8 +158,18 @@ const CommentItem = ({
                 setIsDeleting(true);
                 dispatch(deleteCommentThunk({ commentId, taskId, token }))
                   .unwrap()
-                  .then(() => {
+                  .then(({ updatedAttachments }) => {
                     toast.success("Đã xoá bình luận");
+
+                    if (
+                      !updatedAttachments ||
+                      updatedAttachments.length === 0
+                    ) {
+                      setTimeout(() => {
+                        dispatch(fetchTeamAttachments({ teamId, token }));
+                      }, 200); // ⏳ delay nhẹ để tránh ghi đè slice mới nhận
+                    }
+
                     setActiveMenuId(null);
                   })
                   .catch((err) => {
@@ -178,38 +190,36 @@ const CommentItem = ({
         <div className="space-y-2">
           {/* 📄 Hàng file ➤ cuộn ngang */}
           {otherFiles.map((file) => (
-  <a
-    key={file.name}
-    href={file.url}
-    target="_blank"
-    rel="noopener noreferrer"
-    className="flex shrink-0 items-center gap-1 rounded-xl bg-gray-300 px-2 py-1 hover:bg-gray-200 cursor-pointer"
-  >
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      fill="none"
-      viewBox="0 0 24 24"
-      strokeWidth="1.5"
-      stroke="currentColor"
-      className="size-4 text-gray-500"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"
-      />
-    </svg>
+            <a
+              key={file.name}
+              href={file.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex shrink-0 cursor-pointer items-center gap-1 rounded-xl bg-gray-300 px-2 py-1 hover:bg-gray-200"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth="1.5"
+                stroke="currentColor"
+                className="size-4 text-gray-500"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"
+                />
+              </svg>
 
-    <span className="truncate font-mono text-xs">
-      {file.name}
-    </span>
+              <span className="truncate font-mono text-xs">{file.name}</span>
 
-    {/* 📎 Nút tải về riêng */}
-    <span className="ml-1 text-[10px] text-blue-500 underline">
-      Download
-    </span>
-  </a>
-))}
+              {/* 📎 Nút tải về riêng */}
+              <span className="ml-1 text-[10px] text-blue-500 underline">
+                Download
+              </span>
+            </a>
+          ))}
 
           {/* 🖼 Hàng ảnh ➤ cuộn ngang */}
           {imageFiles.length > 0 && (

@@ -77,17 +77,21 @@ export const deleteCommentThunk = createAsyncThunk(
       const res = await axios.delete(`/api/comment/${commentId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-
+console.log("🧪 Delete response raw:", res.data);
       return {
         commentId,
         taskId,
-        updatedAttachments: res.data.attachments, // 👈 nếu BE trả lại file mới
+        updatedAttachments: Array.isArray(res.data.data)
+  ? res.data.data
+  : []
+          
       };
     } catch (error) {
       const message =
         axios.isAxiosError(error) && error.response?.data?.message
           ? error.response.data.message
           : "Không thể xoá bình luận";
+
       return rejectWithValue(message);
     }
   }
@@ -122,23 +126,28 @@ const commentSlice = createSlice({
       const newComment = action.payload;
       const taskId = action.meta.arg.taskId;
 
+      // Gút: thêm bình luận mới vào byTask
       if (!state.byTask[taskId]) {
         state.byTask[taskId] = [];
       }
-
       state.byTask[taskId].unshift(newComment);
+
+      // 👇 Gút thêm: nếu bình luận có attachments thì cập nhật luôn file list
+      if (Array.isArray(newComment.attachments) && newComment.attachments.length > 0) {
+        state.attachments = [...newComment.attachments, ...state.attachments];
+      }
     });
     builder.addCase(deleteCommentThunk.fulfilled, (state, action) => {
-      const { commentId, taskId, updatedAttachments } = action.payload;
-      if (state.byTask[taskId]) {
-        state.byTask[taskId] = state.byTask[taskId].filter((c) => c.id !== commentId);
+      const { updatedAttachments } = action.payload;
+
+      if (Array.isArray(updatedAttachments)) {
+        state.attachments = [...updatedAttachments];
       }
-      state.attachments = updatedAttachments; // 👈 cập nhật file luôn
     });
     builder.addCase(fetchTeamAttachments.fulfilled, (state, action) => {
-      // Gợi ý: lưu vào state mới tên là `attachments`
       state.attachments = action.payload;
     });
+
   },
 });
 

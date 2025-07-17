@@ -1,9 +1,12 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAppSelector } from "../../../state/hooks";
 import ImagePreviewModal from "./previewimg/ImagePreviewModal";
 
 export const TeamFileList = () => {
   const attachments = useAppSelector((state) => state.comments.attachments);
+  useEffect(() => {
+    console.log("📋 attachments from Redux:", attachments);
+  }, [attachments]);
   //modal
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const formatDate = (iso: string) =>
@@ -54,7 +57,8 @@ export const TeamFileList = () => {
     return "📎";
   };
 
-  if (!attachments.length)
+  if (!Array.isArray(attachments) || attachments.length === 0)
+
     return (
       <div className="w-full p-4 text-sm text-gray-600">
         📂 Looks like this team doesn't have any shared files yet.

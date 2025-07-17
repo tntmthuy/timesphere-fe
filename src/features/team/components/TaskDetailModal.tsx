@@ -179,6 +179,7 @@ export const TaskDetailModal = ({
   const handleSubmit = async (filesToUpload: File[]) => {
     setIsSending(true);
     if (!token || input.trim() === "") {
+      toast.dismiss();
       toast.error("Please enter a message before submitting.");
       return;
     }
@@ -190,6 +191,7 @@ export const TaskDetailModal = ({
         uploaded = await uploadFiles(filesToUpload, token);
         setAttachments(uploaded);
       } catch {
+        toast.dismiss();
         toast.error("Upload failed. Please try again later.");
         return;
       }
@@ -357,12 +359,14 @@ export const TaskDetailModal = ({
                   try {
                     const uploaded = await uploadFiles(files, token!);
                     if (uploaded.length > 5) {
-                      toast.error("Bạn chỉ có thể đính kèm tối đa 5 file.");
+                      toast.dismiss();
+                      toast.error("You can only attach up to 5 files.");
                       return;
                     }
                     // console.log("Uploaded attachments", uploaded);
                     setAttachments(uploaded);
                   } catch {
+                    toast.dismiss();
                     toast.error("Không thể upload file. Vui lòng thử lại.");
                   }
                 }}

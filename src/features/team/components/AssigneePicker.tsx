@@ -81,7 +81,9 @@ export const AssigneePicker = ({ teamId, taskId }: Props) => {
                         .unwrap()
                         .then((updatedTask) => {
                           dispatch(updateTaskLocal(updatedTask));
-                          toast.success("Member has been assigned successfully!");
+                          toast.success(
+                            "Member has been assigned successfully!",
+                          );
 
                           const updatedFromSlice = store
                             .getState()
@@ -92,7 +94,7 @@ export const AssigneePicker = ({ teamId, taskId }: Props) => {
                           );
                         })
                         .catch((err) => {
-                            toast.error("You don't have permission.");
+                          toast.error("You don't have permission.");
                           console.error("Failed to assign member:", err);
                         });
                     }
@@ -137,19 +139,24 @@ export const AssigneePicker = ({ teamId, taskId }: Props) => {
 
                 {/* ❌ Nút chỉ để hiển thị */}
                 <button
-                  onClick={() => {
-                    dispatch(
-                      unassignMemberFromTaskThunk({
-                        taskId: task.id,
-                        memberId: member.id, // 👈 dùng ID của assignee
-                      }),
-                    )
-                      .unwrap()
-                      .then((updatedTask) => {
-                        dispatch(updateTaskLocal(updatedTask)); // ✅ cập nhật lại task vào slice
-                        toast.success("Member has been successfully removed!");
-                      })
-                      .catch(() => toast.error("You don't have permission."));
+                  onClick={async () => {
+                    try {
+                      const updatedTask = await dispatch(
+                        unassignMemberFromTaskThunk({
+                          taskId: task.id,
+                          memberId: member.id,
+                        }),
+                      ).unwrap();
+
+                      dispatch(updateTaskLocal(updatedTask));
+                      toast.dismiss();
+                      toast.success("✅ Member has been successfully removed!");
+                    } catch {
+                      toast.dismiss();
+                      toast.error(
+                        "⛔ You don't have permission to unassign this member.",
+                      );
+                    }
                   }}
                   className="rounded px-2 py-1 text-xs text-gray-400 hover:text-red-500"
                   title="Unassign"
