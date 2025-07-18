@@ -3,12 +3,13 @@ import type { RootState } from "../../../state/store";
 import { useEffect } from "react";
 import { useAppDispatch } from "../../../state/hooks"; // ✅ thêm dòng này
 import { fetchUserProfileThunk } from "../../auth/authSlice";
+import { useNavigate } from "react-router-dom";
 
 export const SidebarProfile = () => {
   const dispatch = useAppDispatch(); // ✅ khai báo dispatch
   const user = useSelector((state: RootState) => state.auth.user);
+  const navigate = useNavigate();
 
-  
   useEffect(() => {
     dispatch(fetchUserProfileThunk());
   }, [dispatch]);
@@ -29,7 +30,6 @@ export const SidebarProfile = () => {
           ) : (
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#B3B1B0] text-sm font-bold text-white">
               {user.firstname?.charAt(0) ?? "?"}
-
             </div>
           )}
           <div className="flex flex-col">
@@ -44,6 +44,11 @@ export const SidebarProfile = () => {
           viewBox="0 0 24 24"
           fill="currentColor"
           className="h-5 w-5 text-gray-400 transition hover:text-yellow-400"
+          onClick={(e) => {
+    e.stopPropagation(); // ✅ ngăn lan lên div cha
+    navigate("notification");
+  }}
+
         >
           <path
             fillRule="evenodd"

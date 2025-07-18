@@ -245,10 +245,10 @@ if (toCol.tasks.length === 0) {
         state.error = null;
       })
       .addCase(fetchBoardThunk.fulfilled, (state, action) => {
-  state.columns = action.payload;
-  state.tasks = action.payload.flatMap((col) => col.tasks); // ✅ lấy toàn bộ task ra
-  state.isLoading = false;
-})
+        state.columns = action.payload;
+        state.tasks = action.payload.flatMap((col) => col.tasks); // ✅ lấy toàn bộ task ra
+        state.isLoading = false;
+      })
       .addCase(fetchBoardThunk.rejected, (state, action) => {
         state.error = action.payload as string;
         state.isLoading = false;
@@ -275,10 +275,10 @@ if (toCol.tasks.length === 0) {
       })
       .addCase(updateSubtaskTitleThunk.fulfilled, (state, action) => {
         const updated = action.payload;
-if (!updated || !updated.id) {
-    console.error("💥 Subtask update payload bị undefined hoặc thiếu id:", updated);
-    return;
-  }
+        if (!updated || !updated.id) {
+            console.error("💥 Subtask update payload bị undefined hoặc thiếu id:", updated);
+            return;
+          }
 
         // ✅ Cập nhật subtask trong mọi task chứa nó
         for (const col of state.columns) {

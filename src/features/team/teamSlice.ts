@@ -26,6 +26,7 @@ type TeamState = {
   searchResults: TeamMemberDTO[]; // 👈 lưu thành viên từ BE
   assignees: TeamMemberDTO[];
   searchError: string | null;
+  newTeamSuggestions: TeamMemberDTO[];
 };
 
 const initialState: TeamState = {
@@ -35,7 +36,27 @@ const initialState: TeamState = {
   searchResults: [], 
   assignees: [],
   searchError: null, 
+  newTeamSuggestions: [],
 };
+
+//kiếm toàn bộ
+export const searchNewTeamMembersThunk = createAsyncThunk(
+  "team/searchNewTeamMembers",
+  async (keyword: string, { getState, rejectWithValue }) => {
+    const token = (getState() as RootState).auth.token;
+
+    try {
+      const res = await axios.get(`/api/user/search-new-team`, {
+        params: { keyword },
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      return res.data.data; // 👈 lấy toàn bộ
+    } catch {
+      return rejectWithValue("SEARCH_FAILED");
+    }
+  }
+);
 
 export const searchMembersInTeamThunk = createAsyncThunk(
   "team/searchMembers",
@@ -134,9 +155,36 @@ export const fetchTeamDetailThunk = createAsyncThunk(
       const res = await axios.get(`/api/teams/${teamId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+      
       return res.data.data; // ✅ Trả về kiểu TeamResponse
     } catch {
       return rejectWithValue("FAILED_TO_FETCH_TEAM_DETAIL");
+    }
+  }
+);
+
+//gửi lời mời
+export const inviteMemberToTeamThunk = createAsyncThunk<
+  string,
+  { teamId: string; email: string },
+  { state: RootState }
+>(
+  "team/inviteMember",
+  async ({ teamId, email }, { getState, rejectWithValue }) => {
+    const token = getState().auth.token;
+
+    try {
+      await axios.post(
+        `/api/teams/${teamId}/members`,
+        [{ email }],
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      return "Invitation sent successfully. Awaiting confirmation.";
+    } catch {
+      return rejectWithValue("This user is already invited or awaiting confirmation.");
     }
   }
 );
@@ -185,6 +233,9 @@ const teamSlice = createSlice({
     });
     builder.addCase(fetchTeamDetailThunk.fulfilled, (state, action) => {
       state.teamDetail = action.payload;
+    });
+    builder.addCase(searchNewTeamMembersThunk.fulfilled, (state, action) => {
+      state.newTeamSuggestions = action.payload;
     });
 }
 });

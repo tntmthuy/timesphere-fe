@@ -13,9 +13,10 @@ import { Toaster } from "react-hot-toast";
 import { useAppDispatch } from "./state/hooks";
 import { fetchUserProfileThunk } from "./features/auth/authSlice";
 import { useEffect } from "react";
+import { NotificationPage } from "./features/sidebar/pages/NotificationPage";
 
 function App() {
-   const dispatch = useAppDispatch();
+  const dispatch = useAppDispatch();
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -110,17 +111,16 @@ function App() {
           element={
             <ProtectedRoute>
               <>
-              <AuthWatcher />
-              <MainPage />
+                <AuthWatcher />
+                <MainPage />
               </>
-              
             </ProtectedRoute>
           }
         >
           <Route index element={<FocusPage />} />
           <Route path="focus" element={<FocusPage />} />
           <Route path="dashboard" element={<DashboardPage />} />
-
+          <Route path="notification" element={<NotificationPage />} />
           {/* Trang xem chi tiết nhóm */}
           <Route path="team/:id" element={<TeamDetailPage />} />
         </Route>

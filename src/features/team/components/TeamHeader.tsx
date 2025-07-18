@@ -4,6 +4,7 @@ import { useDispatch } from "react-redux";
 import { updateTeamName } from "../teamSlice";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import InvitePopup from "./InvitePopup";
 
 type Props = {
   teamName: string;
@@ -61,6 +62,12 @@ export const TeamHeader = ({ teamName, description, teamId }: Props) => {
       console.error("Lỗi cập nhật:", err);
     }
   };
+  const [isInviteOpen, setIsInviteOpen] = useState(false);
+
+  // const handleInvite = (email: string) => {
+  //   console.log("📧 Invite sent to:", email);
+  //   // TODO: call backend invite API
+  // };
 
   return (
     <div className="mb-6 space-y-2">
@@ -75,9 +82,21 @@ export const TeamHeader = ({ teamName, description, teamId }: Props) => {
           placeholder="Team name"
         />
         <div className="flex items-center gap-3">
-          <button className="rounded-md bg-yellow-200 px-3 py-2 text-sm font-medium text-yellow-800 hover:bg-[#fbe89e]">
-            +Invite
-          </button>
+          <div className="relative flex items-center gap-3">
+            <button
+              className="rounded-md bg-yellow-200 px-3 py-2 text-sm font-medium text-yellow-800 hover:bg-[#fbe89e]"
+              onClick={() => setIsInviteOpen((prev) => !prev)}
+            >
+              +Invite
+            </button>
+
+            {isInviteOpen && (
+              <InvitePopup
+                onClose={() => setIsInviteOpen(false)}
+                teamId={teamId}
+              />
+            )}
+          </div>
           <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"

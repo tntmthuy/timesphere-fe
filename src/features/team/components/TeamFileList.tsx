@@ -58,7 +58,6 @@ export const TeamFileList = () => {
   };
 
   if (!Array.isArray(attachments) || attachments.length === 0)
-
     return (
       <div className="w-full p-4 text-sm text-gray-600">
         📂 Looks like this team doesn't have any shared files yet.
@@ -78,8 +77,8 @@ export const TeamFileList = () => {
           <thead className="sticky top-0 z-10 bg-yellow-100">
             <tr className="text-xs text-gray-500">
               <th className="px-2 py-2 text-left uppercase">File name</th>
-              <th className="px-2 py-2 text-center uppercase">Type</th>
-              <th className="px-2 py-2 text-center uppercase">Size</th>
+              <th className="px-2 py-2 text-left uppercase">Type</th>
+              <th className="px-2 py-2 text-left uppercase">Size</th>
               <th className="px-2 py-2 text-center uppercase">Uploaded by</th>
               <th className="px-2 py-2 text-center uppercase">Date</th>
               <th className="px-2 py-2 text-center uppercase">Action</th>
@@ -142,6 +141,7 @@ export const TeamFileList = () => {
                   <div className="flex h-full items-center justify-center">
                     <a
                       href={file.url}
+                      target="_blank"
                       download={file.downloadName || file.name}
                       onClick={(e) => e.stopPropagation()}
                       className="text-blue-500 hover:text-blue-600"
