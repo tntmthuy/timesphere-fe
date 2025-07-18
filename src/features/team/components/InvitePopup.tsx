@@ -43,7 +43,10 @@ const InvitePopup = ({ teamId, onClose }: Props) => {
       className="absolute top-11 right-0 z-20 min-w-[220px] rounded border border-gray-300 bg-white shadow-lg"
     >
       <div className="p-3 text-sm text-gray-800">
-        <p className="mb-1 font-medium">🔗 Invite team members</p>
+        <p className="mb-1 font-medium">Invite team members</p>
+        <p className="text-[10px] text-gray-500">
+          Enter their email to send an invitation to join your team.
+        </p>
 
         <input
           type="email"

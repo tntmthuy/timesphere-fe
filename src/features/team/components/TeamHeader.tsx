@@ -2,7 +2,7 @@ import { EditableText } from "./EditableText";
 import { useAppSelector } from "../../../state/hooks";
 import { useDispatch } from "react-redux";
 import { updateTeamName } from "../teamSlice";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import InvitePopup from "./InvitePopup";
 
@@ -69,6 +69,25 @@ export const TeamHeader = ({ teamName, description, teamId }: Props) => {
   //   // TODO: call backend invite API
   // };
 
+  //out
+  const [showMenu, setShowMenu] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setShowMenu(false);
+      }
+    };
+
+    if (showMenu) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showMenu]);
+
   return (
     <div className="mb-6 space-y-2">
       {/* 🔹 Tiêu đề nhóm + nút */}
@@ -97,20 +116,40 @@ export const TeamHeader = ({ teamName, description, teamId }: Props) => {
               />
             )}
           </div>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={1.5}
-            stroke="currentColor"
-            className="h-6 w-6 text-gray-500"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M6.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM12.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM18.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"
-            />
-          </svg>
+          <div className="relative">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+              className="h-6 w-6 cursor-pointer text-gray-500"
+              onClick={() => setShowMenu((prev) => !prev)}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M6.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM12.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM18.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"
+              />
+            </svg>
+
+            {showMenu && (
+              <div
+                ref={menuRef}
+                className="absolute top-8 right-0 z-50 w-fit rounded-md border border-gray-200 bg-white text-sm shadow-lg"
+              >
+                <button
+                  className="block px-3 py-1.5 text-left text-gray-100 rounded-sm bg-red-600 font-extrabold transition hover:bg-red-800"
+                  onClick={() => {
+                    // TODO: handle leave team
+                    setShowMenu(false);
+                  }}
+                >
+                  Exit
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 

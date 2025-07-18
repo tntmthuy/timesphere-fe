@@ -189,6 +189,42 @@ export const inviteMemberToTeamThunk = createAsyncThunk<
   }
 );
 
+//nhượng quyền
+export const transferOwnershipThunk = createAsyncThunk<
+  string, // return message
+  { teamId: string; userId: string },
+  { state: RootState }
+>(
+  "team/transferOwnership",
+  async ({ teamId, userId }, { getState, rejectWithValue }) => {
+    const token = getState().auth.token;
+
+    try {
+      const res = await fetch(
+        `/api/teams/${teamId}/members/${userId}/role`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ newRole: "OWNER" }),
+        }
+      );
+
+      if (!res.ok) {
+        const error = await res.json();
+        return rejectWithValue(error.message || "Permission denied.");
+      }
+
+      const data = await res.json();
+      return data.message; // "Cập nhật vai trò thành công!"
+    } catch {
+      return rejectWithValue("Failed to transfer ownership.");
+    }
+  }
+);
+
 //Slice
 const teamSlice = createSlice({
   name: "team",

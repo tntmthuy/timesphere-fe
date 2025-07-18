@@ -45,10 +45,9 @@ export const SidebarProfile = () => {
           fill="currentColor"
           className="h-5 w-5 text-gray-400 transition hover:text-yellow-400"
           onClick={(e) => {
-    e.stopPropagation(); // ✅ ngăn lan lên div cha
-    navigate("notification");
-  }}
-
+            e.stopPropagation(); // ✅ ngăn lan lên div cha
+            navigate("notification");
+          }}
         >
           <path
             fillRule="evenodd"
