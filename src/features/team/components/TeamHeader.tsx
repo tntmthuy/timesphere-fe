@@ -1,10 +1,13 @@
 import { EditableText } from "./EditableText";
-import { useAppSelector } from "../../../state/hooks";
-import { useDispatch } from "react-redux";
+import { useAppDispatch, useAppSelector } from "../../../state/hooks";
 import { updateTeamName } from "../teamSlice";
 import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import InvitePopup from "./InvitePopup";
+import { deleteTeamThunk } from "../teamSlice";
+import { useNavigate } from "react-router-dom";
+import { ConfirmModal } from "./ConfirmModal";
+import axios from "axios";
 
 type Props = {
   teamName: string;
@@ -14,7 +17,7 @@ type Props = {
 
 export const TeamHeader = ({ teamName, description, teamId }: Props) => {
   const token = useAppSelector((state) => state.auth.token);
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   // ✅ dùng state nội bộ để UI cập nhật đúng sau khi sửa
   const [title, setTitle] = useState(teamName);
@@ -62,12 +65,39 @@ export const TeamHeader = ({ teamName, description, teamId }: Props) => {
       console.error("Lỗi cập nhật:", err);
     }
   };
-  const [isInviteOpen, setIsInviteOpen] = useState(false);
 
-  // const handleInvite = (email: string) => {
-  //   console.log("📧 Invite sent to:", email);
-  //   // TODO: call backend invite API
-  // };
+  //xóa nhóm
+  const navigate = useNavigate();
+
+  const myTeams = useAppSelector((state) => state.team.teams);
+
+  const handleDeleteTeam = async () => {
+    try {
+      const message = await dispatch(deleteTeamThunk(teamId)).unwrap(); // ✅ lấy thông báo
+      toast.success(message); // "Đã xoá nhóm thành công!"
+
+      // ✅ Cập nhật giao diện ➤ chọn nhóm khác hoặc về dashboard
+      const fallbackTeam = myTeams.find((t) => t.id !== teamId);
+      if (fallbackTeam) {
+        navigate(`/mainpage/team/${fallbackTeam.id}`);
+      } else {
+        navigate("/mainpage/dashboard");
+      }
+    } catch (err) {
+      if (axios.isAxiosError(err) && err.response?.status === 403) {
+        toast.dismiss();
+        toast.error("You don’t have permission to delete this team.");
+      } else {
+        toast.dismiss();
+        toast.error("Failed to delete team.");
+      }
+
+      console.error("Lỗi xoá nhóm:", err);
+    }
+  };
+
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [isInviteOpen, setIsInviteOpen] = useState(false);
 
   //out
   const [showMenu, setShowMenu] = useState(false);
@@ -136,10 +166,10 @@ export const TeamHeader = ({ teamName, description, teamId }: Props) => {
             {showMenu && (
               <div
                 ref={menuRef}
-                className="absolute top-8 right-0 z-50 w-fit rounded-md border border-gray-200 bg-white text-sm shadow-lg"
+                className="absolute top-8 left-0 z-50 w-fit rounded-md bg-white text-sm shadow-lg"
               >
                 <button
-                  className="block px-3 py-1.5 text-left text-gray-100 rounded-sm bg-red-600 font-extrabold transition hover:bg-red-800"
+                  className="block w-full rounded-sm bg-green-600 px-3 py-1.5 text-center font-bold text-white transition hover:bg-green-700"
                   onClick={() => {
                     // TODO: handle leave team
                     setShowMenu(false);
@@ -147,15 +177,35 @@ export const TeamHeader = ({ teamName, description, teamId }: Props) => {
                 >
                   Exit
                 </button>
+                <button
+                  className="block w-full rounded-sm bg-red-600 px-3 py-1.5 text-left font-bold text-white transition hover:bg-red-700"
+                  onClick={() => {
+                    setIsConfirmOpen(true);
+                    setShowMenu(false);
+                  }}
+                >
+                  Del
+                </button>
               </div>
             )}
           </div>
         </div>
       </div>
-
+      {isConfirmOpen && (
+        <ConfirmModal
+          title="Confirm Delete"
+          message={`Are you sure you want to delete this team?\nThis action cannot be undone.`}
+          onConfirm={() => {
+            setIsConfirmOpen(false);
+            handleDeleteTeam();
+          }}
+          onCancel={() => setIsConfirmOpen(false)}
+        />
+      )}
       {/* 🔸 Mô tả nhóm */}
 
       <EditableText
+      allowEmpty={true}
         text={desc}
         as="p"
         tagClassName="text-sm text-gray-600" // 🔽 dùng text-sm thay vì text-base

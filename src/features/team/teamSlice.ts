@@ -39,6 +39,31 @@ const initialState: TeamState = {
   newTeamSuggestions: [],
 };
 
+//tạo nhóm
+export const createTeamThunk = createAsyncThunk<
+  TeamResponse,
+  { teamName: string; description: string },
+  { state: RootState }
+>(
+  "team/createTeam",
+  async (payload, { getState, rejectWithValue }) => {
+    const token = getState().auth.token;
+
+    try {
+      const res = await axios.post("/api/teams", payload, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      return res.data.data;
+    } catch (err) {
+      const msg = axios.isAxiosError(err) && err.response?.data?.message;
+      if (msg === "TEAM_CREATE_LIMIT_FOR_FREE_USER") {
+        return rejectWithValue("TEAM_LIMIT");
+      }
+      return rejectWithValue("CREATE_FAILED");
+    }
+  }
+);
+
 //kiếm toàn bộ
 export const searchNewTeamMembersThunk = createAsyncThunk(
   "team/searchNewTeamMembers",
@@ -183,8 +208,11 @@ export const inviteMemberToTeamThunk = createAsyncThunk<
       );
 
       return "Invitation sent successfully. Awaiting confirmation.";
-    } catch {
-      return rejectWithValue("This user is already invited or awaiting confirmation.");
+    } catch (err) {
+      if (axios.isAxiosError(err) && err.response?.status === 403) {
+        return rejectWithValue("FORBIDDEN_INVITE"); // ✅ báo lỗi quyền
+      }
+      return rejectWithValue("ALREADY_INVITED");
     }
   }
 );
@@ -224,6 +252,29 @@ export const transferOwnershipThunk = createAsyncThunk<
     }
   }
 );
+
+//xóa nhóm
+export const deleteTeamThunk = createAsyncThunk<
+  string, // trả về message
+  string, // teamId
+  { state: RootState }
+>("team/deleteTeam", async (teamId, { getState, rejectWithValue }) => {
+  const token = getState().auth.token;
+
+  try {
+    await axios.delete(`/api/teams/${teamId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    return "Team deleted successfully."; 
+  } catch (err) {
+    if (axios.isAxiosError(err) && err.response?.status === 403) {
+      return rejectWithValue("FORBIDDEN_DELETE");
+    }
+    return rejectWithValue("FAILED_TO_DELETE_TEAM");
+  }
+});
+
 
 //Slice
 const teamSlice = createSlice({
@@ -272,6 +323,13 @@ const teamSlice = createSlice({
     });
     builder.addCase(searchNewTeamMembersThunk.fulfilled, (state, action) => {
       state.newTeamSuggestions = action.payload;
+    });
+    builder.addCase(createTeamThunk.fulfilled, (state, action) => {
+      state.teams.push(action.payload); // ✅ thêm team mới vào danh sách
+    });
+    builder.addCase(deleteTeamThunk.fulfilled, (state, action) => {
+      // `action.meta.arg` chính là `teamId` mà bạn đã truyền khi dispatch
+      state.teams = state.teams.filter((team) => team.id !== action.meta.arg);
     });
 }
 });

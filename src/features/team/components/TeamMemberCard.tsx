@@ -25,12 +25,12 @@ export const TeamMemberCard = ({
 const handleTransfer = async () => {
   try {
     await dispatch(transferOwnershipThunk({ teamId, userId })).unwrap();
-    await dispatch(fetchTeamDetailThunk(teamId)); // ✅ cập nhật lại Redux
+    await dispatch(fetchTeamDetailThunk(teamId));
     toast.success("Ownership transferred!");
     setShowActions(false);
   } catch  {
     toast.dismiss();
-    toast.error("You don’t have permission.");
+    toast.error("You don’t have permission to perform this action.");
   }
 };
 

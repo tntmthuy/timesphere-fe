@@ -14,7 +14,9 @@ export const TeamDetailPage = () => {
   const token = useAppSelector((state) => state.auth.token);
   const teamDetail = useAppSelector((state) => state.team.teamDetail); // 👈 lấy từ Redux
 
-  const [activeTab, setActiveTab] = useState<"Board" | "Member" | "File">("Board");
+  const [activeTab, setActiveTab] = useState<"Board" | "Member" | "File">(
+    "Board",
+  );
 
   useEffect(() => {
     if (!id || !token) return;

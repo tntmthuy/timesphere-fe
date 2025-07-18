@@ -86,8 +86,12 @@ const InvitePopup = ({ teamId, onClose }: Props) => {
                 inviteMemberToTeamThunk({ teamId, email }),
               ).unwrap();
               toast.success(res); // "Đã gửi lời mời thành công!"
-            } catch {
-              toast.error("An invitation has already been sent.");
+            } catch (err) {
+              if (err === "FORBIDDEN_INVITE") {
+                toast.error("You don’t have permission.");
+              } else {
+                toast.error("An invitation has already been sent.");
+              }
             }
 
             setEmail("");

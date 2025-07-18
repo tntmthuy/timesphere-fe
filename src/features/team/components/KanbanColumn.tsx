@@ -13,7 +13,6 @@ import type { KanbanColumnDto } from "../kanban";
 import { useAppDispatch } from "../../../state/hooks";
 import { addTaskLocal } from "../kanbanSlice";
 
-
 type KanbanColumnProps = {
   column: KanbanColumnDto;
   isDragging?: boolean;
@@ -62,12 +61,11 @@ export const KanbanColumn = ({
     }
   };
 
-const dispatch = useAppDispatch();
+  const dispatch = useAppDispatch();
 
-const handleAddTask = (newTask: TaskDto) => {
-  dispatch(addTaskLocal({ columnId: column.id, task: newTask }));
-};
-
+  const handleAddTask = (newTask: TaskDto) => {
+    dispatch(addTaskLocal({ columnId: column.id, task: newTask }));
+  };
 
   return (
     <div
@@ -75,7 +73,9 @@ const handleAddTask = (newTask: TaskDto) => {
       {...attributes}
       {...listeners}
       className={`w-[230px] flex-shrink-0 rounded-xl bg-white p-4 shadow-lg transition ${
-        isColumnDragging ? "ring-2 ring-yellow-400 border-yellow-400" : "border border-gray-200"
+        isColumnDragging
+          ? "border-yellow-400 ring-2 ring-yellow-400"
+          : "border border-gray-200"
       }`}
     >
       <div className="mb-2 flex items-center justify-between">

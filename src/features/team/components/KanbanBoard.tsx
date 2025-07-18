@@ -109,8 +109,10 @@ export const KanbanBoard = ({ workspaceId, activeTab }: Props) => {
 
         // Optional: update local store hoặc fetch lại
         dispatch(fetchBoardThunk(workspaceId));
+        toast.dismiss();
         toast.success("Task deleted!");
       } catch {
+        toast.dismiss();
         toast.error("Failed to delete task.");
       }
       return;
