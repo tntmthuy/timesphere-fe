@@ -45,6 +45,24 @@ export const fetchNotificationsThunk = createAsyncThunk<
   }
 });
 
+//mark 1 
+export const markNotificationAsRead = createAsyncThunk<
+  string, // trả về ID sau khi xử lý
+  string, // đầu vào là notificationId
+  { state: RootState }
+>("notification/markAsRead", async (notificationId, { getState, rejectWithValue }) => {
+  const token = getState().auth.token;
+  try {
+    await axios.post(`/api/notifications/${notificationId}/read`, {}, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return notificationId;
+  } catch {
+    return rejectWithValue("FAILED_TO_MARK_AS_READ");
+  }
+});
+
+//Slice
 const notificationSlice = createSlice({
   name: "notification",
   initialState,
@@ -62,6 +80,13 @@ const notificationSlice = createSlice({
         state.loading = false;
         state.list = [];
       });
+    builder.addCase(markNotificationAsRead.fulfilled, (state, action) => {
+      const id = action.payload;
+      const noti = state.list.find((n) => n.id === id);
+      if (noti) {
+        noti.read = true;
+      }
+    });
   },
 });
 

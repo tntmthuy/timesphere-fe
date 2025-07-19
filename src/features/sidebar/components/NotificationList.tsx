@@ -1,4 +1,5 @@
-import { type Notification } from "../notificationSlice";
+import { useAppDispatch } from "../../../state/hooks";
+import { markNotificationAsRead, type Notification } from "../notificationSlice";
 
 type Props = {
   items: Notification[];
@@ -13,6 +14,8 @@ export const NotificationList = ({
   onAccept,
   onDecline,
 }: Props) => {
+  const dispatch = useAppDispatch();
+
   const filtered = items
     .filter((n) => (filter === "unread" ? !n.read : n.read))
     .sort(
@@ -119,7 +122,7 @@ export const NotificationList = ({
                     {noti.type === "INVITE" && !noti.read && (
                       <div className="flex gap-2 pt-1">
                         <button
-                          className="rounded bg-green-600 px-3 py-1 text-sm text-white hover:bg-green-700"
+                          className="rounded bg-gray-400 px-3 py-1 text-sm text-white hover:bg-gray-300"
                           onClick={() => onAccept(noti.referenceId)}
                         >
                           Đồng ý
@@ -138,28 +141,34 @@ export const NotificationList = ({
                 {/* ✅ Bên phải: biểu tượng trạng thái */}
                 <div className="flex items-center justify-center">
                   {filter === "unread" ? (
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="size-5 text-gray-400 hover:text-gray-300"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth={2}
-                      stroke="currentColor"
+                    <button
+                      onClick={() => dispatch(markNotificationAsRead(noti.id))}
+                      className="transition hover:text-green-600"
+                      title="Đánh dấu đã đọc"
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="m4.5 12.75 6 6 9-13.5"
-                      />
-                    </svg>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="size-5 text-gray-400"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={2}
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="m4.5 12.75 6 6 9-13.5"
+                        />
+                      </svg>
+                    </button>
                   ) : (
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
+                      className="size-5 text-gray-400"
                       fill="none"
                       viewBox="0 0 24 24"
                       strokeWidth="1.5"
                       stroke="currentColor"
-                      className="size-5 text-gray-400 hover:text-gray-300"
                     >
                       <path
                         strokeLinecap="round"
