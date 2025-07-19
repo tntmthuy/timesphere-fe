@@ -4,14 +4,17 @@ import { SearchMemberInput } from "./SearchMemberInput";
 import toast from "react-hot-toast";
 import { createTeamThunk } from "../teamSlice";
 import { useNavigate } from "react-router-dom";
+import type { MemberInvite } from "../member";
 
 type Props = {
   onClose: () => void;
 };
 
 export const CreateTeamModal = ({ onClose }: Props) => {
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+  const [invites, setInvites] = useState<MemberInvite[]>([]);
   const [form, setForm] = useState({ teamName: "", description: "" });
-  // const [message, setMessage] = useState("");
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -19,14 +22,12 @@ export const CreateTeamModal = ({ onClose }: Props) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const dispatch = useAppDispatch();
-
-  const navigate = useNavigate();
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const newTeam = await dispatch(createTeamThunk(form)).unwrap(); // ✅ lấy team mới
+      const newTeam = await dispatch(
+        createTeamThunk({ ...form, invites }),
+      ).unwrap(); // ✅ lấy team mới
       toast.success("Success! A new team is now ready.");
       setForm({ teamName: "", description: "" });
 
@@ -115,7 +116,7 @@ export const CreateTeamModal = ({ onClose }: Props) => {
                 <label className="mb-1 block text-[10px] font-semibold text-gray-600 uppercase">
                   Invite Members
                 </label>
-                <SearchMemberInput />
+                <SearchMemberInput onChange={setInvites} />
               </div>
             </div>
           </div>

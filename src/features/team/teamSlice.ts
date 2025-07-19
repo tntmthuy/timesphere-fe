@@ -3,7 +3,7 @@
 import { createAsyncThunk, createSelector, createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
 import axios from "axios";
-import type { TeamMemberDTO, TeamResponse } from "./member";
+import type { MemberInvite, TeamMemberDTO, TeamResponse } from "./member";
 import type { RootState } from "../../state/store";
 
 // 👥 Thành viên mỗi team
@@ -42,7 +42,11 @@ const initialState: TeamState = {
 //tạo nhóm
 export const createTeamThunk = createAsyncThunk<
   TeamResponse,
-  { teamName: string; description: string },
+  {
+    teamName: string;
+    description: string;
+    invites?: MemberInvite[]; // ✅ thêm vào để chấp nhận danh sách mời
+  },
   { state: RootState }
 >(
   "team/createTeam",
@@ -275,6 +279,31 @@ export const deleteTeamThunk = createAsyncThunk<
   }
 });
 
+//leave team
+export const leaveTeamThunk = createAsyncThunk<
+  string, // trả về message
+  string, // teamId
+  { state: RootState }
+>(
+  "team/leaveTeam",
+  async (teamId, { getState, rejectWithValue }) => {
+    const token = getState().auth.token;
+
+    try {
+      const res = await axios.delete(`/api/teams/${teamId}/leave`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      return res.data.message || "You’ve left the team.";
+    } catch (err) {
+      if (axios.isAxiosError(err) && err.response?.status === 403) {
+        return rejectWithValue("FORBIDDEN_LEAVE");
+      }
+
+      return rejectWithValue("FAILED_TO_LEAVE_TEAM");
+    }
+  }
+);
 
 //Slice
 const teamSlice = createSlice({
@@ -330,6 +359,9 @@ const teamSlice = createSlice({
     builder.addCase(deleteTeamThunk.fulfilled, (state, action) => {
       // `action.meta.arg` chính là `teamId` mà bạn đã truyền khi dispatch
       state.teams = state.teams.filter((team) => team.id !== action.meta.arg);
+    });
+    builder.addCase(leaveTeamThunk.fulfilled, (state, action) => {
+      state.teams = state.teams.filter((t) => t.id !== action.meta.arg);
     });
 }
 });

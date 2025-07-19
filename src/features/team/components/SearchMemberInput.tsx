@@ -2,6 +2,15 @@ import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { useAppSelector } from "../../../state/hooks";
 
+type MemberInvite = {
+  email: string;
+  role: "MEMBER" | "OWNER"; // Hoặc thêm các vai trò nếu có
+};
+
+type Props = {
+  onChange?: (invited: MemberInvite[]) => void;
+};
+
 type UserSuggestion = {
   id: string;
   fullName: string;
@@ -9,7 +18,7 @@ type UserSuggestion = {
   avatarUrl: string | null;
 };
 
-export const SearchMemberInput = () => {
+export const SearchMemberInput = ({ onChange }: Props) => {
   const token = useAppSelector((state) => state.auth.token);
   const currentUserId = useAppSelector((state) => state.auth.user?.id);
   const [keyword, setKeyword] = useState("");
@@ -17,6 +26,14 @@ export const SearchMemberInput = () => {
   const [invited, setInvited] = useState<UserSuggestion[]>([]);
 
   const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const mapped: MemberInvite[] = invited.map((u) => ({
+      email: u.email,
+      role: "MEMBER" as const, // 👈 ép kiểu literal để khớp MemberInvite
+    }));
+    onChange?.(mapped); // ✅ gửi ra ngoài mỗi lần invited thay đổi
+  }, [invited, onChange]);
 
   // Fetch gợi ý
   useEffect(() => {
@@ -80,49 +97,53 @@ export const SearchMemberInput = () => {
       {/* 📍 Gợi ý người dùng */}
       {suggestions.length > 0 && (
         <ul className="absolute z-10 mt-1 max-h-[192px] w-full overflow-auto rounded border bg-white text-sm text-black shadow">
-  {suggestions.map((user) => {
-    const isSelf = user.id === currentUserId;
-    const isInvited = invited.some((u) => u.id === user.id);
+          {suggestions.map((user) => {
+            const isSelf = user.id === currentUserId;
+            const isInvited = invited.some((u) => u.id === user.id);
 
-    if (isSelf) return null;
+            if (isSelf) return null;
 
-    return (
-      <li
-        key={user.id}
-        onClick={() => {
-          if (!isInvited) handleAdd(user);
-        }}
-        className={`flex items-start gap-3 px-3 py-2 text-sm ${
-          isInvited
-            ? "cursor-not-allowed text-gray-400"
-            : "cursor-pointer hover:bg-gray-100"
-        }`}
-        title={isInvited ? "Already invited" : ""}
-      >
-        {/* 🖼️ Avatar trái */}
-        {user.avatarUrl ? (
-          <img
-            src={user.avatarUrl}
-            alt={user.fullName}
-            className="h-8 w-8 rounded-full object-cover shrink-0"
-          />
-        ) : (
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-300 text-xs font-medium shrink-0">
-            {user.fullName?.charAt(0) || "?"}
-          </div>
-        )}
+            return (
+              <li
+                key={user.id}
+                onClick={() => {
+                  if (!isInvited) handleAdd(user);
+                }}
+                className={`flex items-start gap-3 px-3 py-2 text-sm ${
+                  isInvited
+                    ? "cursor-not-allowed text-gray-400"
+                    : "cursor-pointer hover:bg-gray-100"
+                }`}
+                title={isInvited ? "Already invited" : ""}
+              >
+                {/* 🖼️ Avatar trái */}
+                {user.avatarUrl ? (
+                  <img
+                    src={user.avatarUrl}
+                    alt={user.fullName}
+                    className="h-8 w-8 shrink-0 rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-300 text-xs font-medium">
+                    {user.fullName?.charAt(0) || "?"}
+                  </div>
+                )}
 
-        {/* 📋 Info phải: tên + email */}
-        <div className="flex flex-col flex-grow">
-          <span className={`text-[13px] font-medium leading-tight ${isInvited ? "line-through" : ""}`}>
-            {user.fullName}
-          </span>
-          <span className="text-[11px] text-gray-500">{user.email}</span>
-        </div>
-      </li>
-    );
-  })}
-</ul>
+                {/* 📋 Info phải: tên + email */}
+                <div className="flex flex-grow flex-col">
+                  <span
+                    className={`text-[13px] leading-tight font-medium ${isInvited ? "line-through" : ""}`}
+                  >
+                    {user.fullName}
+                  </span>
+                  <span className="text-[11px] text-gray-500">
+                    {user.email}
+                  </span>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
       )}
 
       {/* 👥 Danh sách thành viên được mời */}

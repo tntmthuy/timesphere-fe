@@ -1,6 +1,6 @@
 import { EditableText } from "./EditableText";
 import { useAppDispatch, useAppSelector } from "../../../state/hooks";
-import { updateTeamName } from "../teamSlice";
+import { leaveTeamThunk, updateTeamName } from "../teamSlice";
 import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import InvitePopup from "./InvitePopup";
@@ -96,7 +96,32 @@ export const TeamHeader = ({ teamName, description, teamId }: Props) => {
     }
   };
 
-  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  //leave
+  const handleLeaveTeam = async () => {
+    try {
+      const msg = await dispatch(leaveTeamThunk(teamId)).unwrap();
+      toast.success(msg);
+
+      // ✅ Sau khi rời ➤ chọn nhóm còn lại
+      const otherTeams = myTeams.filter((t) => t.id !== teamId);
+      if (otherTeams.length > 0) {
+        navigate(`/mainpage/team/${otherTeams[0].id}`); // nhóm đầu tiên khác
+      } else {
+        navigate("/mainpage/dashboard"); // không còn nhóm nào
+      }
+    } catch (err) {
+      if (err === "FORBIDDEN_LEAVE") {
+        toast.error("You don’t have permission to leave this team.");
+      } else {
+        toast.error("Failed to leave team.");
+      }
+      console.error("Lỗi rời nhóm:", err);
+    }
+  };
+  const [confirmAction, setConfirmAction] = useState<"leave" | "delete" | null>(
+    null,
+  );
+
   const [isInviteOpen, setIsInviteOpen] = useState(false);
 
   //out
@@ -171,7 +196,7 @@ export const TeamHeader = ({ teamName, description, teamId }: Props) => {
                 <button
                   className="block w-full rounded-sm bg-green-600 px-3 py-1.5 text-center font-bold text-white transition hover:bg-green-700"
                   onClick={() => {
-                    // TODO: handle leave team
+                    setConfirmAction("leave");
                     setShowMenu(false);
                   }}
                 >
@@ -180,7 +205,7 @@ export const TeamHeader = ({ teamName, description, teamId }: Props) => {
                 <button
                   className="block w-full rounded-sm bg-red-600 px-3 py-1.5 text-left font-bold text-white transition hover:bg-red-700"
                   onClick={() => {
-                    setIsConfirmOpen(true);
+                    setConfirmAction("delete");
                     setShowMenu(false);
                   }}
                 >
@@ -191,21 +216,30 @@ export const TeamHeader = ({ teamName, description, teamId }: Props) => {
           </div>
         </div>
       </div>
-      {isConfirmOpen && (
+      {confirmAction && (
         <ConfirmModal
-          title="Confirm Delete"
-          message={`Are you sure you want to delete this team?\nThis action cannot be undone.`}
+          title={`Confirm ${confirmAction === "leave" ? "Leave" : "Delete"}`}
+          message={
+            confirmAction === "leave"
+              ? "Are you sure you want to leave this team?\nYou’ll lose access immediately."
+              : "Are you sure you want to delete this team?\nThis action cannot be undone."
+          }
           onConfirm={() => {
-            setIsConfirmOpen(false);
-            handleDeleteTeam();
+            setConfirmAction(null);
+
+            if (confirmAction === "leave") {
+              handleLeaveTeam();
+            } else {
+              handleDeleteTeam();
+            }
           }}
-          onCancel={() => setIsConfirmOpen(false)}
+          onCancel={() => setConfirmAction(null)}
         />
       )}
       {/* 🔸 Mô tả nhóm */}
 
       <EditableText
-      allowEmpty={true}
+        allowEmpty={true}
         text={desc}
         as="p"
         tagClassName="text-sm text-gray-600" // 🔽 dùng text-sm thay vì text-base

@@ -8,6 +8,7 @@ import authReducer from "../features/auth/authSlice";
 import teamReducer from "../features/team/teamSlice";
 import kanbanReducer from "../features/team/kanbanSlice";
 import commentReducer from "../features/team/commentSlice";
+import notificationReducer from "../features/sidebar/notificationSlice";
 
 // 🔧 Gộp reducers
 const rootReducer = combineReducers({
@@ -15,6 +16,7 @@ const rootReducer = combineReducers({
   team: teamReducer,
   kanban: kanbanReducer,
   comments: commentReducer,
+  notification: notificationReducer,
 });
 
 // 🔒 Cấu hình persist

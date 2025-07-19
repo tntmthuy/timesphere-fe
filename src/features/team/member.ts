@@ -26,3 +26,8 @@ export type TeamResponse = {
   createdByEmail: string;
   createdByFullName: string;
 };
+
+export type MemberInvite = {
+  email: string;
+  role: "MEMBER" | "OWNER"; // hoặc thêm "VIEWER" nếu BE hỗ trợ
+};
