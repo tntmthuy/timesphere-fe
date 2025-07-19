@@ -1,11 +1,17 @@
+import toast from "react-hot-toast";
 import { useAppDispatch } from "../../../state/hooks";
-import { markNotificationAsRead, type Notification } from "../notificationSlice";
+import {
+  deleteNotificationThunk,
+  markNotificationAsRead,
+  type Notification,
+} from "../notificationSlice";
 
 type Props = {
   items: Notification[];
   filter: "unread" | "read";
   onAccept: (teamId: string) => void;
   onDecline: (teamId: string) => void;
+  navigate: (url: string) => void;
 };
 
 export const NotificationList = ({
@@ -13,6 +19,7 @@ export const NotificationList = ({
   filter,
   onAccept,
   onDecline,
+  navigate,
 }: Props) => {
   const dispatch = useAppDispatch();
 
@@ -87,6 +94,11 @@ export const NotificationList = ({
                     ? "border-gray-200 bg-gray-50"
                     : "border-yellow-200 bg-yellow-50"
                 }`}
+                onClick={() => {
+                  if (noti.type !== "INVITE" && noti.targetUrl) {
+                    navigate(noti.targetUrl); // ✅ chuyển sang trang tasks, board, comment, etc
+                  }
+                }}
               >
                 {/* 🖼 Bên trái: Avatar + nội dung */}
                 <div className="flex flex-1 gap-3">
@@ -123,13 +135,24 @@ export const NotificationList = ({
                       <div className="flex gap-2 pt-1">
                         <button
                           className="rounded bg-gray-400 px-3 py-1 text-sm text-white hover:bg-gray-300"
-                          onClick={() => onAccept(noti.referenceId)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onAccept(noti.referenceId);
+                            toast.dismiss();
+                            toast.success("Invitation accepted!");
+                            navigate(`/mainpage/team/${noti.referenceId}`);
+                          }}
                         >
                           Đồng ý
                         </button>
                         <button
                           className="rounded bg-red-600 px-3 py-1 text-sm text-white hover:bg-red-700"
-                          onClick={() => onDecline(noti.referenceId)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onDecline(noti.referenceId);
+                            toast.dismiss();
+                            toast.success("Invitation declined.");
+                          }}
                         >
                           Từ chối
                         </button>
@@ -142,7 +165,12 @@ export const NotificationList = ({
                 <div className="flex items-center justify-center">
                   {filter === "unread" ? (
                     <button
-                      onClick={() => dispatch(markNotificationAsRead(noti.id))}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toast.dismiss();
+                        toast.success("Notification marked as read.");
+                        dispatch(markNotificationAsRead(noti.id));
+                      }}
                       className="transition hover:text-green-600"
                       title="Đánh dấu đã đọc"
                     >
@@ -162,20 +190,31 @@ export const NotificationList = ({
                       </svg>
                     </button>
                   ) : (
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="size-5 text-gray-400"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth="1.5"
-                      stroke="currentColor"
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toast.dismiss();
+                        toast.success("Notification deleted.");
+                        dispatch(deleteNotificationThunk(noti.id));
+                      }}
+                      className="transition hover:text-red-600"
+                      title="Xoá thông báo"
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M6 18 18 6M6 6l12 12"
-                      />
-                    </svg>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="size-5 text-gray-400"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={1.5}
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M6 18 18 6M6 6l12 12"
+                        />
+                      </svg>
+                    </button>
                   )}
                 </div>
               </li>

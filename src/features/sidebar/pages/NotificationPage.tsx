@@ -7,9 +7,13 @@ import {
   acceptInvitationThunk,
   declineInvitationThunk,
 } from "../invitetationSlice";
+import { fetchAllTeamsThunk } from "../../team/teamSlice";
+import { useNavigate } from "react-router-dom";
 
 export const NotificationPage = () => {
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+
   const notifications = useAppSelector((s) => s.notification.list);
   const [activeTab, setActiveTab] = useState<"unread" | "read">("unread");
 
@@ -17,7 +21,7 @@ export const NotificationPage = () => {
   useEffect(() => {
     console.log(
       "🔍 Updated list:",
-      notifications.map((n) => ({ id: n.id, read: n.read }))
+      notifications.map((n) => ({ id: n.id, read: n.read })),
     );
   }, [notifications]);
 
@@ -27,8 +31,9 @@ export const NotificationPage = () => {
 
   const handleAccept = async (teamId: string) => {
     try {
-      const msg = await dispatch(acceptInvitationThunk(teamId)).unwrap();
-      toast.success(msg);
+      await dispatch(acceptInvitationThunk(teamId)).unwrap();
+      await dispatch(fetchAllTeamsThunk());
+      // toast.success(msg);
       await dispatch(fetchNotificationsThunk());
       setActiveTab("read");
     } catch {
@@ -49,7 +54,10 @@ export const NotificationPage = () => {
 
   return (
     <div className="h-full bg-white p-6">
-      <h2 className="mb-4 text-2xl font-bold text-gray-900">🔔 Thông báo</h2>
+      <h2 className="mb-4 text-2xl font-bold text-gray-900">Notification</h2>
+      <h4 className="mb-4 text-sm text-gray-500">
+        All your team invitations, updates, and activity alerts are shown here.
+      </h4>
 
       <div className="mb-4 flex gap-4">
         <button
@@ -60,27 +68,28 @@ export const NotificationPage = () => {
               : "text-gray-500"
           }`}
         >
-          📬 Unread
+          All
         </button>
         <button
           onClick={() => setActiveTab("read")}
           className={`rounded px-3 py-1 text-sm font-medium ${
-            activeTab === "read"
-              ? "bg-gray-100 text-gray-800"
-              : "text-gray-500"
+            activeTab === "read" ? "bg-gray-100 text-gray-800" : "text-gray-500"
           }`}
         >
-          ✅ Read
+          Read
         </button>
       </div>
 
-      <NotificationList
-        key={activeTab + notifications.length} // ép re-render mượt
-        items={notifications}
-        filter={activeTab}
-        onAccept={handleAccept}
-        onDecline={handleDecline}
-      />
+      <div className="max-h-[500px] overflow-y-auto scroll-smooth pr-1">
+        <NotificationList
+          key={activeTab + notifications.length}
+          items={notifications}
+          filter={activeTab}
+          onAccept={handleAccept}
+          onDecline={handleDecline}
+          navigate={navigate}
+        />
+      </div>
     </div>
   );
 };

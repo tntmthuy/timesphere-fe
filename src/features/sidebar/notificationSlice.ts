@@ -62,6 +62,23 @@ export const markNotificationAsRead = createAsyncThunk<
   }
 });
 
+//delete
+export const deleteNotificationThunk = createAsyncThunk<
+  string, // trả về notificationId
+  string, // đầu vào là notificationId
+  { state: RootState }
+>("notification/delete", async (notificationId, { getState, rejectWithValue }) => {
+  const token = getState().auth.token;
+  try {
+    await axios.delete(`/api/notifications/${notificationId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return notificationId;
+  } catch {
+    return rejectWithValue("FAILED_TO_DELETE_NOTIFICATION");
+  }
+});
+
 //Slice
 const notificationSlice = createSlice({
   name: "notification",
@@ -86,6 +103,10 @@ const notificationSlice = createSlice({
       if (noti) {
         noti.read = true;
       }
+    });
+    builder.addCase(deleteNotificationThunk.fulfilled, (state, action) => {
+      const id = action.payload;
+      state.list = state.list.filter((n) => n.id !== id);
     });
   },
 });

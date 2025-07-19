@@ -1,7 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { useAppDispatch } from "../../../state/hooks";
-import { fetchTeamDetailThunk, transferOwnershipThunk } from "../teamSlice";
+import {
+  fetchTeamDetailThunk,
+  removeTeamMemberThunk,
+  transferOwnershipThunk,
+} from "../teamSlice";
 import toast from "react-hot-toast";
+import { ConfirmModal } from "./ConfirmModal";
 
 type Props = {
   fullName: string;
@@ -22,18 +27,6 @@ export const TeamMemberCard = ({
 }: Props) => {
   const dispatch = useAppDispatch();
 
-const handleTransfer = async () => {
-  try {
-    await dispatch(transferOwnershipThunk({ teamId, userId })).unwrap();
-    await dispatch(fetchTeamDetailThunk(teamId));
-    toast.success("Ownership transferred!");
-    setShowActions(false);
-  } catch  {
-    toast.dismiss();
-    toast.error("You don’t have permission to perform this action.");
-  }
-};
-
   // 🛠️ State để hiển thị popup
   const [showActions, setShowActions] = useState(false);
   const popupRef = useRef<HTMLDivElement>(null);
@@ -52,6 +45,38 @@ const handleTransfer = async () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [showActions]);
+
+  const [showModal, setShowModal] = useState(false);
+  const [actionType, setActionType] = useState<"transfer" | "remove" | null>(
+    null,
+  );
+
+  //xác nhận chuyển quyền sở hữu
+  const confirmTransfer = async () => {
+    try {
+      await dispatch(transferOwnershipThunk({ teamId, userId })).unwrap();
+      await dispatch(fetchTeamDetailThunk(teamId));
+      toast.success("Ownership transferred!");
+      setShowActions(false);
+    } catch {
+      toast.dismiss();
+      toast.error("You don’t have permission to perform this action.");
+    }
+  };
+
+  //xác nhận xóa thành viên
+  const confirmRemove = async () => {
+    try {
+      await dispatch(removeTeamMemberThunk({ teamId, userId })).unwrap();
+      await dispatch(fetchTeamDetailThunk(teamId));
+      toast.success("Member removed!");
+      setShowActions(false);
+    } catch {
+      toast.dismiss();
+      toast.error("You don’t have permission to perform this action.");
+    }
+  };
+
   return (
     <div className="relative flex items-center gap-3 rounded-lg border border-gray-200 bg-white px-4 py-3 shadow-sm">
       {/* 🖼 Avatar hoặc chữ cái đầu */}
@@ -107,14 +132,43 @@ const handleTransfer = async () => {
         >
           {" "}
           <button
-            onClick={handleTransfer}
+            onClick={() => {
+              setActionType("transfer");
+              setShowModal(true);
+            }}
             className="block rounded-t-md px-2.5 py-1.5 text-left transition hover:bg-gray-100"
           >
             Transfer
           </button>
-          <button className="block rounded-b-md px-2.5 py-1.5 text-left text-red-600 transition hover:bg-red-50">
+          <button
+            onClick={() => {
+              setActionType("remove");
+              setShowModal(true);
+            }}
+            className="block rounded-b-md px-2.5 py-1.5 text-left text-red-600 transition hover:bg-red-50"
+          >
             Remove
           </button>
+          {showModal && (
+            <ConfirmModal
+              title={
+                actionType === "transfer"
+                  ? "Confirm transfer"
+                  : "Confirm removal"
+              }
+              message={
+                actionType === "transfer"
+                  ? `Are you sure you want to transfer\nownership to ${fullName}?`
+                  : `Are you sure you want to remove\n${fullName} from this team?`
+              }
+              onConfirm={() => {
+                if (actionType === "transfer") confirmTransfer();
+                else if (actionType === "remove") confirmRemove();
+                setShowModal(false);
+              }}
+              onCancel={() => setShowModal(false)}
+            />
+          )}
         </div>
       )}
     </div>

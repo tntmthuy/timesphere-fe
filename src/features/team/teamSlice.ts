@@ -175,6 +175,24 @@ export const unassignMemberFromTaskThunk = createAsyncThunk(
   }
 );
 
+//lấy danh sách nhóm đang tham gia
+// teamSlice.ts
+export const fetchAllTeamsThunk = createAsyncThunk(
+  "team/fetchAllTeams",
+  async (_, { getState, rejectWithValue }) => {
+    const token = (getState() as RootState).auth.token;
+    try {
+      const res = await axios.get("/api/teams", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const list = Array.isArray(res.data.data) ? res.data.data : [];
+      return list;
+    } catch {
+      return rejectWithValue("FAILED_TO_FETCH_TEAMS");
+    }
+  }
+);
+
 // danh sách member
 export const fetchTeamDetailThunk = createAsyncThunk(
   "team/fetchTeamDetail",
@@ -256,6 +274,33 @@ export const transferOwnershipThunk = createAsyncThunk<
     }
   }
 );
+
+//kick khỏi nhóm
+export const removeTeamMemberThunk = createAsyncThunk<
+  string,
+  { teamId: string; userId: string },
+  { state: RootState }
+>(
+  "team/removeMember",
+  async ({ teamId, userId }, { getState, rejectWithValue }) => {
+    const token = getState().auth.token;
+
+    try {
+      const res = await axios.delete(
+        `/api/teams/${teamId}/members/${userId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      return res.data.message || "Member removed!";
+    } catch (err: unknown) {
+        if (axios.isAxiosError(err)) {
+          const msg = err.response?.data?.message || "Lỗi từ server";
+          return rejectWithValue(msg);
+        }
+        return rejectWithValue("Lỗi không xác định");
+      }
+  }
+);
+
 
 //xóa nhóm
 export const deleteTeamThunk = createAsyncThunk<
@@ -346,6 +391,9 @@ const teamSlice = createSlice({
     })
     .addCase(assignMemberToTaskThunk.fulfilled, (state, action) => {
       state.assignees = action.payload.assignees; // ✅ cập nhật danh sách người được giao
+    });
+    builder.addCase(fetchAllTeamsThunk.fulfilled, (state, action) => {
+      state.teams = action.payload;
     });
     builder.addCase(fetchTeamDetailThunk.fulfilled, (state, action) => {
       state.teamDetail = action.payload;

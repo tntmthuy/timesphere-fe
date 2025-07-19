@@ -150,11 +150,11 @@ export const AssigneePicker = ({ teamId, taskId }: Props) => {
 
                       dispatch(updateTaskLocal(updatedTask));
                       toast.dismiss();
-                      toast.success("✅ Member has been successfully removed!");
+                      toast.success("Member has been successfully removed!");
                     } catch {
                       toast.dismiss();
                       toast.error(
-                        "⛔ You don't have permission to unassign this member.",
+                        "You don't have permission to unassign this member.",
                       );
                     }
                   }}
