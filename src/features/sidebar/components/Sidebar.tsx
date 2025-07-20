@@ -113,7 +113,10 @@ export const Sidebar = ({ onNewTeam }: SidebarProps) => {
       </div>
 
       <div className="space-y-1 border-t border-[#444] pt-4">
-        <button className="relative w-full overflow-hidden rounded-md bg-gradient-to-r from-yellow-300 via-yellow-400 to-yellow-500 px-4 py-2 text-xs font-semibold text-black uppercase shadow-md transition hover:from-yellow-400 hover:to-yellow-600 hover:brightness-105">
+        <button
+          onClick={() => navigate("/mainpage/upgrade")}
+          className="relative w-full overflow-hidden rounded-md bg-gradient-to-r from-yellow-300 via-yellow-400 to-yellow-500 px-4 py-2 text-xs font-semibold text-black uppercase shadow-md transition hover:from-yellow-400 hover:to-yellow-600 hover:brightness-105"
+        >
           <span className="relative z-10 font-bold">Go Pro</span>
 
           {/* ⭐ SVG icon lấp lánh ở góc phải trên */}

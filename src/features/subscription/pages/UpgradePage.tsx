@@ -1,0 +1,110 @@
+import { useEffect } from "react";
+import { useAppDispatch, useAppSelector } from "../../../state/hooks";
+import { fetchPlansThunk } from "../subscriptionSlice";
+
+type SubscriptionPlan = {
+  type: "WEEKLY" | "MONTHLY" | "YEARLY";
+  price: number;
+  currency: string;
+  displayName: string;
+};
+
+const planDescriptions: Record<SubscriptionPlan["type"], string> = {
+  WEEKLY:
+    "Ideal for short-term use or quick testing. Expires in 7 days. Renew manually.",
+  MONTHLY: "Best for regular use. Lasts 30 days and requires manual renewal.",
+  YEARLY: "Most cost-effective. Access for a full year with one payment.",
+};
+
+export const UpgradePage = () => {
+  const dispatch = useAppDispatch();
+  const { plans, loading } = useAppSelector((state) => state.subscription);
+
+  useEffect(() => {
+    dispatch(fetchPlansThunk());
+  }, [dispatch]);
+
+  return (
+    <div className="min-h-screen bg-yellow-50 px-20 py-24">
+      {/* 🧡 Hàng đầu: Header giữa */}
+      <div className="mb-20 text-center">
+        <h2 className="text-4xl font-bold text-yellow-900">
+          Upgrade Your Account
+        </h2>
+        <p className="mt-4 text-base text-yellow-700">
+          Select a plan to unlock full features of the website
+        </p>
+        <div className="mt-6 flex justify-center gap-3">
+          {[...Array(3)].map((_, idx) => (
+            <span key={idx} className="h-3 w-3 rounded-full bg-yellow-400" />
+          ))}
+        </div>
+      </div>
+
+      {/* 🛠 Hàng 2: layout 2 cột */}
+      <div className="grid grid-cols-1 gap-20 md:grid-cols-3">
+        {/* ✅ Cột trái: lợi ích premium */}
+        <div>
+          <h3 className="mb-6 text-xl font-bold text-yellow-900">
+            Why go premium?
+          </h3>
+          <ul className="space-y-4">
+            {[
+              "Unlimited team creation",
+              "Advanced dashboard",
+              "Team calendar",
+            ].map((item) => (
+              <li key={item} className="flex items-center gap-4">
+                <span className="h-3 w-3 rounded-full bg-yellow-500" />
+                <span className="text-[15px] text-yellow-800">{item}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* ✅ Cột phải: tiêu đề + danh sách gói */}
+        <div className="md:col-span-2">
+          <h3 className="mb-6 text-xl font-bold text-yellow-900">
+            Choose your plan
+          </h3>
+
+          {loading ? (
+            <div className="text-yellow-700">Loading plans...</div>
+          ) : plans.length === 0 ? (
+            <div className="text-yellow-700">No plans available</div>
+          ) : (
+            <div className="space-y-6">
+              {plans.map((plan: SubscriptionPlan) => (
+                <div
+                  key={plan.type}
+                  className="flex items-center justify-between rounded-md border border-yellow-200 bg-yellow-100 px-8 py-5 shadow-sm transition hover:bg-yellow-200"
+                >
+                  <div>
+                    <span
+                      title={planDescriptions[plan.type]}
+                      className="text-[15px] font-semibold text-yellow-900"
+                    >
+                      {plan.displayName}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-6">
+                    <span className="text-sm text-yellow-700">
+                      ${Number(plan.price).toFixed(2)} /{" "}
+                      {plan.type.toLowerCase()}
+                    </span>
+                    <button
+                      type="button"
+                      className="rounded bg-yellow-500 px-5 py-2 text-sm font-semibold text-white hover:bg-yellow-600 focus:ring-2 focus:ring-yellow-400 focus:outline-none"
+                    >
+                      Select
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};

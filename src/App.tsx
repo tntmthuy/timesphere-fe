@@ -14,6 +14,7 @@ import { useAppDispatch } from "./state/hooks";
 import { fetchUserProfileThunk } from "./features/auth/authSlice";
 import { useEffect } from "react";
 import { NotificationPage } from "./features/sidebar/pages/NotificationPage";
+import { UpgradePage } from "./features/subscription/pages/UpgradePage";
 
 function App() {
   const dispatch = useAppDispatch();
@@ -121,6 +122,7 @@ function App() {
           <Route path="focus" element={<FocusPage />} />
           <Route path="dashboard" element={<DashboardPage />} />
           <Route path="notification" element={<NotificationPage />} />
+          <Route path="upgrade" element={<UpgradePage />} />
           {/* Trang xem chi tiết nhóm */}
           <Route path="team/:id" element={<TeamDetailPage />} />
         </Route>
