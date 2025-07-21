@@ -1,6 +1,7 @@
 //src\features\auth\authSlice.ts
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
+import { api } from "../../api/axios";
 
 // 🧾 Kiểu user
 export interface User {
@@ -103,40 +104,26 @@ export const fetchUserProfileThunk = createAsyncThunk(
   "auth/fetchUserProfile",
   async (_, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem("token");
-      const res = await axios.get("/api/user/profile", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const res = await api.get("/api/user/profile");
       return res.data.data;
     } catch {
       return rejectWithValue("Không lấy được thông tin người dùng");
     }
   }
 );
+
 // up lên cloud + patch avatar
 export const updateAvatarThunk = createAsyncThunk(
   "auth/updateAvatar",
   async (file: File, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem("token");
-
       const formData = new FormData();
       formData.append("file", file);
 
-      // 📤 Upload ảnh
-      const uploadRes = await axios.post("/api/upload?folder=avatars", formData, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
+      const uploadRes = await api.post("/api/upload?folder=avatars", formData);
       const url = uploadRes.data.url;
 
-      // 🧾 PATCH avatar
-      const patchRes = await axios.patch("/api/user/avatar", { avatarUrl: url }, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
+      const patchRes = await api.patch("/api/user/avatar", { avatarUrl: url });
       return patchRes.data.data;
     } catch {
       return rejectWithValue("Không cập nhật được avatar");
@@ -147,19 +134,9 @@ export const updateAvatarThunk = createAsyncThunk(
 //update info
 export const updateProfileInfoThunk = createAsyncThunk(
   "auth/updateProfileInfo",
-  async (
-    payload: {
-      firstname: string;
-      lastname: string;
-      gender: "MALE" | "FEMALE" | "UNSURE";
-    },
-    { rejectWithValue }
-  ) => {
+  async (payload, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem("token");
-      const res = await axios.patch("/api/user/profile", payload, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await api.patch("/api/user/profile", payload);
       return res.data.data;
     } catch {
       return rejectWithValue("Không cập nhật được thông tin cá nhân");
@@ -170,20 +147,10 @@ export const updateProfileInfoThunk = createAsyncThunk(
 //change password
 export const changePasswordThunk = createAsyncThunk(
   "auth/changePassword",
-  async (
-    payload: {
-      currentPassword: string;
-      newPassword: string;
-      confirmationPassword: string;
-    },
-    { rejectWithValue }
-  ) => {
+  async (payload, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem("token");
-      const res = await axios.patch("/api/user/change-password", payload, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      return res.data.message; // "Đổi mật khẩu thành công!"
+      const res = await api.patch("/api/user/change-password", payload);
+      return res.data.message;
     } catch (err) {
       const msg = axios.isAxiosError(err)
         ? err.response?.data?.message || "Password change failed."

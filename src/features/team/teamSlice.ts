@@ -5,12 +5,7 @@ import type { PayloadAction } from "@reduxjs/toolkit";
 import axios from "axios";
 import type { MemberInvite, TeamMemberDTO, TeamResponse } from "./member";
 import type { RootState } from "../../state/store";
-
-// 👥 Thành viên mỗi team
-// type TeamMember = {
-//   userId: string;
-//   role: "OWNER" | "MEMBER";
-// };
+import { api } from "../../api/axios";
 
 // 🏢 Cấu trúc team
 export type Team = {
@@ -50,13 +45,9 @@ export const createTeamThunk = createAsyncThunk<
   { state: RootState }
 >(
   "team/createTeam",
-  async (payload, { getState, rejectWithValue }) => {
-    const token = getState().auth.token;
-
+  async (payload, { rejectWithValue }) => {
     try {
-      const res = await axios.post("/api/teams", payload, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await api.post("/api/teams", payload);
       return res.data.data;
     } catch (err) {
       const msg = axios.isAxiosError(err) && err.response?.data?.message;
@@ -71,13 +62,10 @@ export const createTeamThunk = createAsyncThunk<
 //kiếm toàn bộ
 export const searchNewTeamMembersThunk = createAsyncThunk(
   "team/searchNewTeamMembers",
-  async (keyword: string, { getState, rejectWithValue }) => {
-    const token = (getState() as RootState).auth.token;
-
+    async (keyword: string, { rejectWithValue }) => {
     try {
-      const res = await axios.get(`/api/user/search-new-team`, {
+      const res = await api.get(`/api/user/search-new-team`, {
         params: { keyword },
-        headers: { Authorization: `Bearer ${token}` },
       });
 
       return res.data.data; // 👈 lấy toàn bộ
@@ -91,14 +79,11 @@ export const searchMembersInTeamThunk = createAsyncThunk(
   "team/searchMembers",
   async (
     { teamId, keyword }: { teamId: string; keyword: string },
-    { getState, rejectWithValue }
+    { rejectWithValue }
   ) => {
-    const token = (getState() as RootState).auth.token;
-
     try {
-      const res = await axios.get(`/api/teams/${teamId}/members/search`, {
+      const res = await api.get(`/api/teams/${teamId}/members/search`, {
         params: { keyword },
-        headers: { Authorization: `Bearer ${token}` }, // 👈 chuẩn gu
       });
       return res.data.data;
     } catch (err) {
@@ -113,14 +98,9 @@ export const searchMembersInTeamThunk = createAsyncThunk(
 //tìm assignees
 export const fetchAssigneesOfTaskThunk = createAsyncThunk(
   "team/fetchAssignees",
-  async (taskId: string, { getState, rejectWithValue }) => {
-    const token = (getState() as RootState).auth.token;
-
+  async (taskId: string, { rejectWithValue }) => {
     try {
-      const res = await axios.get(`/api/kanban/task/${taskId}/assignees`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
+      const res = await api.get(`/api/kanban/task/${taskId}/assignees`);
       return res.data.data; // 👈 mảng assignee
     } catch {
       return rejectWithValue("FAILED_TO_FETCH_ASSIGNEES");
@@ -133,19 +113,13 @@ export const assignMemberToTaskThunk = createAsyncThunk(
   "task/assignMember",
   async (
     { taskId, memberId }: { taskId: string; memberId: string },
-    { getState, rejectWithValue }
+    { rejectWithValue }
   ) => {
-    const token = (getState() as RootState).auth.token;
-
     try {
-      const res = await axios.put(
+      const res = await api.put(
         `/api/kanban/task/${taskId}/assign`,
-        { memberIds: [memberId] },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+        { memberIds: [memberId] },        
       );
-
       return res.data.data; // ✅ Task sau khi gán xong
     } catch {
       return rejectWithValue("ASSIGN_FAILED");
@@ -158,15 +132,12 @@ export const unassignMemberFromTaskThunk = createAsyncThunk(
   "task/unassignMember",
   async (
     { taskId, memberId }: { taskId: string; memberId: string },
-    { getState, rejectWithValue }
+    {  rejectWithValue }
   ) => {
-    const token = (getState() as RootState).auth.token;
-
     try {
-      const res = await axios.put(
+      const res = await api.put(
         `/api/kanban/task/${taskId}/unassign`,
         { memberIds: [memberId] },
-        { headers: { Authorization: `Bearer ${token}` } }
       );
       return res.data.data; // ✅ Updated Task
     } catch {
@@ -179,12 +150,9 @@ export const unassignMemberFromTaskThunk = createAsyncThunk(
 // teamSlice.ts
 export const fetchAllTeamsThunk = createAsyncThunk(
   "team/fetchAllTeams",
-  async (_, { getState, rejectWithValue }) => {
-    const token = (getState() as RootState).auth.token;
+  async (_, { rejectWithValue }) => {
     try {
-      const res = await axios.get("/api/teams", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await api.get("/api/teams");
       const list = Array.isArray(res.data.data) ? res.data.data : [];
       return list;
     } catch {
@@ -196,13 +164,9 @@ export const fetchAllTeamsThunk = createAsyncThunk(
 // danh sách member
 export const fetchTeamDetailThunk = createAsyncThunk(
   "team/fetchTeamDetail",
-  async (teamId: string, { getState, rejectWithValue }) => {
-    const token = (getState() as RootState).auth.token;
+  async (teamId: string, { rejectWithValue }) => {
     try {
-      const res = await axios.get(`/api/teams/${teamId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      
+      const res = await api.get(`/api/teams/${teamId}`);      
       return res.data.data; // ✅ Trả về kiểu TeamResponse
     } catch {
       return rejectWithValue("FAILED_TO_FETCH_TEAM_DETAIL");
@@ -217,18 +181,12 @@ export const inviteMemberToTeamThunk = createAsyncThunk<
   { state: RootState }
 >(
   "team/inviteMember",
-  async ({ teamId, email }, { getState, rejectWithValue }) => {
-    const token = getState().auth.token;
-
+  async ({ teamId, email }, { rejectWithValue }) => {
     try {
-      await axios.post(
+      await api.post(
         `/api/teams/${teamId}/members`,
-        [{ email }],
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+        [{ email }],        
       );
-
       return "Invitation sent successfully. Awaiting confirmation.";
     } catch (err) {
       if (axios.isAxiosError(err) && err.response?.status === 403) {
@@ -241,36 +199,24 @@ export const inviteMemberToTeamThunk = createAsyncThunk<
 
 //nhượng quyền
 export const transferOwnershipThunk = createAsyncThunk<
-  string, // return message
-  { teamId: string; userId: string },
-  { state: RootState }
+  string,
+  { teamId: string; userId: string }
 >(
   "team/transferOwnership",
-  async ({ teamId, userId }, { getState, rejectWithValue }) => {
-    const token = getState().auth.token;
-
+  async ({ teamId, userId }, { rejectWithValue }) => {
     try {
-      const res = await fetch(
-        `/api/teams/${teamId}/members/${userId}/role`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ newRole: "OWNER" }),
-        }
-      );
+      const res = await api.put(`/api/teams/${teamId}/members/${userId}/role`, {
+        newRole: "OWNER",
+      });
 
-      if (!res.ok) {
-        const error = await res.json();
-        return rejectWithValue(error.message || "Permission denied.");
-      }
+      return res.data.message || "Cập nhật vai trò thành công!";
+    } catch (err) {
+      const msg =
+        axios.isAxiosError(err) && err.response?.data?.message
+          ? err.response.data.message
+          : "Failed to transfer ownership.";
 
-      const data = await res.json();
-      return data.message; // "Cập nhật vai trò thành công!"
-    } catch {
-      return rejectWithValue("Failed to transfer ownership.");
+      return rejectWithValue(msg);
     }
   }
 );
@@ -282,14 +228,10 @@ export const removeTeamMemberThunk = createAsyncThunk<
   { state: RootState }
 >(
   "team/removeMember",
-  async ({ teamId, userId }, { getState, rejectWithValue }) => {
-    const token = getState().auth.token;
+  async ({ teamId, userId }, { rejectWithValue }) => {
 
     try {
-      const res = await axios.delete(
-        `/api/teams/${teamId}/members/${userId}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const res = await api.delete(`/api/teams/${teamId}/members/${userId}`);
       return res.data.message || "Member removed!";
     } catch (err: unknown) {
         if (axios.isAxiosError(err)) {
@@ -301,20 +243,14 @@ export const removeTeamMemberThunk = createAsyncThunk<
   }
 );
 
-
 //xóa nhóm
 export const deleteTeamThunk = createAsyncThunk<
   string, // trả về message
   string, // teamId
   { state: RootState }
->("team/deleteTeam", async (teamId, { getState, rejectWithValue }) => {
-  const token = getState().auth.token;
-
+>("team/deleteTeam", async (teamId, { rejectWithValue }) => {
   try {
-    await axios.delete(`/api/teams/${teamId}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-
+    await api.delete(`/api/teams/${teamId}`);
     return "Team deleted successfully."; 
   } catch (err) {
     if (axios.isAxiosError(err) && err.response?.status === 403) {
@@ -331,14 +267,10 @@ export const leaveTeamThunk = createAsyncThunk<
   { state: RootState }
 >(
   "team/leaveTeam",
-  async (teamId, { getState, rejectWithValue }) => {
-    const token = getState().auth.token;
+  async (teamId, { rejectWithValue }) => {
 
     try {
-      const res = await axios.delete(`/api/teams/${teamId}/leave`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
+      const res = await api.delete(`/api/teams/${teamId}/leave`);
       return res.data.message || "You’ve left the team.";
     } catch (err) {
       if (axios.isAxiosError(err) && err.response?.status === 403) {
@@ -411,6 +343,7 @@ const teamSlice = createSlice({
     builder.addCase(leaveTeamThunk.fulfilled, (state, action) => {
       state.teams = state.teams.filter((t) => t.id !== action.meta.arg);
     });
+    
 }
 });
 

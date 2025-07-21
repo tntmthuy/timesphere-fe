@@ -5,7 +5,6 @@ import { api } from "../../api/axios";
 import axios from "axios";
 import type { TaskDto } from "./task";
 import type { KanbanColumnDto } from "./kanban";
-import type { RootState } from "../../state/store";
 import type { SubTask } from "./subtask";
 import toast from "react-hot-toast";
 
@@ -30,16 +29,12 @@ const initialState: KanbanState = {
   error: null,
 };
 
+//tải bảng Kanban
 export const fetchBoardThunk = createAsyncThunk(
   "kanban/fetchBoard",
-  async (workspaceId: string, { getState, rejectWithValue }) => {
-    const state = getState() as RootState;
-    const token = state.auth.token;
-
+  async (workspaceId: string, { rejectWithValue }) => {
     try {
-      const res = await api.get(`/api/kanban/${workspaceId}/kanban-board`, {
-        headers: { Authorization: `Bearer ${token}` }, // ✅ thêm header
-      });
+      const res = await api.get(`/api/kanban/${workspaceId}/kanban-board`);
       return res.data.data.columns as KanbanColumnDto[];
     } catch {
       return rejectWithValue("Không thể tải bảng Kanban");
@@ -47,19 +42,12 @@ export const fetchBoardThunk = createAsyncThunk(
   }
 );
 
+//tạo cột Kanban
 export const createColumnThunk = createAsyncThunk(
   "kanban/createColumn",
-  async (
-    payload: { workspaceId: string; title: string },
-    { getState, rejectWithValue }
-  ) => {
-    const token = (getState() as RootState).auth.token;
-
+  async (payload: { workspaceId: string; title: string }, { rejectWithValue }) => {
     try {
-      const res = await api.post("/api/kanban/column", payload, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
+      const res = await api.post("/api/kanban/column", payload);
       return res.data.data;
     } catch (err: unknown) {
       if (axios.isAxiosError(err)) {
@@ -73,19 +61,12 @@ export const createColumnThunk = createAsyncThunk(
   }
 );
 
+//tạo subtask
 export const createSubtaskThunk = createAsyncThunk(
   "kanban/createSubtask",
-  async (
-    payload: { parentTaskId: string; title: string },
-    { getState, rejectWithValue }
-  ) => {
-    const token = (getState() as RootState).auth.token;
-
+  async (payload: { parentTaskId: string; title: string }, { rejectWithValue }) => {
     try {
-      const res = await axios.post("/api/kanban/task/subtask", payload, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
+      const res = await api.post("/api/kanban/task/subtask", payload);
       return {
         parentTaskId: payload.parentTaskId,
         subtask: res.data.data as SubTask,
@@ -98,25 +79,14 @@ export const createSubtaskThunk = createAsyncThunk(
   }
 );
 
+//cập nhât tiêu đề subtask
 export const updateSubtaskTitleThunk = createAsyncThunk(
   "kanban/updateSubtaskTitle",
-  async (
-    payload: { subtaskId: string; title: string },
-    { getState, rejectWithValue }
-  ) => {
-    const token = (getState() as RootState).auth.token;
-
+  async (payload: { subtaskId: string; title: string }, { rejectWithValue }) => {
     try {
-      const res = await axios.patch(
-        `/api/kanban/task/subtask/${payload.subtaskId}`,
-        { title: payload.title },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      console.log("📥 Subtask update response:", res.data);
+      await api.patch(`/api/kanban/task/subtask/${payload.subtaskId}`, {
+        title: payload.title,
+      });
       return {
         id: payload.subtaskId,
         title: payload.title,
@@ -127,15 +97,13 @@ export const updateSubtaskTitleThunk = createAsyncThunk(
   }
 );
 
+//xóa subtask
 export const deleteSubtaskThunk = createAsyncThunk(
   "kanban/deleteSubtask",
-  async (subtaskId: string, { getState }) => {
-    const token = (getState() as RootState).auth.token;
-    await api.delete(`/api/kanban/task/subtask/${subtaskId}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+  async (subtaskId: string) => {
+    await api.delete(`/api/kanban/task/subtask/${subtaskId}`);
     return subtaskId;
-  },
+  }
 );
 
 //
@@ -215,15 +183,15 @@ moveTaskLocal: (
 
   const safePos = Math.min(toCol.tasks.length, targetPosition);
   toCol.tasks.splice(safePos, 0, task);
-if (toCol.tasks.length === 0) {
-  console.log("📭 Cột target đang rỗng, thêm task đầu tiên");
-}
-  // ✅ Nếu bạn đang dùng state.tasks toàn cục thì cập nhật thêm:
-  const globalIndex = state.tasks.findIndex((t) => t.id === taskId);
-  if (globalIndex !== -1) {
-    state.tasks[globalIndex] = task;
+  if (toCol.tasks.length === 0) {
+    console.log("📭 Cột target đang rỗng, thêm task đầu tiên");
   }
-}
+    // ✅ Nếu bạn đang dùng state.tasks toàn cục thì cập nhật thêm:
+    const globalIndex = state.tasks.findIndex((t) => t.id === taskId);
+    if (globalIndex !== -1) {
+      state.tasks[globalIndex] = task;
+    }
+  }
 
   },
   extraReducers: (builder) => {

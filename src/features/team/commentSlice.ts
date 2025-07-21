@@ -1,6 +1,7 @@
 //src\features\team\commentSlice.ts
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
+import { api } from "../../api/axios";
 import type { AttachedFileDTO, TaskCommentDTO } from "./comment";
 
 type CreateCommentPayload = {
@@ -9,7 +10,6 @@ type CreateCommentPayload = {
   visibility?: "PUBLIC" | "PRIVATE";
   visibleToUserIds?: string[];
   attachments?: AttachedFileDTO[];
-  token: string;
 };
 
 import { createSelector } from "@reduxjs/toolkit";
@@ -23,10 +23,8 @@ export const makeSelectCommentsByTask = (taskId: string) =>
 //comment of task
 export const fetchTaskComments = createAsyncThunk(
   "comments/fetchTaskComments",
-  async ({ taskId, token }: { taskId: string; token: string }) => {
-    const res = await axios.get(`/api/comment/task/${taskId}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+  async ({ taskId }: { taskId: string }) => {
+    const res = await api.get(`/api/comment/task/${taskId}`);
     return res.data.data as TaskCommentDTO[];
   }
 );
@@ -44,16 +42,16 @@ export const createCommentThunk = createAsyncThunk(
       visibility = "PUBLIC",
       visibleToUserIds = [],
       attachments = [],
-      token,
     } = payload;
 
-    try {
-      const res = await axios.post(
-        "/api/comment/task",
-        { taskId, content, visibility, visibleToUserIds, attachments },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
+     try {
+      const res = await api.post("/api/comment/task", {
+        taskId,
+        content,
+        visibility,
+        visibleToUserIds,
+        attachments,
+      });
       return res.data.data as TaskCommentDTO;
     } catch (error) {
       const message =
@@ -70,22 +68,17 @@ export const createCommentThunk = createAsyncThunk(
 export const deleteCommentThunk = createAsyncThunk(
   "comments/deleteComment",
   async (
-    { commentId, taskId, token }: { commentId: string; taskId: string; token: string },
+    { commentId, taskId }: { commentId: string; taskId: string; },
     { rejectWithValue }
   ) => {
     try {
-      const res = await axios.delete(`/api/comment/${commentId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-console.log("🧪 Delete response raw:", res.data);
+      const res = await api.delete(`/api/comment/${commentId}`);
       return {
         commentId,
         taskId,
-        updatedAttachments: Array.isArray(res.data.data)
-  ? res.data.data
-  : []
-          
+        updatedAttachments: Array.isArray(res.data.data) ? res.data.data : [],
       };
+
     } catch (error) {
       const message =
         axios.isAxiosError(error) && error.response?.data?.message
@@ -100,10 +93,8 @@ console.log("🧪 Delete response raw:", res.data);
 //lấy file nguyên team
 export const fetchTeamAttachments = createAsyncThunk(
   "comments/fetchTeamAttachments",
-  async ({ teamId, token }: { teamId: string; token: string }) => {
-    const res = await axios.get(`/api/teams/${teamId}/attachments`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+  async ({ teamId }: { teamId: string }) => {
+    const res = await api.get(`/api/teams/${teamId}/attachments`);
     return res.data as AttachedFileDTO[];
   }
 );
@@ -138,8 +129,14 @@ const commentSlice = createSlice({
       }
     });
     builder.addCase(deleteCommentThunk.fulfilled, (state, action) => {
-      const { updatedAttachments } = action.payload;
+      const { commentId, taskId, updatedAttachments } = action.payload;
+      
+      // 🧹 Xoá bình luận khỏi danh sách hiển thị
+      if (state.byTask[taskId]) {
+        state.byTask[taskId] = state.byTask[taskId].filter((c) => c.id !== commentId);
+      }
 
+      // 🔄 Cập nhật lại danh sách file đính kèm nếu có
       if (Array.isArray(updatedAttachments)) {
         state.attachments = [...updatedAttachments];
       }

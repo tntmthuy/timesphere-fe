@@ -6,3 +6,11 @@ export const api = axios.create({
   withCredentials: false,           // nếu không dùng cookie
 });
 
+// ✅ Thêm interceptor để tự inject token
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("token"); // luôn lấy token mới nhất
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});

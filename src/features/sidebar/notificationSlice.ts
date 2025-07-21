@@ -1,6 +1,7 @@
+// src/features/sidebar/notificationSlice.ts
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import axios from "axios";
 import type { RootState } from "../../state/store";
+import { api } from "../../api/axios";
 
 export type Notification = {
   id: string;
@@ -31,13 +32,9 @@ export const fetchNotificationsThunk = createAsyncThunk<
   Notification[],
   void,
   { state: RootState }
->("notification/fetch", async (_, { getState, rejectWithValue }) => {
-  const token = getState().auth.token;
+>("notification/fetch", async (_, { rejectWithValue }) => {
   try {
-    const res = await axios.get("/api/notifications", {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-
+     const res = await api.get("/api/notifications");
     const data = Array.isArray(res.data.data) ? res.data.data : [];
     return data;
   } catch {
@@ -47,37 +44,33 @@ export const fetchNotificationsThunk = createAsyncThunk<
 
 //mark 1 
 export const markNotificationAsRead = createAsyncThunk<
-  string, // trả về ID sau khi xử lý
-  string, // đầu vào là notificationId
+  string,
+  string,
   { state: RootState }
->("notification/markAsRead", async (notificationId, { getState, rejectWithValue }) => {
-  const token = getState().auth.token;
+>("notification/markAsRead", async (notificationId, { rejectWithValue }) => {
   try {
-    await axios.post(`/api/notifications/${notificationId}/read`, {}, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    await api.post(`/api/notifications/${notificationId}/read`);
     return notificationId;
   } catch {
     return rejectWithValue("FAILED_TO_MARK_AS_READ");
   }
 });
 
+
 //delete
 export const deleteNotificationThunk = createAsyncThunk<
-  string, // trả về notificationId
-  string, // đầu vào là notificationId
+  string,
+  string,
   { state: RootState }
->("notification/delete", async (notificationId, { getState, rejectWithValue }) => {
-  const token = getState().auth.token;
+>("notification/delete", async (notificationId, { rejectWithValue }) => {
   try {
-    await axios.delete(`/api/notifications/${notificationId}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    await api.delete(`/api/notifications/${notificationId}`);
     return notificationId;
   } catch {
     return rejectWithValue("FAILED_TO_DELETE_NOTIFICATION");
   }
 });
+
 
 //Slice
 const notificationSlice = createSlice({
