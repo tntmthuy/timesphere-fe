@@ -1,6 +1,8 @@
-import { useEffect } from "react";
+// src/features/subscription/pages/UpgradePage.tsx
+import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../../state/hooks";
 import { fetchPlansThunk } from "../subscriptionSlice";
+import { PlanCheckoutSidebar } from "../components/PlanCheckoutSidebar";
 
 type SubscriptionPlan = {
   type: "WEEKLY" | "MONTHLY" | "YEARLY";
@@ -19,6 +21,12 @@ const planDescriptions: Record<SubscriptionPlan["type"], string> = {
 export const UpgradePage = () => {
   const dispatch = useAppDispatch();
   const { plans, loading } = useAppSelector((state) => state.subscription);
+
+  //SỬA SAU, UI TRƯỚC
+  const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlan | null>(
+    null,
+  );
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     dispatch(fetchPlansThunk());
@@ -93,6 +101,10 @@ export const UpgradePage = () => {
                       {plan.type.toLowerCase()}
                     </span>
                     <button
+                      onClick={() => {
+                        setSelectedPlan(plan);
+                        setShowModal(true);
+                      }}
                       type="button"
                       className="rounded bg-yellow-500 px-5 py-2 text-sm font-semibold text-white hover:bg-yellow-600 focus:ring-2 focus:ring-yellow-400 focus:outline-none"
                     >
@@ -102,6 +114,17 @@ export const UpgradePage = () => {
                 </div>
               ))}
             </div>
+          )}
+          {showModal && selectedPlan && (
+            <PlanCheckoutSidebar
+              plan={selectedPlan}
+              onClose={() => setShowModal(false)}
+              onConfirm={() => {
+                // Gọi BE hoặc redirect tới PayPal
+                console.log("Proceed to PayPal:", selectedPlan);
+                setShowModal(false);
+              }}
+            />
           )}
         </div>
       </div>

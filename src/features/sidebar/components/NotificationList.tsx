@@ -55,7 +55,7 @@ export const NotificationList = ({
       else if (isThisWeek) label = "This week";
       else {
         label =
-          "📅 " +
+          "" +
           created.toLocaleDateString("en-US", {
             weekday: "long",
             day: "2-digit",
@@ -135,12 +135,21 @@ export const NotificationList = ({
                       <div className="flex gap-2 pt-1">
                         <button
                           className="rounded bg-gray-400 px-3 py-1 text-sm text-white hover:bg-gray-300"
-                          onClick={(e) => {
+                          onClick={async (e) => {
                             e.stopPropagation();
-                            onAccept(noti.referenceId);
                             toast.dismiss();
-                            toast.success("Invitation accepted!");
-                            navigate(`/mainpage/team/${noti.referenceId}`);
+
+                            try {
+                               await onAccept(noti.referenceId);
+                              toast.success( "Invitation accepted!");
+                              navigate(`/mainpage/team/${noti.referenceId}`);
+                            } catch (error) {
+                              toast.error(
+                                typeof error === "string"
+                                  ? error
+                                  : "Cannot accept invitation.",
+                              );
+                            }
                           }}
                         >
                           Đồng ý

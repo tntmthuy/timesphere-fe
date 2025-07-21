@@ -29,26 +29,29 @@ export const NotificationPage = () => {
     dispatch(fetchNotificationsThunk());
   }, [dispatch]);
 
-  const handleAccept = async (teamId: string) => {
-    try {
-      await dispatch(acceptInvitationThunk(teamId)).unwrap();
-      await dispatch(fetchAllTeamsThunk());
-      // toast.success(msg);
-      await dispatch(fetchNotificationsThunk());
-      setActiveTab("read");
-    } catch {
-      toast.error("Không thể chấp nhận lời mời.");
+  const handleAccept = async (teamId: string): Promise<string> => {
+    const result = await dispatch(acceptInvitationThunk(teamId));
+    if (acceptInvitationThunk.rejected.match(result)) {
+      throw result.payload;
     }
+
+    await dispatch(fetchAllTeamsThunk());
+    await dispatch(fetchNotificationsThunk());
+    setActiveTab("read");
+
+    return result.payload;
   };
 
-  const handleDecline = async (teamId: string) => {
+  const handleDecline = async (teamId: string): Promise<void> => {
     try {
       const msg = await dispatch(declineInvitationThunk(teamId)).unwrap();
       toast.success(msg);
       await dispatch(fetchNotificationsThunk());
       setActiveTab("read");
-    } catch {
-      toast.error("Không thể từ chối lời mời.");
+    } catch (error) {
+      toast.error(
+        typeof error === "string" ? error : "Cannot decline invitation.",
+      );
     }
   };
 
