@@ -3,6 +3,9 @@ import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../../state/hooks";
 import { fetchPlansThunk } from "../subscriptionSlice";
 import { PlanCheckoutSidebar } from "../components/PlanCheckoutSidebar";
+import { PremiumThankYouModal } from "../components/PremiumThanhYouModal";
+import axios from "axios";
+import { fetchUserProfileThunk } from "../../auth/authSlice";
 
 type SubscriptionPlan = {
   type: "WEEKLY" | "MONTHLY" | "YEARLY";
@@ -30,6 +33,30 @@ export const UpgradePage = () => {
 
   useEffect(() => {
     dispatch(fetchPlansThunk());
+  }, [dispatch]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const paymentId = params.get("paymentId");
+    const payerId = params.get("PayerID");
+    const planType = params.get("planType");
+
+    if (paymentId && payerId && planType) {
+      const token = localStorage.getItem("token");
+      axios
+        .get("http://localhost:8081/payment/success", {
+          params: { paymentId, PayerID: payerId, planType },
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        .then((res) => {
+          if (res.data.status === "success") {
+            localStorage.setItem("token", res.data.token);
+            setSelectedPlan(null);
+            setShowModal(true);
+            window.history.replaceState({}, "", "/mainpage/upgrade");
+          }
+        });
+    }
   }, [dispatch]);
 
   return (
@@ -115,14 +142,20 @@ export const UpgradePage = () => {
               ))}
             </div>
           )}
-          {showModal && selectedPlan && (
+          {selectedPlan && showModal && (
             <PlanCheckoutSidebar
               plan={selectedPlan}
               onClose={() => setShowModal(false)}
+            />
+          )}
+
+          {!selectedPlan && showModal && (
+            <PremiumThankYouModal
+              message="Your account has been successfully upgraded to Premium. Click OK to refresh and start exploring all features."
+              buttonLabel="OK"
               onConfirm={() => {
-                // Gọi BE hoặc redirect tới PayPal
-                console.log("Proceed to PayPal:", selectedPlan);
-                setShowModal(false);
+                dispatch(fetchUserProfileThunk());
+                window.location.reload();
               }}
             />
           )}

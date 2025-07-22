@@ -1,6 +1,8 @@
 // src/features/subscription/components/PlanCheckoutSidebar.tsx
 
 import { useEffect, useState } from "react";
+import { api } from "../../../api/axios";
+import toast from "react-hot-toast";
 
 type SubscriptionPlan = {
   type: "WEEKLY" | "MONTHLY" | "YEARLY";
@@ -11,11 +13,11 @@ type SubscriptionPlan = {
 
 type Props = {
   plan: SubscriptionPlan;
-  onConfirm: () => void;
+  // onConfirm: () => void;
   onClose: () => void;
 };
 
-export const PlanCheckoutSidebar = ({ plan, onConfirm, onClose }: Props) => {
+export const PlanCheckoutSidebar = ({ plan, onClose }: Props) => {
   const [isClosing, setIsClosing] = useState(false);
 
   useEffect(() => {
@@ -26,6 +28,35 @@ export const PlanCheckoutSidebar = ({ plan, onConfirm, onClose }: Props) => {
       return () => clearTimeout(timer);
     }
   }, [isClosing, onClose]);
+
+  const handleConfirm = async () => {
+  try {
+    toast.loading("🔄 Redirecting to PayPal..."); // ✅ thêm loader UX
+
+    const res = await api.post("/payment/create", null, {
+      params: {
+        method: "paypal",
+        amount: plan.price,
+        currency: plan.currency,
+        description: plan.displayName,
+        planType: plan.type,
+      },
+    });
+
+    const approvalUrl = res.data.approvalUrl;
+    if (approvalUrl) {
+      setIsClosing(true); // ✅ chạy animation trước khi đi
+      setTimeout(() => {
+        window.location.href = approvalUrl;
+      }, 300);
+    } else {
+      toast.error("💥 Không thể tạo giao dịch PayPal");
+    }
+  } catch (e) {
+    console.error("Lỗi tạo đơn PayPal", e);
+    toast.error("💥 Không thể tạo giao dịch PayPal");
+  }
+};
 
   return (
     <div
@@ -45,7 +76,7 @@ export const PlanCheckoutSidebar = ({ plan, onConfirm, onClose }: Props) => {
           <div className="mb-4 flex items-start justify-between">
             <h2 className="text-xl font-bold text-yellow-900">Checkout Plan</h2>
             <button
-              className="text-sm text-yellow-700 hover:underline cursor-pointer"
+              className="cursor-pointer text-sm text-yellow-700 hover:underline"
               onClick={() => setIsClosing(true)}
             >
               ✕ Close
@@ -53,10 +84,12 @@ export const PlanCheckoutSidebar = ({ plan, onConfirm, onClose }: Props) => {
           </div>
 
           <p className="mb-2 text-sm text-yellow-800">
-            <span className="font-semibold">Plan:</span> {plan.displayName} ({plan.type})
+            <span className="font-semibold">Plan:</span> {plan.displayName} (
+            {plan.type})
           </p>
           <p className="mb-6 text-sm text-yellow-800">
-            <span className="font-semibold">Price:</span> ${plan.price.toFixed(2)} {plan.currency}
+            <span className="font-semibold">Price:</span> $
+            {plan.price.toFixed(2)} {plan.currency}
           </p>
 
           <p className="text-[13px] text-yellow-600 italic">
@@ -64,8 +97,8 @@ export const PlanCheckoutSidebar = ({ plan, onConfirm, onClose }: Props) => {
             {plan.type === "WEEKLY"
               ? "7 days"
               : plan.type === "MONTHLY"
-              ? "30 days"
-              : "1 year"}
+                ? "30 days"
+                : "1 year"}
             . Manual renewal required.
           </p>
         </div>
@@ -78,7 +111,7 @@ export const PlanCheckoutSidebar = ({ plan, onConfirm, onClose }: Props) => {
             </div>
             <button
               className="w-full rounded bg-yellow-500 px-5 py-2 text-sm font-semibold text-white hover:bg-yellow-600"
-              onClick={onConfirm}
+              onClick={handleConfirm}
             >
               Pay with PayPal
             </button>

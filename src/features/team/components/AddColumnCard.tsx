@@ -62,7 +62,7 @@ export const AddColumnCard = ({ workspaceId, onCancel }: AddColumnCardProps) => 
           className="mr-2 w-full rounded-md bg-yellow-200 px-3 py-2 text-sm font-medium text-yellow-800 hover:bg-[#fbe89e]"
           onClick={handleAdd}
         >
-          Thêm danh sách
+          Add column
         </button>
         <button
           className="px-2 text-base font-bold text-gray-400 hover:text-gray-600"

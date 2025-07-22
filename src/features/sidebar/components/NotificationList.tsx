@@ -152,7 +152,7 @@ export const NotificationList = ({
                             }
                           }}
                         >
-                          Đồng ý
+                          Accept
                         </button>
                         <button
                           className="rounded bg-red-600 px-3 py-1 text-sm text-white hover:bg-red-700"
@@ -163,7 +163,7 @@ export const NotificationList = ({
                             toast.success("Invitation declined.");
                           }}
                         >
-                          Từ chối
+                          Declince
                         </button>
                       </div>
                     )}

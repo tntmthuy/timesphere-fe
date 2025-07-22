@@ -39,7 +39,7 @@ export const CreateTeamModal = ({ onClose }: Props) => {
       } else if (error === "TEAM_NAME_REQUIRED") {
         toast.error("⚠️ Please enter a team name.");
       } else {
-        toast.error("Failed to create team.");
+        toast.error("Team creation limit reached. Upgrade to unlock more.");
       }
 
       console.error("Tạo nhóm thất bại:", error);
