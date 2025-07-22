@@ -1,14 +1,17 @@
+// src/features/team/components/AddTaskInlineInput.tsx
 import { useState, useRef, useEffect } from "react";
 import { createTask, type TaskDto } from "../task";
-import { useAppSelector } from "../../../state/hooks";
+import { useAppDispatch, useAppSelector } from "../../../state/hooks";
 import toast from "react-hot-toast";
+import { fetchTeamCalendarThunk } from "../teamSlice";
 
 type Props = {
   columnId: string;
+  teamId: string;
   onAddTask: (newTask: TaskDto) => void;
 };
 
-export const AddTaskInlineInput = ({ columnId, onAddTask }: Props) => {
+export const AddTaskInlineInput = ({ columnId, teamId, onAddTask }: Props) => {
   const [editing, setEditing] = useState(false);
   const [value, setValue] = useState("");
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -17,7 +20,7 @@ export const AddTaskInlineInput = ({ columnId, onAddTask }: Props) => {
   useEffect(() => {
     if (editing && inputRef.current) inputRef.current.focus();
   }, [editing]);
-
+  const dispatch = useAppDispatch();
   const handleSubmit = async () => {
     const trimmed = value.trim();
     if (!trimmed || !token) return;
@@ -25,6 +28,7 @@ export const AddTaskInlineInput = ({ columnId, onAddTask }: Props) => {
     try {
       const task = await createTask(columnId, trimmed, token);
       onAddTask(task);
+      dispatch(fetchTeamCalendarThunk(teamId));
       setValue("");
       setEditing(false);
       toast.success("Task created successfully!");
@@ -33,16 +37,16 @@ export const AddTaskInlineInput = ({ columnId, onAddTask }: Props) => {
       toast.error("Unable to create task");
     }
   };
-const handleBlur = () => {
-  const trimmed = value.trim();
+  const handleBlur = () => {
+    const trimmed = value.trim();
 
-  if (trimmed) {
-    handleSubmit(); // gọi tạo task nếu có nội dung
-  } else {
-    setEditing(false); // ❌ không tạo task trống
-    setValue("");      // ✅ reset luôn
-  }
-};
+    if (trimmed) {
+      handleSubmit(); // gọi tạo task nếu có nội dung
+    } else {
+      setEditing(false); // ❌ không tạo task trống
+      setValue(""); // ✅ reset luôn
+    }
+  };
   return editing ? (
     <input
       ref={inputRef}

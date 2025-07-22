@@ -50,8 +50,6 @@ export const TaskCard = ({ task, onClick, dragData }: TaskCardProps) => {
     id: task.id,
     data: dragData,
   });
-
-
   
   return (
     <div

@@ -26,7 +26,7 @@ export const KanbanColumn = ({
 }: KanbanColumnProps) => {
   const token = useAppSelector((state) => state.auth.token);
   const [title, setTitle] = useState(column.title);
-
+  const teamDetail = useAppSelector((state) => state.team.teamDetail);
   const {
     setNodeRef,
     attributes,
@@ -93,7 +93,13 @@ export const KanbanColumn = ({
       </div>
 
       <div className="mb-2 pt-2 pb-2">
-        <AddTaskInlineInput columnId={column.id} onAddTask={handleAddTask} />
+        {teamDetail && (
+          <AddTaskInlineInput
+            columnId={column.id}
+            teamId={teamDetail.id}
+            onAddTask={handleAddTask}
+          />
+        )}
       </div>
 
       <ReorderableList<TaskDto>

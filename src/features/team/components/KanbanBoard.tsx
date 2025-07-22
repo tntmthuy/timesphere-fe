@@ -31,6 +31,7 @@ import { api } from "../../../api/axios";
 import type { AxiosError } from "axios";
 import type { TaskDto } from "../task";
 import { TrashDropZone } from "./reorder/TrashDropZone";
+import { fetchTeamCalendarThunk } from "../teamSlice";
 
 type Props = {
   workspaceId: string;
@@ -109,6 +110,7 @@ export const KanbanBoard = ({ workspaceId, activeTab }: Props) => {
 
         // Optional: update local store hoặc fetch lại
         dispatch(fetchBoardThunk(workspaceId));
+        dispatch(fetchTeamCalendarThunk(workspaceId)); // ✅ đây chính là teamId trong luồng này
         toast.dismiss();
         toast.success("Task deleted!");
       } catch {
@@ -162,12 +164,6 @@ export const KanbanBoard = ({ workspaceId, activeTab }: Props) => {
     }
 
     if (!fromColumnId || !toColumnId) return;
-    console.log("🐣 Task drag from column:", fromColumnId);
-    console.log("🧲 Drop target info:", sortableInfo);
-    console.log("📦 Drop to column:", toColumnId, "→ index:", targetPosition);
-
-    console.log("🧮 OVER ID:", over.id);
-    console.log("🎯 SORTABLE containerId:", sortableInfo?.containerId);
 
     if (!toCol) return;
     const taskCount = toCol.tasks.length;

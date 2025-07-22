@@ -20,7 +20,7 @@ import {
   makeSelectCommentsByTask,
 } from "../commentSlice";
 import type { AttachedFileDTO } from "../comment";
-import { searchMembersInTeamThunk } from "../teamSlice";
+import { fetchTeamCalendarThunk, searchMembersInTeamThunk } from "../teamSlice";
 // import type { RootState } from "../../../state/store";
 // import { useSelector } from "react-redux";
 
@@ -105,9 +105,9 @@ export const TaskDetailModal = ({
 
       const updated = res.data.data as TaskDto;
       dispatch(updateTaskLocal(updated));
+      dispatch(fetchTeamCalendarThunk(teamId));
       toast.dismiss();
       toast.success("Task updated successfully");
-
       setTitle(updated.taskTitle);
       setDescription(updated.description ?? "");
       setDueDate(updated.dateDue ? new Date(updated.dateDue) : null);
@@ -162,7 +162,7 @@ export const TaskDetailModal = ({
   //comment
   useEffect(() => {
     if (token) {
-      dispatch(fetchTaskComments({ taskId: task.id, token }));
+      dispatch(fetchTaskComments({ taskId: task.id }));
     }
   }, [task.id, token, dispatch]); // ✅ thêm dispatch ở đây
 
@@ -203,7 +203,6 @@ export const TaskDetailModal = ({
         content: input,
         visibleToUserIds,
         visibility: visibleToUserIds.length > 0 ? "PRIVATE" : "PUBLIC",
-        token,
         attachments: uploaded,
       }),
     )

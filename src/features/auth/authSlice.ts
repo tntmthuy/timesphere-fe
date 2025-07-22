@@ -11,6 +11,9 @@ export interface User {
   email: string;
   gender: "male" | "female" | "unsure";
   avatarUrl: string | null;
+  role: "FREE" | "PREMIUM" | "ADMIN"; // 👑 từ BE
+  isPremium: boolean;
+  isAdmin: boolean;
 }
 
 // 💾 Kiểu state auth
@@ -218,26 +221,35 @@ const authSlice = createSlice({
       })
       .addCase(fetchUserProfileThunk.fulfilled, (state, action) => {
         state.user = {
-        id: action.payload.id,
-        firstname: action.payload.firstname,
-        lastname: action.payload.lastname,
-        email: action.payload.email,
-        gender: action.payload.gender,
-        avatarUrl: action.payload.avatarUrl,
-      };
+          id: action.payload.id,
+          firstname: action.payload.firstname,
+          lastname: action.payload.lastname,
+          email: action.payload.email,
+          gender: action.payload.gender,
+          avatarUrl: action.payload.avatarUrl,
+          role: action.payload.role,                // 👑 thêm role
+          isPremium: action.payload.role === "PREMIUM", // ✅ logic fallback
+          isAdmin: action.payload.role === "ADMIN", 
+        };
       })
       .addCase(updateAvatarThunk.fulfilled, (state, action) => {
-        state.user = action.payload; // hoặc state.user.avatarUrl = action.payload.avatarUrl;
+        state.user = {
+          ...state.user,
+          ...action.payload,
+        };
       })
       .addCase(updateProfileInfoThunk.fulfilled, (state, action) => {
-        state.user = action.payload;
+        state.user = {
+          ...state.user,
+          ...action.payload,
+        };
       })
       .addCase(fetchUserProfileThunk.rejected, (state) => {
-  state.token = null;
-  state.user = null;
-  state.status = "failed";
-  localStorage.removeItem("token");
-})
+        state.token = null;
+        state.user = null;
+        state.status = "failed";
+        localStorage.removeItem("token");
+      })
       ;
   },
 });

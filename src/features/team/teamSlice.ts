@@ -14,6 +14,11 @@ export type Team = {
   members: TeamMemberDTO[];
 };
 
+export type CalendarDay = {
+  date: string;        // ngày theo format "2025-07-24"
+  taskCount: number;   // số lượng task trong ngày đó
+};
+
 type TeamState = {
   teamDetail: TeamResponse | null;
   teams: Team[];
@@ -22,6 +27,7 @@ type TeamState = {
   assignees: TeamMemberDTO[];
   searchError: string | null;
   newTeamSuggestions: TeamMemberDTO[];
+  calendar: CalendarDay[];
 };
 
 const initialState: TeamState = {
@@ -32,7 +38,22 @@ const initialState: TeamState = {
   assignees: [],
   searchError: null, 
   newTeamSuggestions: [],
+  calendar: [],
 };
+
+//lịch nhóm
+export const fetchTeamCalendarThunk = createAsyncThunk(
+  "team/fetchCalendar",
+  async (teamId: string, { rejectWithValue }) => {
+    try {
+      const res = await api.get(`/api/teams/${teamId}/calendar`);
+      return res.data.days; // 👈 chỉ lấy phần days[]
+    } catch {
+      return rejectWithValue("Không lấy được dữ liệu lịch nhóm");
+    }
+  }
+);
+
 
 //tạo nhóm
 export const createTeamThunk = createAsyncThunk<
@@ -310,6 +331,13 @@ const teamSlice = createSlice({
   },
   extraReducers: (builder) => {
   builder
+    .addCase(fetchTeamCalendarThunk.fulfilled, (state, action) => {
+      state.calendar = action.payload;
+    })
+    .addCase(fetchTeamCalendarThunk.rejected, (state) => {
+      state.calendar = []; // hoặc giữ nguyên nếu muốn preserve
+    })
+
     .addCase(searchMembersInTeamThunk.fulfilled, (state, action) => {
       state.searchResults = action.payload;
       state.searchError = null;
