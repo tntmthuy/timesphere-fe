@@ -27,7 +27,7 @@ export const TeamCalendar = () => {
       {/* 📆 Header */}
       <div className="flex items-center justify-between">
         <div className="text-xl font-semibold text-slate-800">
-          📆 {baseDate.format("MMMM YYYY")}
+          {baseDate.format("MMMM")}
         </div>
         <div className="flex items-center gap-4">
           <button
@@ -52,7 +52,7 @@ export const TeamCalendar = () => {
       </div>
 
       {/* 🗓️ Tuần */}
-      <div className="grid grid-cols-7 gap-2 text-center text-xs font-medium text-slate-500 uppercase">
+      <div className="grid grid-cols-7 border-b pb-2 gap-2 text-left text-xs font-medium text-slate-500 uppercase">
         {weekDays.map((day) => (
           <div key={day}>{day}</div>
         ))}
