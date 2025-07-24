@@ -37,10 +37,11 @@ export const FocusSessionForm = ({
               onChange={(e) => onChangeFocus(e.target.value)}
               className="mt-1 w-full rounded-md border border-yellow-300 bg-white px-3 py-2 text-sm"
             >
-              <option>25 min</option>
-              <option>30 min</option>
-              <option>45 min</option>
-              <option>60 min</option>
+              <option value="1">Dev Test (3s)</option>
+              <option value="25">25 min</option>
+              <option value="30">30 min</option>
+              <option value="45">45 min</option>
+              <option value="60">60 min</option>
             </select>
           </div>
           <div>
@@ -52,9 +53,10 @@ export const FocusSessionForm = ({
               onChange={(e) => onChangeBreak(e.target.value)}
               className="mt-1 w-full rounded-md border border-yellow-300 bg-white px-3 py-2 text-sm"
             >
-              <option>5 min</option>
-              <option>10 min</option>
-              <option>15 min</option>
+              <option value="0.05">Dev Break (3s)</option>
+              <option value="5">5 min</option> // ✅ thêm value rõ ràng
+              <option value="10">10 min</option>
+              <option value="15">15 min</option>
             </select>
           </div>
         </div>

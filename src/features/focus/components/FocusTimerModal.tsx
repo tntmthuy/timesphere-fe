@@ -1,14 +1,24 @@
-// src/components/FocusTimerModal.tsx
-import { useEffect, useState } from "react";
+import { useRef, useEffect, useState } from "react";
+import { ConfirmModal } from "../../team/components/ConfirmModal";
+import { deleteSessionThunk } from "../focusSlice";
+import { useAppDispatch } from "../../../state/hooks";
 
 type Props = {
+  sessionId: number; 
   targetLabel: string;
-  targetMinutes: number; // ✅ số phút mục tiêu
+  targetMinutes: number;
+  breakMinutes: number;
   onClose: () => void;
-  onEnd: () => void;     // ✅ gọi khi kết thúc phiên
+  onEnd: () => void;
 };
 
-export const FocusTimerModal = ({ targetLabel, targetMinutes, onClose, onEnd }: Props) => {
+export const FocusTimerModal = ({
+  sessionId,
+  targetMinutes,
+  breakMinutes,
+  onClose,
+  onEnd,
+}: Props) => {
   const motivationalQuotes = [
     "Keep breathing. You're doing great.",
     "Focus is a form of self-respect.",
@@ -21,15 +31,65 @@ export const FocusTimerModal = ({ targetLabel, targetMinutes, onClose, onEnd }: 
     "Keep your promise to yourself.",
   ];
 
+  const dispatch = useAppDispatch();
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [mode, setMode] = useState<"focus" | "break">("focus");
   const [elapsed, setElapsed] = useState(0);
+  const [breakElapsed, setBreakElapsed] = useState(0);
   const [paused, setPaused] = useState(false);
-  const [quoteIndex, setQuoteIndex] = useState(Math.floor(Math.random() * motivationalQuotes.length));
+  const [quoteIndex, setQuoteIndex] = useState(
+    Math.floor(Math.random() * motivationalQuotes.length),
+  );
+  const [soundPlayed, setSoundPlayed] = useState(false);
 
-  const hasReachedTarget = elapsed >= targetMinutes * 60;
+  const focusSoundRef = useRef<HTMLAudioElement | null>(null);
+
   const currentQuote = motivationalQuotes[quoteIndex];
+  const showDevEndButton = targetMinutes === 1 && elapsed >= 3;
+  const isDevTestMode = targetMinutes === 1;
+  const hasReachedTarget = elapsed >= (isDevTestMode ? 3 : targetMinutes * 60);
+  const currentBreakCountdown = Math.max(0, breakMinutes * 60 - breakElapsed);
 
+  //break
+  const breakSoundRef = useRef<HTMLAudioElement | null>(null);
+  const [breakSoundPlayed, setBreakSoundPlayed] = useState(false);
+  const isBreakTestMode = breakMinutes === 0.05;
+  const hasReachedBreak =
+    breakElapsed >= (isBreakTestMode ? 3 : breakMinutes * 60);
+
+  // 🔊 Load âm thanh 1 lần
   useEffect(() => {
-    if (paused || hasReachedTarget) return;
+    const preload = setTimeout(() => {
+      focusSoundRef.current = new Audio("/sounds/microwave-timer.mp3");
+      focusSoundRef.current.load();
+
+      breakSoundRef.current = new Audio("/sounds/din-ding.mp3");
+      breakSoundRef.current.load();
+
+      console.log("🔊 Sound preloaded");
+    }, 100);
+    return () => clearTimeout(preload);
+  }, []);
+
+  //break sound
+  useEffect(() => {
+    if (mode === "break" && hasReachedBreak && !breakSoundPlayed) {
+      console.log("🔔 Break completed — playing break sound...");
+      breakSoundRef.current
+        ?.play()
+        .then(() => {
+          console.log("✅ Break sound played successfully");
+        })
+        .catch((e) => {
+          console.warn("⚠️ Break sound play blocked:", e);
+        });
+      setBreakSoundPlayed(true);
+    }
+  }, [mode, hasReachedBreak, breakSoundPlayed]);
+
+  // ⏱️ Focus timer
+  useEffect(() => {
+    if (paused) return;
     const interval = setInterval(() => {
       setElapsed((prev) => {
         const next = prev + 1;
@@ -40,13 +100,40 @@ export const FocusTimerModal = ({ targetLabel, targetMinutes, onClose, onEnd }: 
       });
     }, 1000);
     return () => clearInterval(interval);
-  }, [paused, hasReachedTarget, motivationalQuotes.length]);
+  }, [motivationalQuotes.length, paused]);
+
+  // ⏱️ Break timer
+  useEffect(() => {
+    if (paused || mode !== "break") return;
+    const interval = setInterval(() => {
+      setBreakElapsed((prev) => prev + 1);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [paused, mode]);
+
+  // 🔔 Phát âm thanh khi hết thời gian focus
+  useEffect(() => {
+    if (mode === "focus" && hasReachedTarget && !soundPlayed) {
+      console.log("🔔 Focus completed — playing sound...");
+      focusSoundRef.current
+        ?.play()
+        .then(() => {
+          console.log("✅ Sound played successfully");
+        })
+        .catch((e) => {
+          console.warn("⚠️ Sound play blocked:", e);
+        });
+      setSoundPlayed(true);
+    }
+  }, [mode, hasReachedTarget, soundPlayed]);
 
   const format = (s: number) => {
     const h = Math.floor(s / 3600);
     const m = Math.floor((s % 3600) / 60);
     const sec = s % 60;
-    return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}:${sec.toString().padStart(2, "0")}`;
+    return `${h.toString().padStart(2, "0")}:${m
+      .toString()
+      .padStart(2, "0")}:${sec.toString().padStart(2, "0")}`;
   };
 
   return (
@@ -54,29 +141,76 @@ export const FocusTimerModal = ({ targetLabel, targetMinutes, onClose, onEnd }: 
       <div className="relative flex h-[420px] w-[360px] flex-col justify-between rounded-xl border border-yellow-200 bg-yellow-50 p-8 text-center shadow-lg">
         {/* ❌ Close */}
         <button
-          onClick={onClose}
+          onClick={() => {
+            if (mode === "focus" && !hasReachedTarget) {
+              setShowConfirm(true); // 👉 mở modal xác nhận
+            } else {
+              onClose(); // ✅ nếu break mode hoặc đã hết giờ ➜ đóng bình thường
+            }
+          }}
           className="absolute top-3 right-3 text-lg text-slate-600 hover:text-slate-800"
         >
           ✕
         </button>
+        {showConfirm && (
+          <ConfirmModal
+            title="End Focus Early?"
+            message={`You're ending the session early.
+It won't be recorded as a completed focus — are you sure you want to exit?`}
+            onConfirm={async () => {
+              setShowConfirm(false);
+              if (sessionId) {
+                await dispatch(deleteSessionThunk(sessionId)); // ✅ gọi API xóa trong redux
+              }
+              onClose(); // 👈 xác nhận xong thì đóng
+            }}
+            onCancel={() => {
+              setShowConfirm(false); // 👈 hủy thì giữ lại modal focus
+            }}
+          />
+        )}
 
         {/* 🕐 Title */}
-        <h2 className="text-xl font-semibold text-yellow-800">{targetLabel}</h2>
+        <h2 className="text-xl font-semibold text-yellow-800">
+          {mode === "break"
+            ? `Focus (${format(elapsed)})`
+            : `Focus (${targetMinutes} min)`}
+        </h2>
+        {mode === "break" && (
+          <span className="mt-1 inline-block rounded-full bg-yellow-300 px-3 py-1 text-xs font-medium text-yellow-800">
+            Break Mode
+          </span>
+        )}
 
-        {/* ⏱️ Timer & quote */}
+        {/* ⏱️ Main timer & quote */}
         <div className="flex flex-1 flex-col items-center justify-center">
-          <div className="text-4xl font-bold text-slate-700">{format(elapsed)}</div>
-          <p className="mt-3 max-w-[80%] text-sm text-yellow-700 italic">{currentQuote}</p>
+          <div className="text-4xl font-bold text-slate-700">
+            {mode === "focus" ? format(elapsed) : format(currentBreakCountdown)}
+          </div>
+          <p className="mt-3 max-w-[80%] text-sm text-yellow-700 italic">
+            {currentQuote}
+          </p>
         </div>
 
-        {/* 🎯 Control button */}
+        {/* 🎯 Controls */}
         <div className="flex justify-center">
-          {hasReachedTarget ? (
+          {mode === "break" ? (
             <button
               onClick={onEnd}
-              className="rounded-md bg-green-600 px-6 py-3 text-white font-semibold text-sm hover:bg-green-700"
+              className="rounded-md bg-green-600 px-6 py-3 text-sm font-semibold text-white hover:bg-green-700"
             >
-                End Session
+              Done
+            </button>
+          ) : showDevEndButton || hasReachedTarget ? (
+            <button
+              onClick={() => {
+                setMode("break");
+                setPaused(false);
+                setBreakSoundPlayed(false);
+              }}
+              className="rounded-md bg-yellow-600 px-6 py-3 text-sm font-semibold text-white hover:bg-yellow-700"
+            >
+              End Session
             </button>
           ) : (
             <button
@@ -84,16 +218,31 @@ export const FocusTimerModal = ({ targetLabel, targetMinutes, onClose, onEnd }: 
               className="rounded-full bg-yellow-500 p-5 transition duration-200 hover:bg-yellow-600"
             >
               {paused ? (
-                // ▶️ Resume Icon
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
-                  className="h-10 w-10 text-white" style={{ transform: "translateX(3px)" }}>
-                  <path fillRule="evenodd" d="M4.5 5.653c0-1.427 1.529-2.33 2.779-1.643l11.54 6.347c1.295.712 1.295 2.573 0 3.286L7.28 19.99c-1.25.687-2.779-.217-2.779-1.643V5.653Z" clipRule="evenodd" />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  className="h-10 w-10 text-white"
+                  style={{ transform: "translateX(3px)" }}
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M4.5 5.653c0-1.427 1.529-2.33 2.779-1.643l11.54 6.347c1.295.712 1.295 2.573 0 3.286L7.28 19.99c-1.25.687-2.779-.217-2.779-1.643V5.653Z"
+                    clipRule="evenodd"
+                  />
                 </svg>
               ) : (
-                // ⏸️ Pause Icon
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
-                  className="h-10 w-10 text-white">
-                  <path fillRule="evenodd" d="M6.75 5.25a.75.75 0 0 1 .75-.75H9a.75.75 0 0 1 .75.75v13.5a.75.75 0 0 1-.75.75H7.5a.75.75 0 0 1-.75-.75V5.25Zm7.5 0A.75.75 0 0 1 15 4.5h1.5a.75.75 0 0 1 .75.75v13.5a.75.75 0 0 1-.75.75H15a.75.75 0 0 1-.75-.75V5.25Z" clipRule="evenodd" />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  className="h-10 w-10 text-white"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M6.75 5.25a.75.75 0 0 1 .75-.75H9a.75.75 0 0 1 .75.75v13.5a.75.75 0 0 1-.75.75H7.5a.75.75 0 0 1-.75-.75V5.25Zm7.5 0A.75.75 0 0 1 15 4.5h1.5a.75.75 0 0 1 .75.75v13.5a.75.75 0 0 1-.75.75H15a.75.75 0 0 1-.75-.75V5.25Z"
+                    clipRule="evenodd"
+                  />
                 </svg>
               )}
             </button>

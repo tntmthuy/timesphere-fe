@@ -33,48 +33,53 @@ export const FocusHistoryCard = ({ sessions, loading = false }: Props) => {
             No focus sessions recorded yet. Start your first session!
           </p>
         ) : (
-          sessions.map((session) => {
-            const isCancelled = session.status === "CANCELLED";
-            const date = session.startedAt ? new Date(session.startedAt) : null;
+          sessions
+            .filter((session) => session.status !== "CANCELLED")
+            .map((session) => {
+              const isCancelled = session.status === "CANCELLED";
+              const date = session.startedAt
+                ? new Date(session.startedAt)
+                : null;
 
-            const timestamp = date
-              ? `${date.toLocaleDateString("en-GB")} • ${date.toLocaleTimeString(
-                  "en-GB",
-                  { hour: "2-digit", minute: "2-digit" },
-                )}`
-              : "Chưa rõ thời gian";
+              const timestamp = date
+                ? `${date.toLocaleDateString("en-GB")} • ${date.toLocaleTimeString(
+                    "en-GB",
+                    { hour: "2-digit", minute: "2-digit" },
+                  )}`
+                : "Chưa rõ thời gian";
 
-            return (
-              <div
-                key={session.id}
-                className={`rounded-md border p-4 shadow-sm transition ${
-                  isCancelled
-                    ? "border-red-400 bg-red-100 hover:bg-red-200"
-                    : "border-amber-300 bg-amber-100 hover:bg-amber-200"
-                }`}
-              >
-                <div className="mb-2 text-xs text-amber-800">{timestamp}</div>
-
-                {session.description && (
-                  <div
-                    className={`mb-2 text-sm ${
-                      isCancelled ? "text-red-700" : "text-slate-800"
-                    }`}
-                  >
-                    {isCancelled ? "⚠️ Interrupted:" : ""} {session.description}
-                  </div>
-                )}
-
+              return (
                 <div
-                  className={`text-lg font-bold ${
-                    isCancelled ? "text-red-700" : "text-amber-900"
+                  key={session.id}
+                  className={`rounded-md border p-4 shadow-sm transition ${
+                    isCancelled
+                      ? "border-red-400 bg-red-100 hover:bg-red-200"
+                      : "border-amber-300 bg-amber-100 hover:bg-amber-200"
                   }`}
                 >
-                  {formatMinutes(session.actualMinutes)}
+                  <div className="mb-2 text-xs text-amber-800">{timestamp}</div>
+
+                  {session.description && (
+                    <div
+                      className={`mb-2 text-sm ${
+                        isCancelled ? "text-red-700" : "text-slate-800"
+                      }`}
+                    >
+                      {isCancelled ? "⚠️ Interrupted:" : ""}{" "}
+                      {session.description}
+                    </div>
+                  )}
+
+                  <div
+                    className={`text-lg font-bold ${
+                      isCancelled ? "text-red-700" : "text-amber-900"
+                    }`}
+                  >
+                    {formatMinutes(session.actualMinutes)}
+                  </div>
                 </div>
-              </div>
-            );
-          })
+              );
+            })
         )}
       </div>
     </div>

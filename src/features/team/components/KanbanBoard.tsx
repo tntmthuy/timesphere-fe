@@ -92,9 +92,11 @@ export const KanbanBoard = ({ workspaceId, activeTab }: Props) => {
           await api.delete(`/api/kanban/column/${active.id}`, {
             headers: { Authorization: `Bearer ${token}` },
           });
+          toast.dismiss();
           toast.success("Column deleted!");
           dispatch(fetchBoardThunk(workspaceId)); // hoặc removeColumnLocal nếu có
         } catch {
+          toast.dismiss();
           toast.error("Failed to delete column.");
         }
         return;
@@ -138,6 +140,7 @@ export const KanbanBoard = ({ workspaceId, activeTab }: Props) => {
         toast.dismiss();
         toast.success("Moved column!");
       } catch {
+        toast.dismiss();
         toast.error("You don’t have permission to move column.");
       }
 

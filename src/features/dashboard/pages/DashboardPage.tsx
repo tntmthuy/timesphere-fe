@@ -1,61 +1,53 @@
-// ./features/dashboard/pages/DashboardPage.tsx
-
-import { useAppSelector } from "../../../state/hooks";
-import { Link } from "react-router-dom";
+import { useAppDispatch, useAppSelector } from "../../../state/hooks";
+import { useEffect } from "react";
+import { fetchAllUserFocusStatsThunk } from "../../focus/focusSlice";
+import { fetchAssignedTasksThunk } from "../../team/kanbanSlice";
+import { fetchUserSubscriptionThunk } from "../../subscription/subscriptionSlice";
 import { UserStatusCard } from "../components/UserStatusCard";
+import { FocusLeaderboard } from "../components/FocusLeaderboard";
+import { AssignedTaskList } from "../components/AssignedTaskList";
 
 export const DashboardPage = () => {
+  const dispatch = useAppDispatch();
   const user = useAppSelector((state) => state.auth.user);
+
+  useEffect(() => {
+    dispatch(fetchAllUserFocusStatsThunk());
+    dispatch(fetchAssignedTasksThunk());
+    dispatch(fetchUserSubscriptionThunk());
+  }, [dispatch]);
 
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-slate-50 px-20 py-14">
-      {/* 🎯 Greeting */}
-      <h1 className="mb-2 text-3xl font-bold text-slate-800">
-        Welcome back, {user.firstname}
-      </h1>
-      <UserStatusCard user={user} />
-
-
-      {/* 👥 Premium & FREE view */}
-      {!user.isAdmin && (
-        <>
-          <h2 className="mb-4 text-xl font-semibold text-slate-800">
-            Your Teams
-          </h2>
-
-          {user.role !== "PREMIUM" && (
-            <Link
-              to="/mainpage/upgrade"
-              className="rounded bg-slate-100 px-4 py-2 text-sm font-medium text-yellow-800 hover:bg-yellow-200"
-            >
-              Upgrade to unlock team creation
-            </Link>
-          )}
-        </>
-      )}
-
-      {/* 🔐 Admin View */}
-      {user.isAdmin && (
-        <div className="mt-10">
-          <h2 className="mb-4 text-xl font-semibold text-slate-800">
-            🔐 Admin Panel
-          </h2>
-          <Link
-            to="/admin/users"
-            className="mr-4 rounded bg-red-500 px-4 py-2 text-sm text-white hover:bg-red-600"
-          >
-            Manage Users
-          </Link>
-          <Link
-            to="/admin/teams"
-            className="rounded bg-slate-700 px-4 py-2 text-sm text-white hover:bg-slate-800"
-          >
-            View All Teams
-          </Link>
+    <div className="min-h-screen bg-yellow-50 px-6 py-12 md:px-12 md:py-16">
+      {/* Header */}
+      <header className="mb-10">
+        <h1 className="text-3xl font-bold text-yellow-900">
+          Have a nice day, {user.firstname}
+        </h1>
+        <p className="mt-2 text-sm text-yellow-700">
+          Here's your personal productivity dashboard
+        </p>
+        <div className="mt-2 flex gap-2">
+          {[...Array(3)].map((_, idx) => (
+            <span key={idx} className="h-2 w-2 rounded-full bg-yellow-400" />
+          ))}
         </div>
-      )}
+        <div className="mt-4">
+          <UserStatusCard user={user} />
+        </div>
+      </header>
+
+      {/* ✅ Giao diện full-width cho task list */}
+      <section className="mt-10">
+        <AssignedTaskList />
+      </section>
+
+      {/* Leaderboard */}
+      <footer className="mt-20">
+        <FocusLeaderboard />
+      </footer>
     </div>
   );
 };

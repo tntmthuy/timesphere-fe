@@ -1,35 +1,97 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import axios from "axios";
+import { createSlice, createAsyncThunk, type PayloadAction } from "@reduxjs/toolkit";
+import { api } from "../../api/axios";
 
-export const fetchPlansThunk = createAsyncThunk("subscription/fetchPlans", async () => {
-  const token = localStorage.getItem("token");
-  const res = await axios.get("/api/plans", {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-  return res.data;
+// 📦 Gói đăng ký
+export interface SubscriptionInfo {
+  planType: "WEEKLY" | "MONTHLY" | "YEARLY";
+  status: "ACTIVE" | "EXPIRED" | "CANCELLED";
+  startDate: string;
+  endDate: string;
+}
+
+// 🎯 Lấy danh sách gói (UpgradePage dùng)
+export const fetchPlansThunk = createAsyncThunk<
+  SubscriptionInfo[],
+  void,
+  { rejectValue: string }
+>("subscription/fetchPlans", async (_, { rejectWithValue }) => {
+  try {
+    const res = await api.get("/api/plans");
+    return res.data as SubscriptionInfo[];
+  } catch {
+    return rejectWithValue("Không thể tải danh sách gói");
+  }
 });
 
-const slice = createSlice({
+// 🎯 Lấy thông tin gói của user
+export const fetchUserSubscriptionThunk = createAsyncThunk<
+  SubscriptionInfo,
+  void,
+  { rejectValue: string }
+>("subscription/fetchInfo", async (_, { rejectWithValue }) => {
+  try {
+    const res = await api.get("/api/plans/subscription/me");
+    return res.data.data as SubscriptionInfo;
+  } catch {
+    return rejectWithValue("Không thể tải thông tin gói đăng ký");
+  }
+});
+
+// ✅ State & Slice
+interface SubscriptionState {
+  plans: SubscriptionInfo[];
+  info: SubscriptionInfo | null;
+  loading: boolean;
+  error: string | null;
+}
+
+const initialState: SubscriptionState = {
+  plans: [],
+  info: null,
+  loading: false,
+  error: null,
+};
+
+const subscriptionSlice = createSlice({
   name: "subscription",
-  initialState: {
-    plans: [],
-    loading: false,
-  },
+  initialState,
   reducers: {},
   extraReducers: (builder) => {
-    builder.addCase(fetchPlansThunk.pending, (state) => {
-      state.loading = true;
-    });
-    builder.addCase(fetchPlansThunk.fulfilled, (state, action) => {
-      state.plans = action.payload;
-      state.loading = false;
-    });
-    builder.addCase(fetchPlansThunk.rejected, (state) => {
-      state.loading = false;
-    });
+    builder
+      // ⬇️ getPlans
+      .addCase(fetchPlansThunk.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchPlansThunk.fulfilled, (state, action: PayloadAction<SubscriptionInfo[]>) => {
+        state.plans = action.payload;
+        state.loading = false;
+      })
+      .addCase(fetchPlansThunk.rejected, (state, action) => {
+        state.loading = false;
+        state.error =
+          typeof action.payload === "string"
+            ? action.payload
+            : "Không thể tải danh sách gói";
+      })
+
+      // ⬇️ getUser subscription
+      .addCase(fetchUserSubscriptionThunk.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchUserSubscriptionThunk.fulfilled, (state, action: PayloadAction<SubscriptionInfo>) => {
+        state.info = action.payload;
+        state.loading = false;
+      })
+      .addCase(fetchUserSubscriptionThunk.rejected, (state, action) => {
+        state.loading = false;
+        state.error =
+          typeof action.payload === "string"
+            ? action.payload
+            : "Không thể tải thông tin đăng ký";
+      });
   },
 });
 
-export default slice.reducer;
+export default subscriptionSlice.reducer;

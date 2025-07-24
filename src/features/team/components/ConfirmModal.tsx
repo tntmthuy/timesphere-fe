@@ -1,3 +1,4 @@
+// src/features/team/components/ConfirmModal.tsx
 export function ConfirmModal({
   title,
   message,

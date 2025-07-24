@@ -3,7 +3,7 @@
 import { createSlice, createAsyncThunk, type PayloadAction } from "@reduxjs/toolkit";
 import { api } from "../../api/axios";
 import axios from "axios";
-import type { TaskDto } from "./task";
+import type { AssignedTask, TaskDto } from "./task";
 import type { KanbanColumnDto } from "./kanban";
 import type { SubTask } from "./subtask";
 import toast from "react-hot-toast";
@@ -20,6 +20,7 @@ interface KanbanState {
   tasks: TaskDto[];               // ✅ thêm mảng task
   isLoading: boolean;
   error: string | null;
+  assignedTasks: AssignedTask[];
 }
 
 const initialState: KanbanState = {
@@ -27,7 +28,23 @@ const initialState: KanbanState = {
   tasks: [],
   isLoading: false,
   error: null,
+  assignedTasks: [],
 };
+
+//danh sách task được gán
+export const fetchAssignedTasksThunk = createAsyncThunk<
+  AssignedTask[],
+  void,
+  { rejectValue: string }
+>("kanban/fetchAssignedTasks", async (_, { rejectWithValue }) => {
+  try {
+    const res = await api.get("/api/kanban/tasks/assigned-to-me");
+    const tasks = Array.isArray(res.data.data) ? res.data.data : [];
+    return tasks;
+  } catch {
+    return rejectWithValue("Không thể tải danh sách nhiệm vụ được giao.");
+  }
+});
 
 //tải bảng Kanban
 export const fetchBoardThunk = createAsyncThunk(
@@ -196,6 +213,18 @@ moveTaskLocal: (
   },
   extraReducers: (builder) => {
     builder
+      .addCase(fetchAssignedTasksThunk.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(fetchAssignedTasksThunk.fulfilled, (state, action) => {
+        state.assignedTasks = action.payload;
+        state.isLoading = false;
+      })
+      .addCase(fetchAssignedTasksThunk.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload ?? "Lỗi tải nhiệm vụ.";
+      })
       .addCase(createColumnThunk.pending, (state) => {
         state.isLoading = true;
         state.error = null;

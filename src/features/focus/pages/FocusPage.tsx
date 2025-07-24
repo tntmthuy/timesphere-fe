@@ -22,8 +22,8 @@ const formatMinutes = (total: number): string => {
 };
 
 export const FocusPage = () => {
-  const [focusTime, setFocusTime] = useState("25 min");
-  const [breakTime, setBreakTime] = useState("5 min");
+  const [focusTime, setFocusTime] = useState("25"); 
+  const [breakTime, setBreakTime] = useState("5");
   const [description, setDescription] = useState("");
   const [showTimer, setShowTimer] = useState(false);
   const [activeSessionId, setActiveSessionId] = useState<number | null>(null);
@@ -42,6 +42,7 @@ export const FocusPage = () => {
       const res = await dispatch(startSessionThunk({ targetMinutes: target, description })).unwrap();
       setActiveSessionId(res.id);
       setShowTimer(true);
+      setDescription("");
     } catch {
       // handle error if needed
     }
@@ -52,7 +53,8 @@ export const FocusPage = () => {
     try {
       await dispatch(endSessionThunk({
         sessionId: activeSessionId,
-        actualMinutes: parseInt(focusTime),
+        // actualMinutes: parseInt(focusTime),
+        actualMinutes: 1,
       })).unwrap();
 
       dispatch(fetchCompletedSessionsThunk());
@@ -97,8 +99,11 @@ export const FocusPage = () => {
           />
           {showTimer && activeSessionId && (
             <FocusTimerModal
+            sessionId={activeSessionId} 
               targetLabel={`Focus (${focusTime})`}
-              targetMinutes={parseInt(focusTime)}
+              // targetMinutes={parseInt(focusTime)}
+              targetMinutes={parseFloat(focusTime)}
+              breakMinutes={Number(breakTime)}
               onEnd={handleEndSession}
               onClose={() => setShowTimer(false)}
             />

@@ -26,6 +26,14 @@ export type TaskDto = {
   columnId: string;
 };
 
+export interface AssignedTask {
+  taskId: string;
+  title: string;
+  teamId: string;
+  teamName: string;
+  teamUrl: string;
+}
+
 export const createTask = async (
   columnId: string,
   title: string,

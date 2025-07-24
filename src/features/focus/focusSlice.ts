@@ -15,16 +15,24 @@ export type FocusSessionResponse = {
   message: string;
 };
 
+export type UserFocusStats = {
+  name: string;
+  avatar: string | null;
+  totalMinutes: number;
+};
+
 type FocusState = {
   sessions: FocusSessionResponse[];
   loading: boolean;
   weeklyMinutes: number;
+  userStats: UserFocusStats[];
 };
 
 const initialState: FocusState = {
   sessions: [],
   loading: false,
   weeklyMinutes: 0,
+  userStats: [],
 };
 
 // 🎯 Thunk: Lấy toàn bộ phiên đã hoàn thành
@@ -88,6 +96,35 @@ export const endSessionThunk = createAsyncThunk<
   }
 });
 
+// 🚀 Thunk: Xóa phiên tập trung
+export const deleteSessionThunk = createAsyncThunk<
+  number, // trả về sessionId đã xóa
+  number, // input là sessionId
+  { state: RootState }
+>("focus/deleteSession", async (sessionId, { rejectWithValue }) => {
+  try {
+    await api.delete(`/api/focus/${sessionId}`);
+    return sessionId;
+  } catch {
+    return rejectWithValue("FAILED_TO_DELETE_SESSION");
+  }
+});
+
+//focus stats
+export const fetchAllUserFocusStatsThunk = createAsyncThunk<
+  UserFocusStats[],
+  void,
+  { state: RootState }
+>("focus/fetchAllUserFocusStats", async (_, { rejectWithValue }) => {
+  try {
+    const res = await api.get("/api/focus/stats/all");
+    const data = Array.isArray(res.data.data) ? res.data.data : [];
+    return data;
+  } catch {
+    return rejectWithValue("FAILED_TO_FETCH_FOCUS_STATS");
+  }
+});
+
 //slice
 const focusSlice = createSlice({
   name: "focus",
@@ -120,7 +157,13 @@ const focusSlice = createSlice({
                 state.sessions[index] = updated;
             }
         })
-        
+      .addCase(deleteSessionThunk.fulfilled, (state, action) => {
+        const deletedId = action.payload;
+        state.sessions = state.sessions.filter((s) => s.id !== deletedId);
+      })
+      .addCase(fetchAllUserFocusStatsThunk.fulfilled, (state, action) => {
+        state.userStats = action.payload;
+      })
       ;
       
   },
