@@ -1,4 +1,4 @@
-// ProfileDetailModal.tsx
+// src/features/sidebar/components/ProfileDetailModal.tsx
 import { useSelector } from "react-redux";
 import { useState } from "react";
 import { useAppDispatch } from "../../../state/hooks";

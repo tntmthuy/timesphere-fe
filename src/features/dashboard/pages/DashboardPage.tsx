@@ -4,8 +4,8 @@ import { fetchAllUserFocusStatsThunk } from "../../focus/focusSlice";
 import { fetchAssignedTasksThunk } from "../../team/kanbanSlice";
 import { fetchUserSubscriptionThunk } from "../../subscription/subscriptionSlice";
 import { UserStatusCard } from "../components/UserStatusCard";
-import { FocusLeaderboard } from "../components/FocusLeaderboard";
 import { AssignedTaskList } from "../components/AssignedTaskList";
+import { FloatingFocusLeaderboard } from "../components/FloatingFocusLeaderboard";
 
 export const DashboardPage = () => {
   const dispatch = useAppDispatch();
@@ -20,7 +20,7 @@ export const DashboardPage = () => {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-yellow-50 px-6 py-12 md:px-12 md:py-16">
+    <div className="relative min-h-screen bg-yellow-50 px-6 py-12 md:px-12 md:py-16">
       {/* Header */}
       <header className="mb-10">
         <h1 className="text-3xl font-bold text-yellow-900">
@@ -39,15 +39,13 @@ export const DashboardPage = () => {
         </div>
       </header>
 
-      {/* ✅ Giao diện full-width cho task list */}
+      {/* Task list */}
       <section className="mt-10">
         <AssignedTaskList />
       </section>
 
-      {/* Leaderboard */}
-      <footer className="mt-20">
-        <FocusLeaderboard />
-      </footer>
+      {/* Nút mở sidebar leaderboard */}
+      <FloatingFocusLeaderboard />
     </div>
   );
 };

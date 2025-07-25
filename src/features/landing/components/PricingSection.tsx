@@ -1,7 +1,13 @@
-// import { PageSectionWrapper } from "./PageSectionWrapper";
 import { PlanCard } from "./PlanCard";
 
 export const PricingSection = () => {
+  const sharedFeatures = [
+    "All features included",
+    "No ads",
+    "Sync across devices",
+    "Priority support",
+  ];
+
   return (
     <section id="pricing" className="bg-[#FFDE70] px-0 py-20 text-black">
       <div className="w-full max-w-[1000px] mx-auto px-4">
@@ -9,30 +15,26 @@ export const PricingSection = () => {
           <h2 className="text-3xl font-bold inline-block px-4 py-1 rounded-md">
             Choose Your Plan
           </h2>
+          <p className="text-sm text-yellow-900 mt-2">
+            Same features, just better value over time!
+          </p>
         </div>
+
         <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 md:grid-cols-3">
           <PlanCard
-            duration="7 Days"
-            price="$2.99"
-            features={["All core features", "No ads", "Priority support"]}
+            duration="Weekly"
+            price="$1.00"
+            features={sharedFeatures}
           />
           <PlanCard
-            duration="1 Month"
-            price="$7.99"
-            features={[
-              "Everything in 7-day plan",
-              "Sync across devices",
-              "Usage reports",
-            ]}
+            duration="Monthly"
+            price="$3.00"
+            features={sharedFeatures}
           />
           <PlanCard
-            duration="1 Year"
-            price="$59.99"
-            features={[
-              "All features",
-              "Early access to new tools",
-              "Dedicated support",
-            ]}
+            duration="Yearly"
+            price="$25.00"
+            features={sharedFeatures}
             isPopular
           />
         </div>

@@ -32,6 +32,7 @@ export interface AssignedTask {
   teamId: string;
   teamName: string;
   teamUrl: string;
+  dateDue?: string;
 }
 
 export const createTask = async (

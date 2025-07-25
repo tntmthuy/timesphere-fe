@@ -134,8 +134,18 @@ export const updateAvatarThunk = createAsyncThunk(
   }
 );
 
+type ProfileInfoPayload = {
+  firstname: string;
+  lastname: string;
+  gender: "MALE" | "FEMALE" | "UNSURE";
+};
+
+
 //update info
-export const updateProfileInfoThunk = createAsyncThunk(
+export const updateProfileInfoThunk = createAsyncThunk<
+  Partial<User>, // ✅ Cho phép thiếu các field như id, email
+  ProfileInfoPayload
+>(
   "auth/updateProfileInfo",
   async (payload, { rejectWithValue }) => {
     try {
@@ -148,7 +158,16 @@ export const updateProfileInfoThunk = createAsyncThunk(
 );
 
 //change password
-export const changePasswordThunk = createAsyncThunk(
+type ChangePasswordPayload = {
+  currentPassword: string;
+  newPassword: string;
+  confirmationPassword: string;
+};
+
+export const changePasswordThunk = createAsyncThunk<
+  string, // hoặc kiểu trả về bạn muốn
+  ChangePasswordPayload
+>(
   "auth/changePassword",
   async (payload, { rejectWithValue }) => {
     try {
@@ -239,11 +258,10 @@ const authSlice = createSlice({
         };
       })
       .addCase(updateProfileInfoThunk.fulfilled, (state, action) => {
-        state.user = {
-          ...state.user,
-          ...action.payload,
-        };
-      })
+  if (state.user) {
+    state.user = { ...state.user, ...action.payload }; // ✅ kiểu hợp lệ
+  }
+})
       .addCase(fetchUserProfileThunk.rejected, (state) => {
         state.token = null;
         state.user = null;

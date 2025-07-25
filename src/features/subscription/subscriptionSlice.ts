@@ -9,15 +9,22 @@ export interface SubscriptionInfo {
   endDate: string;
 }
 
+export interface SubscriptionPlan {
+  type: "WEEKLY" | "MONTHLY" | "YEARLY";
+  price: number;
+  currency: string;
+  displayName: string;
+}
+
 // 🎯 Lấy danh sách gói (UpgradePage dùng)
 export const fetchPlansThunk = createAsyncThunk<
-  SubscriptionInfo[],
+  SubscriptionPlan[],
   void,
   { rejectValue: string }
 >("subscription/fetchPlans", async (_, { rejectWithValue }) => {
   try {
     const res = await api.get("/api/plans");
-    return res.data as SubscriptionInfo[];
+    return res.data as SubscriptionPlan[];
   } catch {
     return rejectWithValue("Không thể tải danh sách gói");
   }
@@ -39,7 +46,7 @@ export const fetchUserSubscriptionThunk = createAsyncThunk<
 
 // ✅ State & Slice
 interface SubscriptionState {
-  plans: SubscriptionInfo[];
+  plans: SubscriptionPlan[];
   info: SubscriptionInfo | null;
   loading: boolean;
   error: string | null;
@@ -63,7 +70,7 @@ const subscriptionSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(fetchPlansThunk.fulfilled, (state, action: PayloadAction<SubscriptionInfo[]>) => {
+      .addCase(fetchPlansThunk.fulfilled, (state, action: PayloadAction<SubscriptionPlan[]>) => {
         state.plans = action.payload;
         state.loading = false;
       })

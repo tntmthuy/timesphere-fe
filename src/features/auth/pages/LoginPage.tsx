@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../../../state/hooks";
 import { fetchUserProfileThunk, loginThunk } from "../authSlice";
+import { store } from "../../../state/store";
 
 export const LoginPage = () => {
   const dispatch = useAppDispatch();
@@ -19,22 +20,27 @@ export const LoginPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await dispatch(loginThunk(form)).unwrap();
-      await dispatch(fetchUserProfileThunk()).unwrap();
-      navigate("/mainpage");
+      const result = await dispatch(loginThunk(form));
+
+      if (result.meta.requestStatus === "fulfilled") {
+        await dispatch(fetchUserProfileThunk());
+        const user = store.getState().auth.user;
+
+        if (user?.isAdmin) {
+          navigate("/admin");
+        } else {
+          navigate("/mainpage");
+        }
+      }
     } catch (err) {
       if (err === "MFA_REQUIRED") {
         navigate("/verify", { state: { email: form.email } });
       } else {
         console.warn("⛔️ Login thất bại:", err);
-
-        // ✨ Gán lỗi rõ ràng không ảnh hưởng thunk
-        if (err === "Invalid credentials or account not found.") {
-          if (form.email.includes("@") && form.password.length >= 6) {
-            setFormError("Email or password is incorrect.");
-          } else {
-            setFormError("Please check your login details.");
-          }
+        if (form.email.includes("@") && form.password.length >= 6) {
+          setFormError("Email or password is incorrect.");
+        } else {
+          setFormError("Please check your login details.");
         }
       }
     }
