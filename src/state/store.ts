@@ -11,6 +11,7 @@ import commentReducer from "../features/team/commentSlice";
 import notificationReducer from "../features/sidebar/notificationSlice";
 import subscriptionReducer from "../features/subscription/subscriptionSlice";
 import focusReducer from "../features/focus/focusSlice";
+import dashboardReducer from "../features/admin/dashboardSlice";
 
 // 🔧 Gộp reducers
 const rootReducer = combineReducers({
@@ -21,6 +22,7 @@ const rootReducer = combineReducers({
   notification: notificationReducer,
   subscription: subscriptionReducer,
   focus: focusReducer,
+  dashboard: dashboardReducer,
 });
 
 // 🔒 Cấu hình persist

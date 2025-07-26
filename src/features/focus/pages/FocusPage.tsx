@@ -16,20 +16,23 @@ import { useAppDispatch } from "../../../state/hooks";
 const formatMinutes = (total: number): string => {
   const hours = Math.floor(total / 60);
   const minutes = total % 60;
-  if (hours > 0 && minutes > 0) return `${hours} hour${hours > 1 ? "s" : ""} ${minutes} minute${minutes > 1 ? "s" : ""}`;
+  if (hours > 0 && minutes > 0)
+    return `${hours} hour${hours > 1 ? "s" : ""} ${minutes} minute${minutes > 1 ? "s" : ""}`;
   if (hours > 0) return `${hours} hour${hours > 1 ? "s" : ""}`;
   return `${minutes} minute${minutes > 1 ? "s" : ""}`;
 };
 
 export const FocusPage = () => {
-  const [focusTime, setFocusTime] = useState("25"); 
+  const [focusTime, setFocusTime] = useState("25");
   const [breakTime, setBreakTime] = useState("5");
   const [description, setDescription] = useState("");
   const [showTimer, setShowTimer] = useState(false);
   const [activeSessionId, setActiveSessionId] = useState<number | null>(null);
 
   const dispatch = useAppDispatch();
-  const { sessions, loading, weeklyMinutes } = useSelector((state: RootState) => state.focus);
+  const { sessions, loading, weeklyMinutes } = useSelector(
+    (state: RootState) => state.focus,
+  );
 
   useEffect(() => {
     dispatch(fetchCompletedSessionsThunk());
@@ -39,7 +42,9 @@ export const FocusPage = () => {
   const handleStartFocus = async () => {
     try {
       const target = parseInt(focusTime);
-      const res = await dispatch(startSessionThunk({ targetMinutes: target, description })).unwrap();
+      const res = await dispatch(
+        startSessionThunk({ targetMinutes: target, description }),
+      ).unwrap();
       setActiveSessionId(res.id);
       setShowTimer(true);
       setDescription("");
@@ -51,11 +56,13 @@ export const FocusPage = () => {
   const handleEndSession = async () => {
     if (!activeSessionId) return;
     try {
-      await dispatch(endSessionThunk({
-        sessionId: activeSessionId,
-        // actualMinutes: parseInt(focusTime),
-        actualMinutes: 1,
-      })).unwrap();
+      await dispatch(
+        endSessionThunk({
+          sessionId: activeSessionId,
+          // actualMinutes: parseInt(focusTime),
+          actualMinutes: 1,
+        }),
+      ).unwrap();
 
       dispatch(fetchCompletedSessionsThunk());
       dispatch(fetchWeeklyMinutesThunk());
@@ -80,14 +87,15 @@ export const FocusPage = () => {
           ))}
         </div>
         <p className="mt-6 rounded-md bg-amber-200 p-3 text-sm font-semibold text-yellow-900">
-          You've stayed focused for <strong>{formatMinutes(weeklyMinutes)}</strong> this week.
+          You've stayed focused for{" "}
+          <strong>{formatMinutes(weeklyMinutes)}</strong> this week.
         </p>
       </div>
 
       {/* 🧱 Layout: Left ➜ Form + Timer | Right ➜ History */}
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 items-stretch">
+      <div className="grid grid-cols-1 items-stretch gap-6 md:grid-cols-2">
         {/* ⬅️ Left */}
-        <div className="flex flex-col gap-4 h-full">
+        <div className="flex h-full flex-col gap-4">
           <FocusSessionForm
             focusTime={focusTime}
             breakTime={breakTime}
@@ -99,7 +107,7 @@ export const FocusPage = () => {
           />
           {showTimer && activeSessionId && (
             <FocusTimerModal
-            sessionId={activeSessionId} 
+              sessionId={activeSessionId}
               targetLabel={`Focus (${focusTime})`}
               // targetMinutes={parseInt(focusTime)}
               targetMinutes={parseFloat(focusTime)}

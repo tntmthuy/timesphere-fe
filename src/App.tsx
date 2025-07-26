@@ -17,6 +17,10 @@ import { NotificationPage } from "./features/sidebar/pages/NotificationPage";
 import { UpgradePage } from "./features/subscription/pages/UpgradePage";
 import { ProtectedAdminRoute } from "./features/admin/components/ProtectedAdminRoute";
 import { AdminPage } from "./features/admin/pages/AdminPage";
+import { Dashboard } from "./features/admin/components/Dashboard";
+import { Users } from "./features/admin/components/Users";
+import { Teams } from "./features/admin/components/Teams";
+import { PaymentsLite } from "./features/admin/components/Payment";
 
 function App() {
   const dispatch = useAppDispatch();
@@ -43,7 +47,12 @@ function App() {
           },
           success: {
             icon: (
-              <svg xmlns="http://www.w3.org/2000/svg" fill="#4ade80" viewBox="0 0 24 24" className="h-5 w-5">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="#4ade80"
+                viewBox="0 0 24 24"
+                className="h-5 w-5"
+              >
                 <path
                   fillRule="evenodd"
                   clipRule="evenodd"
@@ -65,7 +74,12 @@ function App() {
           },
           error: {
             icon: (
-              <svg xmlns="http://www.w3.org/2000/svg" fill="#f87171" viewBox="0 0 24 24" className="h-5 w-5">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="#f87171"
+                viewBox="0 0 24 24"
+                className="h-5 w-5"
+              >
                 <path
                   fillRule="evenodd"
                   clipRule="evenodd"
@@ -125,7 +139,10 @@ function App() {
             </ProtectedAdminRoute>
           }
         >
-          
+          <Route index element={<Dashboard />} />
+          <Route path="users" element={<Users />} />
+          <Route path="teams" element={<Teams />} />
+          <Route path="payments" element={<PaymentsLite />} />
         </Route>
       </Routes>
     </>
