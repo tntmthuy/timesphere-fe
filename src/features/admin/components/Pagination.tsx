@@ -1,3 +1,4 @@
+// src\features\admin\components\Pagination.tsx
 type Props = {
   totalPages: number;
   currentPage: number;

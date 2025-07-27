@@ -1,10 +1,26 @@
 // src/features/admin/adminSlice.ts
 import { createSlice, createAsyncThunk, type PayloadAction } from '@reduxjs/toolkit';
 import { api } from '../../api/axios';
+import type { TeamMemberDTO } from '../team/member';
 
 // DTO
 export type Role = 'FREE' | 'PREMIUM' | 'ADMIN';
 export type UserStatus = 'ACTIVE' | 'INACTIVE' | 'BANNED';
+
+export type TeamSummaryDto = {
+  teamId: string;
+  teamName: string;
+  description: string;
+  createdBy: string | null;
+  createdByAvatarUrl: string | null;     
+  ownerFullName: string | null;          
+  ownerAvatarUrl: string | null;         
+  createdAt: string;                     
+  members: TeamMemberDTO[];
+  totalFiles: number;
+  totalComments: number;
+  totalTasks: number;
+};
 
 export type UserSummaryDto = {
   id: string;
@@ -66,19 +82,42 @@ export const deleteUser = createAsyncThunk<
   }
 );
 
+//danh sách nhóm
+export const fetchTeamSummaryList = createAsyncThunk<
+  TeamSummaryDto[], // kiểu giá trị trả về
+  void,             // kiểu arg
+  { rejectValue: string } // 💥 thêm dòng này
+>(
+  'admin/fetchTeamSummaryList',
+  async (_, { rejectWithValue }) => {
+    try {
+      const res = await api.get('/api/admin/teams');
+      return res.data;
+    } catch {
+      return rejectWithValue('Không thể lấy danh sách nhóm');
+    }
+  }
+);
+
 // 🧩 Slice state
 type AdminState = {
   users: UserSummaryDto[];
   loadingUsers: boolean;
   errorUsers: string | null;
   deletingUserId: string | null;
+  teams: TeamSummaryDto[];
+  loadingTeams: boolean;
+  errorTeams: string | null;
 };
 
 const initialState: AdminState = {
   users: [],
   loadingUsers: false,
   errorUsers: null,
-  deletingUserId: null
+  deletingUserId: null,
+  teams: [],
+  loadingTeams: false,
+  errorTeams: null,
 };
 
 // 🍰 Slice
@@ -129,7 +168,20 @@ const adminSlice = createSlice({
       .addCase(deleteUser.rejected, (state, action) => {
         state.errorUsers = action.payload ?? 'Có lỗi khi xoá người dùng';
         state.deletingUserId = null;
-      });
+      })
+      .addCase(fetchTeamSummaryList.pending, (state) => {
+        state.loadingTeams = true;
+        state.errorTeams = null;
+      })
+      .addCase(fetchTeamSummaryList.fulfilled, (state, action: PayloadAction<TeamSummaryDto[]>) => {
+        state.loadingTeams = false;
+        state.teams = action.payload;
+      })
+      .addCase(fetchTeamSummaryList.rejected, (state, action: PayloadAction<string | undefined>) => {
+        state.loadingTeams = false;
+        state.errorTeams = action.payload ?? 'Có lỗi khi lấy danh sách nhóm';
+      })
+      ;
   }
 });
 
