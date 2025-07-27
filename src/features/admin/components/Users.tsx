@@ -4,27 +4,35 @@ import {
   deleteUser,
   fetchUserList,
   updateUserRole,
+  searchUsersByCriteria, // ✅ dùng filter tổng hợp
 } from "../adminSlice";
+
 import type { Role } from "../adminSlice";
+import type { SearchFilters } from "./AdvancedUserFilterBar";
+
 import { ConfirmModal } from "../../team/components/ConfirmModal";
 import { Pagination } from "./Pagination";
 import { UserTable } from "./UserTable";
+import {
+  AdvancedUserFilterBar,
+  type FilterType,
+} from "./AdvancedUserFilterBar";
 
 const ITEMS_PER_PAGE = 10;
 
 export const Users = () => {
   const dispatch = useAppDispatch();
   const { users, loadingUsers, errorUsers } = useAppSelector(
-    (state) => state.admin
+    (state) => state.admin,
   );
-  const [currentPage, setCurrentPage] = useState(1);
 
-  // ✅ Xác nhận đổi vai trò
+  const [currentPage, setCurrentPage] = useState(1);
+  const [filterType, setFilterType] = useState<FilterType>("keyword");
+
   const [pendingUserId, setPendingUserId] = useState<string | null>(null);
   const [pendingUserName, setPendingUserName] = useState<string | null>(null);
   const [pendingRole, setPendingRole] = useState<Role | null>(null);
 
-  // ✅ Xác nhận xoá người dùng
   const [userToDeleteId, setUserToDeleteId] = useState<string | null>(null);
   const [userToDeleteName, setUserToDeleteName] = useState<string | null>(null);
 
@@ -35,32 +43,22 @@ export const Users = () => {
   const totalPages = Math.ceil(users.length / ITEMS_PER_PAGE);
   const paginatedUsers = users.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
+    currentPage * ITEMS_PER_PAGE,
   );
 
-  const handlePageChange = (page: number) => setCurrentPage(page);
-
-  const handleDeleteClick = (id: string) => {
-    const user = users.find((u) => u.id === id);
-    if (user) {
-      setUserToDeleteId(id);
-      setUserToDeleteName(user.fullName);
-    }
+  // ✅ Khi người dùng chọn filter và nhấn Search
+  const handleApplyFilters = (filters: SearchFilters) => {
+    dispatch(searchUsersByCriteria(filters));
+    setCurrentPage(1);
   };
 
-  const confirmDeleteUser = () => {
-    if (userToDeleteId) {
-      dispatch(deleteUser(userToDeleteId));
-    }
-    setUserToDeleteId(null);
-    setUserToDeleteName(null);
+  // ✅ Reset toàn bộ
+  const handleResetFilters = () => {
+    dispatch(fetchUserList());
+    setCurrentPage(1);
   };
 
-  const cancelDeleteUser = () => {
-    setUserToDeleteId(null);
-    setUserToDeleteName(null);
-  };
-
+  // 🔧 Role
   const handleRoleChangeClick = (id: string, newRole: Role) => {
     const user = users.find((u) => u.id === id);
     if (user) {
@@ -85,14 +83,34 @@ export const Users = () => {
     setPendingRole(null);
   };
 
-  if (loadingUsers)
-    return <p className="p-8 text-gray-500 italic">Loading...</p>;
+  // 🔧 Delete
+  const handleDeleteClick = (id: string) => {
+    const user = users.find((u) => u.id === id);
+    if (user) {
+      setUserToDeleteId(id);
+      setUserToDeleteName(user.fullName);
+    }
+  };
+
+  const confirmDeleteUser = () => {
+    if (userToDeleteId) dispatch(deleteUser(userToDeleteId));
+    setUserToDeleteId(null);
+    setUserToDeleteName(null);
+  };
+
+  const cancelDeleteUser = () => {
+    setUserToDeleteId(null);
+    setUserToDeleteName(null);
+  };
+
+  // if (loadingUsers) return <p className="p-8 text-gray-500 italic">Loading...</p>;
   if (errorUsers)
     return <p className="p-8 text-red-600">Error: {errorUsers}</p>;
 
   return (
     <div className="min-h-screen bg-yellow-50 p-8 text-yellow-900">
-      <div className="mb-8">
+      {/* 🧭 Header */}
+      <header className="mb-8">
         <h1 className="text-3xl font-bold">👥 Manage Users</h1>
         <p className="mt-2 text-sm text-yellow-700">
           A quick snapshot of all registered users.
@@ -103,25 +121,35 @@ export const Users = () => {
           ))}
         </div>
         <p className="mt-6 rounded-md bg-amber-200 p-3 font-semibold">
-  There are currently <strong>{users.length} users</strong> in the system.
-</p>
-      </div>
+          There are currently <strong>{users.length} users</strong> in the
+          system.
+        </p>
+      </header>
 
-      {/* 🗂 Bảng người dùng */}
+      {/* 🔎 Filter bar */}
+      <AdvancedUserFilterBar
+        filterType={filterType}
+        onFilterTypeChange={setFilterType}
+        onApplyFilters={handleApplyFilters}
+        onResetFilters={handleResetFilters}
+      />
+
+      {/* 📋 User table */}
       <UserTable
         users={paginatedUsers}
+        loading={loadingUsers}
         onDelete={handleDeleteClick}
         onRoleChangeClick={handleRoleChangeClick}
       />
 
-      {/* 📄 Phân trang */}
+      {/* 🔢 Pagination */}
       <Pagination
         totalPages={totalPages}
         currentPage={currentPage}
-        onPageChange={handlePageChange}
+        onPageChange={(page) => setCurrentPage(page)}
       />
 
-      {/* 🔐 Modal xác nhận đổi vai trò */}
+      {/* 🔐 Confirm role modal */}
       {pendingUserId && pendingRole && (
         <ConfirmModal
           title="Change Role"
@@ -131,7 +159,7 @@ export const Users = () => {
         />
       )}
 
-      {/* 🗑️ Modal xác nhận xoá */}
+      {/* 🗑️ Confirm delete modal */}
       {userToDeleteId && (
         <ConfirmModal
           title="Delete User"

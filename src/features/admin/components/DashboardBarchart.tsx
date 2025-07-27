@@ -24,7 +24,7 @@ ChartJS.register(
 
 const getWeekRangeFromDate = (dateStr: string) => {
   const date = new Date(dateStr);
-  const day = date.getDay(); // 0 = Chủ nhật → về Thứ Hai
+  const day = date.getDay();
   const monday = new Date(date);
   monday.setDate(date.getDate() - ((day + 6) % 7));
   const sunday = new Date(monday);
@@ -41,8 +41,8 @@ const DashboardBarChart = () => {
 
   const [range, setRange] = useState("week");
   const [selectedDate, setSelectedDate] = useState<string>(
-  new Date().toISOString().slice(0, 10)
-);
+    new Date().toISOString().slice(0, 10),
+  );
   const [selectedMonth, setSelectedMonth] = useState<number>(
     new Date().getMonth() + 1,
   );
@@ -105,7 +105,7 @@ const DashboardBarChart = () => {
       legend: { position: "top" as const },
       title: {
         display: true,
-        text: `📊 Biểu đồ theo ${range}`,
+        text: `📊 Chart by ${range}`,
       },
     },
   };
@@ -113,27 +113,29 @@ const DashboardBarChart = () => {
   return (
     <div className="mt-10 rounded-lg bg-yellow-100 p-6 shadow-md">
       <div className="mb-4 flex flex-wrap items-center gap-6">
-        {/* Select kiểu thống kê */}
+        {/* Statistic mode selector */}
         <div className="flex items-center gap-2">
           <label className="text-sm font-semibold text-gray-700">
-            Thống kê theo:
+            Statistics by:
           </label>
           <select
             value={range}
             onChange={(e) => setRange(e.target.value)}
             className="rounded border bg-white px-3 py-1 text-sm text-gray-700"
           >
-            <option value="day">Ngày</option>
-            <option value="week">Tuần (qua ngày)</option>
-            <option value="month">Tháng</option>
+            <option value="day">Day</option>
+            <option value="week">Week (by day)</option>
+            <option value="month">Month</option>
           </select>
         </div>
 
-        {/* Nếu là day/week → chọn ngày */}
+        {/* Day/Week date picker */}
         {(range === "day" || range === "week") && (
           <div className="flex items-center gap-2">
             <label className="text-sm font-semibold text-gray-700">
-              {range === "day" ? "Chọn ngày:" : "Chọn ngày bất kỳ trong tuần:"}
+              {range === "day"
+                ? "Select date:"
+                : "Pick any date within the week:"}
             </label>
             <input
               type="date"
@@ -144,21 +146,34 @@ const DashboardBarChart = () => {
           </div>
         )}
 
-        {/* Nếu là tháng → chọn tháng + năm */}
+        {/* Month/Year selector */}
         {range === "month" && (
           <>
             <div className="flex items-center gap-2">
               <label className="text-sm font-semibold text-gray-700">
-                Tháng:
+                Month:
               </label>
               <select
                 value={selectedMonth}
                 onChange={(e) => setSelectedMonth(Number(e.target.value))}
                 className="rounded border bg-white px-3 py-1 text-sm text-gray-700"
               >
-                {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
-                  <option key={m} value={m}>
-                    Tháng {m}
+                {[
+                  "January",
+                  "February",
+                  "March",
+                  "April",
+                  "May",
+                  "June",
+                  "July",
+                  "August",
+                  "September",
+                  "October",
+                  "November",
+                  "December",
+                ].map((monthName, index) => (
+                  <option key={monthName} value={index + 1}>
+                    {monthName}
                   </option>
                 ))}
               </select>
@@ -166,7 +181,7 @@ const DashboardBarChart = () => {
 
             <div className="flex items-center gap-2">
               <label className="text-sm font-semibold text-gray-700">
-                Năm:
+                Year:
               </label>
               <input
                 type="number"
@@ -179,13 +194,13 @@ const DashboardBarChart = () => {
         )}
       </div>
 
-      {/* Biểu đồ */}
+      {/* Chart rendering */}
       {loadingChart ? (
-        <p className="text-yellow-600">Đang tải biểu đồ...</p>
+        <p className="text-yellow-600">Loading chart...</p>
       ) : error ? (
-        <p className="text-red-600">Lỗi: {error}</p>
+        <p className="text-red-600">Error: {error}</p>
       ) : chartData.length === 0 ? (
-        <p>Không có dữ liệu biểu đồ.</p>
+        <p>No chart data available.</p>
       ) : (
         <Bar data={data} options={options} />
       )}
