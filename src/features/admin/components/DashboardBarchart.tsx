@@ -40,7 +40,9 @@ const DashboardBarChart = () => {
   );
 
   const [range, setRange] = useState("week");
-  const [selectedDate, setSelectedDate] = useState<string>("");
+  const [selectedDate, setSelectedDate] = useState<string>(
+  new Date().toISOString().slice(0, 10)
+);
   const [selectedMonth, setSelectedMonth] = useState<number>(
     new Date().getMonth() + 1,
   );

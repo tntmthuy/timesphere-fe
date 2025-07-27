@@ -23,7 +23,6 @@ interface ChartParams {
   year?: number;
 }
 
-
 export const fetchChartData = createAsyncThunk(
   "dashboard/fetchChartData",
   async (params: ChartParams, thunkAPI) => {
