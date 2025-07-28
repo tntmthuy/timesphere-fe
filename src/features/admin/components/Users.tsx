@@ -102,7 +102,7 @@ export const Users = () => {
     setUserToDeleteId(null);
     setUserToDeleteName(null);
   };
-  
+
   // if (loadingUsers) return <p className="p-8 text-gray-500 italic">Loading...</p>;
   if (errorUsers)
     return <p className="p-8 text-red-600">Error: {errorUsers}</p>;
@@ -121,8 +121,8 @@ export const Users = () => {
           ))}
         </div>
         <p className="mt-6 rounded-md bg-amber-200 p-3 font-semibold">
-          There are currently <strong>{users.length} users</strong> in the
-          system.
+          A total of <strong>{users.length}</strong> registered users match your
+          filter.
         </p>
       </header>
 

@@ -33,16 +33,22 @@ export const Dashboard = () => {
       </div>
 
       {loadingSummary ? (
-  <p className="text-yellow-600">Đang tải dữ liệu...</p>
-) : error ? (
-  <p className="text-red-600">Lỗi: {error}</p>
-) : (
-  <div className="grid grid-cols-3 gap-6">
-    <StatBox title="Total Users" value={totalUsers.toLocaleString()} />
-    <StatBox title="Total Teams Created" value={totalTeams.toLocaleString()} />
-    <StatBox title="Total Focus Sessions" value={totalFocusSessions.toLocaleString()} />
-  </div>
-)}
+        <p className="text-yellow-600">Đang tải dữ liệu...</p>
+      ) : error ? (
+        <p className="text-red-600">Lỗi: {error}</p>
+      ) : (
+        <div className="grid grid-cols-3 gap-6">
+          <StatBox title="Total Users" value={totalUsers.toLocaleString()} />
+          <StatBox
+            title="Total Teams Created"
+            value={totalTeams.toLocaleString()}
+          />
+          <StatBox
+            title="Total Focus Sessions"
+            value={totalFocusSessions.toLocaleString()}
+          />
+        </div>
+      )}
 
       {!loadingSummary && !error && (
         <>

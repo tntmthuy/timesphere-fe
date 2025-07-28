@@ -38,7 +38,8 @@ const PaymentsLite = () => {
 
   const filteredSubs = [...paidSubs]
     .sort(
-      (a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime(),
+      (a, b) =>
+        new Date(b.startDate).getTime() - new Date(a.startDate).getTime(),
     )
     .filter((item) => {
       const itemDate = new Date(item.startDate);
@@ -61,7 +62,8 @@ const PaymentsLite = () => {
           ))}
         </div>
         <p className="mt-6 rounded-md bg-amber-200 p-3 font-semibold">
-          There are <strong>{filteredSubs.length} active transactions</strong> in total.
+          A total of <strong>{filteredSubs?.length ?? 0}</strong> active payment
+          transactions match your filter.
         </p>
       </header>
 
@@ -119,13 +121,19 @@ const PaymentsLite = () => {
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={7} className="py-6 text-center text-yellow-600 italic">
+                <td
+                  colSpan={7}
+                  className="py-6 text-center text-yellow-600 italic"
+                >
                   Loading subscriptions...
                 </td>
               </tr>
             ) : filteredSubs.length === 0 ? (
               <tr>
-                <td colSpan={7} className="py-4 text-center text-gray-500 italic">
+                <td
+                  colSpan={7}
+                  className="py-4 text-center text-gray-500 italic"
+                >
                   No paid transactions found.
                 </td>
               </tr>
@@ -135,7 +143,9 @@ const PaymentsLite = () => {
                   key={item.paymentId}
                   className="border-b transition hover:bg-yellow-50"
                 >
-                  <td className="px-4 py-2 font-mono text-xs">{item.paymentId}</td>
+                  <td className="px-4 py-2 font-mono text-xs">
+                    {item.paymentId}
+                  </td>
                   <td className="flex items-center gap-2 px-4 py-2">
                     <span title={item.fullName}>
                       <img
