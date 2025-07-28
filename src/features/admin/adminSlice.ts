@@ -126,6 +126,20 @@ export const fetchTeamSummaryList = createAsyncThunk<
   }
 });
 
+//xóa nhóm
+export const deleteTeamById = createAsyncThunk<
+  string,
+  string,
+  { rejectValue: string }
+>("admin/deleteTeamById", async (teamId, { rejectWithValue }) => {
+  try {
+    await api.delete(`/api/admin/teams/${teamId}`);
+    return teamId;
+  } catch {
+    return rejectWithValue("Không thể xoá nhóm");
+  }
+});
+
 // 🧩 Slice state
 type AdminState = {
   users: UserSummaryDto[];
@@ -135,6 +149,7 @@ type AdminState = {
   teams: TeamSummaryDto[];
   loadingTeams: boolean;
   errorTeams: string | null;
+  deletingTeamId: string | null;
 };
 
 const initialState: AdminState = {
@@ -145,6 +160,7 @@ const initialState: AdminState = {
   teams: [],
   loadingTeams: false,
   errorTeams: null,
+  deletingTeamId: null,
 };
 
 // 🍰 Slice
@@ -237,7 +253,20 @@ const adminSlice = createSlice({
       .addCase(searchUsersByCriteria.rejected, (state, action) => {
         state.loadingUsers = false;
         state.errorUsers = action.payload ?? "Lỗi khi lọc người dùng";
-      });
+      })
+      // Delete team
+      .addCase(deleteTeamById.pending, (state, action) => {
+        state.deletingTeamId = action.meta.arg;
+      })
+      .addCase(deleteTeamById.fulfilled, (state, action) => {
+        state.teams = state.teams.filter((t) => t.teamId !== action.payload);
+        state.deletingTeamId = null;
+      })
+      .addCase(deleteTeamById.rejected, (state, action) => {
+        state.errorTeams = action.payload ?? "Có lỗi khi xoá nhóm";
+        state.deletingTeamId = null;
+      })
+      ;
   },
 });
 

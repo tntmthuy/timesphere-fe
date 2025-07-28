@@ -20,7 +20,7 @@ import { AdminPage } from "./features/admin/pages/AdminPage";
 import { Dashboard } from "./features/admin/components/Dashboard";
 import { Users } from "./features/admin/components/Users";
 import { Teams } from "./features/admin/components/Teams";
-import { PaymentsLite } from "./features/admin/components/Payment";
+import PaymentsLite from "./features/admin/components/Payment"; 
 
 function App() {
   const dispatch = useAppDispatch();

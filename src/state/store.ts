@@ -13,6 +13,7 @@ import subscriptionReducer from "../features/subscription/subscriptionSlice";
 import focusReducer from "../features/focus/focusSlice";
 import dashboardReducer from "../features/admin/dashboardSlice";
 import adminReducer from '../features/admin/adminSlice';
+import adminSubscriptionReducer from "../features/admin/adminSubscriptionSlice";
 
 // 🔧 Gộp reducers
 const rootReducer = combineReducers({
@@ -24,7 +25,8 @@ const rootReducer = combineReducers({
   subscription: subscriptionReducer,
   focus: focusReducer,
   dashboard: dashboardReducer,
-  admin: adminReducer
+  admin: adminReducer,
+  adminSubscription: adminSubscriptionReducer,
 });
 
 // 🔒 Cấu hình persist

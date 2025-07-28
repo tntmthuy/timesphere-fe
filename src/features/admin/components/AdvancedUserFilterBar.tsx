@@ -63,7 +63,7 @@ export const AdvancedUserFilterBar = ({
         >
           <option value="keyword">Name or Email</option>
           <option value="role">User Role</option>
-          <option value="date">Created Date Range</option>
+          <option value="date">Created Date</option>
         </select>
 
         {/* Keyword filter */}
@@ -86,7 +86,11 @@ export const AdvancedUserFilterBar = ({
         {filterType === "role" && (
           <select
             value={selectedRole}
-            onChange={(e) => setSelectedRole(e.target.value as Role)}
+            onChange={(e) => {
+              const role = e.target.value as Role;
+              setSelectedRole(role);
+              if (role) onApplyFilters({ role });
+            }}
             className={inputStyle}
           >
             <option value="">Select Role</option>
@@ -102,32 +106,44 @@ export const AdvancedUserFilterBar = ({
             <input
               type="date"
               value={createdFrom}
-              onChange={(e) => setCreatedFrom(e.target.value)}
-              className={inputStyle}
+              onChange={(e) => {
+                const from = e.target.value;
+                setCreatedFrom(from);
+                if (from && createdTo)
+                  onApplyFilters({ createdFrom: from, createdTo });
+              }}
+              className="w-[150px] rounded border border-gray-300 bg-white px-3 py-1 text-sm text-gray-700 shadow-sm"
             />
-            <span className="text-gray-600">→</span>
+            <span className="text-gray-500">→</span>
             <input
               type="date"
               value={createdTo}
-              onChange={(e) => setCreatedTo(e.target.value)}
-              className={inputStyle}
+              onChange={(e) => {
+                const to = e.target.value;
+                setCreatedTo(to);
+                if (createdFrom && to)
+                  onApplyFilters({ createdFrom, createdTo: to });
+              }}
+              className="w-[150px] rounded border border-gray-300 bg-white px-3 py-1 text-sm text-gray-700 shadow-sm"
             />
           </>
         )}
 
         {/* Action buttons */}
-        <button
-          onClick={handleSubmit}
-          className="rounded bg-yellow-500 px-4 py-2 text-sm font-medium text-white shadow transition hover:bg-yellow-600"
-        >
-          Search
-        </button>
+        {filterType === "keyword" && (
+          <button
+            onClick={handleSubmit}
+            className="rounded bg-yellow-500 px-4 py-2 text-sm font-medium text-white shadow transition hover:bg-yellow-600"
+          >
+            Search
+          </button>
+        )}
 
         <button
           onClick={onResetFilters}
           className="rounded bg-amber-300 px-4 py-2 text-sm font-semibold text-yellow-800 shadow hover:bg-yellow-200"
         >
-          View All Users
+          View All
         </button>
       </div>
     </div>

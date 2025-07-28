@@ -14,15 +14,7 @@ export const fetchDashboardSummary = createAsyncThunk(
   }
 );
 
-// 🎯 Thunk: lấy dữ liệu biểu đồ
-interface ChartParams {
-  range?: string;
-  fromDate?: string;
-  toDate?: string;
-  month?: number;
-  year?: number;
-}
-
+// 🎯 Thunk: lấy dữ liệu biểu đồ tổng quan
 export const fetchChartData = createAsyncThunk(
   "dashboard/fetchChartData",
   async (params: ChartParams, thunkAPI) => {
@@ -35,13 +27,40 @@ export const fetchChartData = createAsyncThunk(
   }
 );
 
+// 🎯 Thunk: lấy dữ liệu biểu đồ giao dịch
+export const fetchPaymentChart = createAsyncThunk(
+  "dashboard/fetchPaymentChart",
+  async (params: ChartParams, thunkAPI) => {
+    try {
+      const res = await api.get("/api/admin/payments/chart", { params });
+      return res.data.data as PaymentChartPoint[];
+    } catch {
+      return thunkAPI.rejectWithValue("Không thể lấy biểu đồ giao dịch");
+    }
+  }
+);
 
-// 🧩 Type dữ liệu từng điểm biểu đồ
+// 🧩 Type params chung cho tất cả chart
+interface ChartParams {
+  range?: string;
+  fromDate?: string;
+  toDate?: string;
+  month?: number;
+  year?: number;
+}
+
+// 🧩 Type dữ liệu biểu đồ
 type ChartPoint = {
   date: string;
   totalUsers: number;
   totalTeams: number;
   totalFocusSessions: number;
+};
+
+type PaymentChartPoint = {
+  date: string;
+  count: number;
+  totalAmount: number;
 };
 
 // 🧩 State toàn cục
@@ -50,8 +69,10 @@ type DashboardState = {
   totalTeams: number;
   totalFocusSessions: number;
   chartData: ChartPoint[];
+  paymentChartData: PaymentChartPoint[];
   loadingSummary: boolean;
   loadingChart: boolean;
+  loadingPaymentChart: boolean;
   error: string | null;
 };
 
@@ -61,9 +82,11 @@ const initialState: DashboardState = {
   totalTeams: 0,
   totalFocusSessions: 0,
   chartData: [],
+  paymentChartData: [],
   loadingSummary: false,
   loadingChart: false,
-  error: null
+  loadingPaymentChart: false,
+  error: null,
 };
 
 // 🍰 Slice chính
@@ -73,7 +96,7 @@ const dashboardSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
-      // ⚙️ Summary
+      // ⚙️ Tổng quan
       .addCase(fetchDashboardSummary.pending, (state) => {
         state.loadingSummary = true;
         state.error = null;
@@ -89,7 +112,7 @@ const dashboardSlice = createSlice({
         state.error = action.payload as string;
       })
 
-      // ⚙️ Chart data
+      // ⚙️ Biểu đồ tổng quan
       .addCase(fetchChartData.pending, (state) => {
         state.loadingChart = true;
         state.error = null;
@@ -100,6 +123,20 @@ const dashboardSlice = createSlice({
       })
       .addCase(fetchChartData.rejected, (state, action) => {
         state.loadingChart = false;
+        state.error = action.payload as string;
+      })
+
+      // ⚙️ Biểu đồ giao dịch
+      .addCase(fetchPaymentChart.pending, (state) => {
+        state.loadingPaymentChart = true;
+        state.error = null;
+      })
+      .addCase(fetchPaymentChart.fulfilled, (state, action: PayloadAction<PaymentChartPoint[]>) => {
+        state.paymentChartData = action.payload;
+        state.loadingPaymentChart = false;
+      })
+      .addCase(fetchPaymentChart.rejected, (state, action) => {
+        state.loadingPaymentChart = false;
         state.error = action.payload as string;
       });
   }

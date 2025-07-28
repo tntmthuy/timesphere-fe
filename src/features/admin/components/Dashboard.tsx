@@ -2,17 +2,12 @@ import { useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "../../../state/hooks";
 import { fetchDashboardSummary } from "../dashboardSlice";
 import DashboardBarChart from "./DashboardBarchart";
-
+import PaymentBarChart from "./PaymentBarChart";
 
 export const Dashboard = () => {
   const dispatch = useAppDispatch();
-  const {
-    totalUsers,
-    totalTeams,
-    totalFocusSessions,
-    loadingSummary,
-    error
-  } = useAppSelector((state) => state.dashboard);
+  const { totalUsers, totalTeams, totalFocusSessions, loadingSummary, error } =
+    useAppSelector((state) => state.dashboard);
 
   useEffect(() => {
     dispatch(fetchDashboardSummary());
@@ -38,21 +33,26 @@ export const Dashboard = () => {
       </div>
 
       {loadingSummary ? (
-        <p className="text-yellow-600">Đang tải dữ liệu...</p>
-      ) : error ? (
-        <p className="text-red-600">Lỗi: {error}</p>
-      ) : (
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
-          <StatBox title="Total Users" value={totalUsers.toLocaleString()} />
-          <StatBox title="Total Teams Created" value={totalTeams.toLocaleString()} />
-          <StatBox title="Total Focus Sessions" value={totalFocusSessions.toLocaleString()} />
-        </div>
-      )}
+  <p className="text-yellow-600">Đang tải dữ liệu...</p>
+) : error ? (
+  <p className="text-red-600">Lỗi: {error}</p>
+) : (
+  <div className="grid grid-cols-3 gap-6">
+    <StatBox title="Total Users" value={totalUsers.toLocaleString()} />
+    <StatBox title="Total Teams Created" value={totalTeams.toLocaleString()} />
+    <StatBox title="Total Focus Sessions" value={totalFocusSessions.toLocaleString()} />
+  </div>
+)}
 
       {!loadingSummary && !error && (
-        <div className="mt-8">
-          <DashboardBarChart />
-        </div>
+        <>
+          <div className="mt-8">
+            <DashboardBarChart />
+          </div>
+          <div className="mt-12">
+            <PaymentBarChart /> {/* 👈 Biểu đồ giao dịch hiển thị ở đây */}
+          </div>
+        </>
       )}
     </div>
   );

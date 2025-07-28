@@ -111,7 +111,7 @@ export const Users = () => {
     <div className="min-h-screen bg-yellow-50 p-8 text-yellow-900">
       {/* 🧭 Header */}
       <header className="mb-8">
-        <h1 className="text-3xl font-bold">👥 Manage Users</h1>
+        <h1 className="text-3xl font-bold">Manage Users</h1>
         <p className="mt-2 text-sm text-yellow-700">
           A quick snapshot of all registered users.
         </p>
