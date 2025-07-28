@@ -1,5 +1,6 @@
 import dayjs from "dayjs";
 import type { Role, UserSummaryDto } from "../adminSlice";
+import customParseFormat from "dayjs/plugin/customParseFormat";
 
 type Props = {
   users: UserSummaryDto[];
@@ -8,7 +9,13 @@ type Props = {
   onRoleChangeClick: (id: string, newRole: Role) => void;
 };
 
-export const UserTable = ({ users, loading, onDelete, onRoleChangeClick }: Props) => {
+dayjs.extend(customParseFormat);
+export const UserTable = ({
+  users,
+  loading,
+  onDelete,
+  onRoleChangeClick,
+}: Props) => {
   return (
     <div className="overflow-x-auto rounded-md bg-white shadow-md">
       <table className="w-full text-left text-sm">
@@ -25,7 +32,10 @@ export const UserTable = ({ users, loading, onDelete, onRoleChangeClick }: Props
         <tbody>
           {loading ? (
             <tr>
-              <td colSpan={6} className="py-6 text-center italic text-yellow-600">
+              <td
+                colSpan={6}
+                className="py-6 text-center text-yellow-600 italic"
+              >
                 Loading users...
               </td>
             </tr>
@@ -37,11 +47,20 @@ export const UserTable = ({ users, loading, onDelete, onRoleChangeClick }: Props
             </tr>
           ) : (
             users.map((user) => (
-              <tr key={user.id} className="border-b transition hover:bg-yellow-50">
+              <tr
+                key={user.id}
+                className="border-b transition hover:bg-yellow-50"
+              >
                 <td className="px-4 py-2">{user.id}</td>
                 <td className="px-4 py-2">{user.fullName}</td>
                 <td className="px-4 py-2">{user.email}</td>
-                <td className="px-4 py-2">{dayjs(user.createdAt).format("DD/MM/YYYY")}</td>
+                <td className="px-4 py-2">
+                  {dayjs(user.createdAt, "DD/MM/YYYY").isValid() ? (
+                    dayjs(user.createdAt, "DD/MM/YYYY").format("DD/MM/YYYY")
+                  ) : (
+                    <span className="text-gray-500 italic">Invalid Date</span>
+                  )}
+                </td>
                 <td className="px-4 py-2">
                   {user.role === "ADMIN" ? (
                     <span className="rounded bg-red-100 px-2 py-1 text-xs font-medium text-red-600">
@@ -50,7 +69,9 @@ export const UserTable = ({ users, loading, onDelete, onRoleChangeClick }: Props
                   ) : (
                     <select
                       value={user.role}
-                      onChange={(e) => onRoleChangeClick(user.id, e.target.value as Role)}
+                      onChange={(e) =>
+                        onRoleChangeClick(user.id, e.target.value as Role)
+                      }
                       className={`rounded border px-2 py-1 text-xs font-semibold transition ${
                         user.role === "PREMIUM"
                           ? "border-yellow-300 bg-yellow-100 text-yellow-800"
@@ -64,7 +85,9 @@ export const UserTable = ({ users, loading, onDelete, onRoleChangeClick }: Props
                 </td>
                 <td className="px-4 py-2 text-center">
                   {user.role === "ADMIN" ? (
-                    <span className="text-xs text-gray-400 italic">Not editable</span>
+                    <span className="text-xs text-gray-400 italic">
+                      Not editable
+                    </span>
                   ) : (
                     <button
                       onClick={() => onDelete(user.id)}
