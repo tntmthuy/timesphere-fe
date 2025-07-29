@@ -16,6 +16,7 @@ type Props = {
   onCancel: () => void;
   isLoading?: boolean;
   taskId: string;
+  onRetry: () => void;
 };
 
 export const SubtaskSuggestionModal: FC<Props> = ({
@@ -26,6 +27,7 @@ export const SubtaskSuggestionModal: FC<Props> = ({
   onCancel,
   isLoading = false,
   taskId,
+  onRetry,
 }) => {
   const task = useAppSelector((state) =>
     state.kanban.tasks.find((t) => t.id === taskId),
@@ -70,10 +72,34 @@ export const SubtaskSuggestionModal: FC<Props> = ({
             <span key={idx} className="h-2 w-2 rounded-full bg-yellow-400" />
           ))}
         </div>
-        <div className="mb-2 text-xs text-yellow-800">
-          <span className="font-medium text-yellow-700">Task:</span>{" "}
-          {currentTitle}
-        </div>
+        <div className="mb-2 flex items-center justify-between text-xs text-yellow-800">
+  <span>
+    <span className="font-medium text-yellow-700">Task:</span>{" "}
+    {currentTitle}
+  </span>
+
+  <button
+    onClick={onRetry}
+    disabled={isLoading}
+    className="ml-2 flex h-5 w-5 items-center justify-center rounded-full border border-red-400 bg-red-100 text-red-500 hover:bg-red-200 disabled:opacity-40 transition"
+  >
+    {/* 🔄 Icon xoay xoay */}
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth={2}
+      className={`h-3.5 w-3.5 ${isLoading ? "animate-spin" : ""}`}
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M4 4v6h6M20 20v-6h-6M4 10a9 9 0 0116 0M20 14a9 9 0 01-16 0"
+      />
+    </svg>
+  </button>
+</div>
 
         {/* 📦 Danh sách gợi ý */}
         {isLoading ? (
@@ -87,17 +113,17 @@ export const SubtaskSuggestionModal: FC<Props> = ({
             {suggestions.map((item) => (
               <li
                 key={item.id}
-                className={`flex items-center gap-2 rounded px-2 py-1 ${
-                  item.isSelected ? "bg-yellow-100" : ""
-                }`}
+                className="flex items-center gap-2 rounded px-2 py-1"
               >
-                <input
-                  type="checkbox"
-                  checked={item.isSelected}
-                  onChange={() => onToggleSelect(item.id)}
-                  className="h-4 w-4 accent-yellow-500"
-                />
-                <span className={`text-sm font-medium text-yellow-900`}>
+                <div className="pt-1">
+                  <input
+                    type="checkbox"
+                    checked={item.isSelected}
+                    onChange={() => onToggleSelect(item.id)}
+                    className="h-[16px] w-[16px] flex-shrink-0 accent-yellow-500"
+                  />
+                </div>
+                <span className="text-sm leading-snug font-medium text-yellow-900">
                   {item.title}
                 </span>
               </li>

@@ -149,7 +149,11 @@ export const TaskDetailModal = ({
     toggleSuggestion,
     handleAddSuggestions,
     handleOpenSuggestions,
-  } = useSubtaskSuggestion(subTasks, handleSubTaskChange);
+    handleRetrySuggestions,
+  } = useSubtaskSuggestion(subTasks, handleSubTaskChange, task.taskTitle);
+const handleRetry = () => {
+  handleRetrySuggestions(); // Gọi lại API từ hook
+};
 
   //upload
   const uploadFiles = async (
@@ -313,7 +317,8 @@ export const TaskDetailModal = ({
                 onToggleSelect={toggleSuggestion}
                 isLoading={isLoadingSuggestion}
                 taskId={task.id}
-                
+                onRetry={handleRetry}
+
               />
 
               {!isCollapsed && (

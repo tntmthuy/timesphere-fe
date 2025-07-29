@@ -15,6 +15,7 @@ export type SuggestedSubtask = {
 export const useSubtaskSuggestion = (
   existingSubtasks: SubTask[],
   handleUpdate: (newList: SubTask[]) => void,
+  taskTitle: string
 ) => {
   const [suggestedSubtasks, setSuggestedSubtasks] = useState<SuggestedSubtask[]>([]);
   const [isSuggestionModalOpen, setSuggestionModalOpen] = useState(false);
@@ -30,26 +31,38 @@ export const useSubtaskSuggestion = (
 
   const dispatch = useAppDispatch();
 
-const handleAddSuggestions = async (parentTaskId: string) => {
-  const selected = suggestedSubtasks.filter((s) => s.isSelected);
-  if (selected.length === 0) return;
+  const handleAddSuggestions = async (parentTaskId: string) => {
+    const selected = suggestedSubtasks.filter((s) => s.isSelected);
+    if (selected.length === 0) return;
 
-  try {
-    const res = await dispatch(createMultipleSubtasksThunk({
-      parentTaskId,
-      titles: selected.map((s) => s.title),
-    })).unwrap();
+    try {
+      const res = await dispatch(createMultipleSubtasksThunk({
+        parentTaskId,
+        titles: selected.map((s) => s.title),
+      })).unwrap();
 
-    const newSubTasks: SubTask[] = res.subtasks;
-    const updatedList: SubTask[] = [...existingSubtasks, ...newSubTasks];
+      const newSubTasks: SubTask[] = res.subtasks;
+      const updatedList: SubTask[] = [...existingSubtasks, ...newSubTasks];
 
-    handleUpdate(updatedList);
-    setSuggestedSubtasks([]);
-    setSuggestionModalOpen(false);
-  } catch {
-    toast.error("Không thể thêm subtask. Vui lòng thử lại.");
-  }
-};
+      handleUpdate(updatedList);
+      setSuggestedSubtasks([]);
+      setSuggestionModalOpen(false);
+    } catch {
+      toast.error("Không thể thêm subtask. Vui lòng thử lại.");
+    }
+  };
+
+  const handleRetrySuggestions = async () => {
+    setIsLoadingSuggestion(true);
+    const raw = await fetchSubtaskSuggestions(taskTitle); // gọi OpenRouter
+    const formatted = raw.map((title, idx) => ({
+      id: `${idx}`,
+      title,
+      isSelected: false,
+    }));
+    setSuggestedSubtasks(formatted);
+    setIsLoadingSuggestion(false);
+  };
 
   const handleOpenSuggestions = async (taskTitle: string) => {
   setSuggestionModalOpen(true);
@@ -77,5 +90,6 @@ const handleAddSuggestions = async (parentTaskId: string) => {
     toggleSuggestion,
     handleAddSuggestions,
     handleOpenSuggestions,
+    handleRetrySuggestions,
   };
 };
