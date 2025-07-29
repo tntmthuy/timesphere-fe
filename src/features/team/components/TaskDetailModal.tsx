@@ -21,8 +21,8 @@ import {
 } from "../commentSlice";
 import type { AttachedFileDTO } from "../comment";
 import { fetchTeamCalendarThunk, searchMembersInTeamThunk } from "../teamSlice";
-// import type { RootState } from "../../../state/store";
-// import { useSelector } from "react-redux";
+import { SubtaskSuggestionModal } from "./SubtaskSugesstionModal";
+import { useSubtaskSuggestion } from "../useSubtakSugesstion";
 
 type TaskDetailModalProps = {
   task: TaskDto;
@@ -138,6 +138,16 @@ export const TaskDetailModal = ({
       }),
     );
   };
+
+  //mở sugesstion modal
+  const {
+    suggestedSubtasks,
+    isSuggestionModalOpen,
+    isLoadingSuggestion,
+    setSuggestionModalOpen,
+    toggleSuggestion,
+    handleAddSuggestions,
+  } = useSubtaskSuggestion(subTasks, handleSubTaskChange);
 
   //upload
   const uploadFiles = async (
@@ -287,6 +297,17 @@ export const TaskDetailModal = ({
                 onToggleCollapse={() => setIsCollapsed((prev) => !prev)}
                 onToggleHideCompleted={() => setHideCompleted((prev) => !prev)}
                 onAddSubtask={() => subTaskRef.current?.addAtTop()}
+                onOpenSuggestionModal={() => setSuggestionModalOpen(true)}
+              />
+
+              {/* AI gợi ý */}
+              <SubtaskSuggestionModal
+                isOpen={isSuggestionModalOpen}
+                onCancel={() => setSuggestionModalOpen(false)}
+                onConfirm={handleAddSuggestions}
+                suggestions={suggestedSubtasks}
+                onToggleSelect={toggleSuggestion}
+                isLoading={isLoadingSuggestion}
               />
 
               {!isCollapsed && (

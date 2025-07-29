@@ -8,6 +8,7 @@ type Props = {
   onToggleHideCompleted: () => void;
   showAddButton?: boolean;
   onAddSubtask?: () => void;
+  onOpenSuggestionModal?: () => void;
 };
 
 export const SubTaskHeader: FC<Props> = ({
@@ -18,6 +19,7 @@ export const SubTaskHeader: FC<Props> = ({
   onToggleHideCompleted,
   showAddButton,
   onAddSubtask,
+  onOpenSuggestionModal,
 }) => {
   return (
     <div className="flex items-center justify-between">
@@ -65,7 +67,6 @@ export const SubTaskHeader: FC<Props> = ({
             }
           >
             {hideCompleted ? (
-              // 👁️‍🗨️ Eye-slash SVG
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
@@ -77,7 +78,6 @@ export const SubTaskHeader: FC<Props> = ({
                 <path d="M6.75 12c0-.619.107-1.213.304-1.764l-3.1-3.1a11.25 11.25 0 0 0-2.63 4.31c-.12.362-.12.752 0 1.114 1.489 4.467 5.704 7.69 10.675 7.69 1.5 0 2.933-.294 4.242-.827l-2.477-2.477A5.25 5.25 0 0 1 6.75 12Z" />
               </svg>
             ) : (
-              // 👁️ Eye SVG
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
@@ -95,9 +95,17 @@ export const SubTaskHeader: FC<Props> = ({
           </button>
         </div>
       </div>
-
+      <button
+  onClick={(e) => {
+    e.stopPropagation();
+    onOpenSuggestionModal?.();
+  }}
+  className="ml-6 flex items-center gap-1 rounded-full bg-gradient-to-r from-purple-700 via-indigo-600 to-blue-600 px-2 py-0.5 text-[11px] text-indigo-200 shadow-md transition hover:brightness-110"
+>
+  AI suggestion
+</button>
       {/* ➕ Add subtask button (optional) */}
-      {showAddButton && (
+      {showAddButton && subTasks.length === 0 && (
         <div className="flex items-center gap-2">
           <button
             onClick={(e) => {
@@ -106,11 +114,7 @@ export const SubTaskHeader: FC<Props> = ({
             }}
             className="ml-6 flex items-center gap-1 px-1 py-0.5 text-xs text-gray-500 transition hover:rounded hover:bg-yellow-50 hover:text-yellow-600"
           >
-            <svg
-              viewBox="0 0 24 24"
-              fill="currentColor"
-              className="h-5 w-5"
-            >
+            <svg viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5">
               <path
                 fillRule="evenodd"
                 clipRule="evenodd"
