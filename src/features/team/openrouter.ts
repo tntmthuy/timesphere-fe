@@ -1,10 +1,11 @@
 // src\features\team\openrouter.ts
 export const fetchSubtaskSuggestions = async (taskTitle: string): Promise<string[]> => {
   try {
+    const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY;
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
-        Authorization: "Bearer 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", // API key của bạn
+        Authorization: `Bearer ${apiKey}`, // API key của bạn
         "Content-Type": "application/json",
         "HTTP-Referer": "http://localhost:5173",
         "X-Title": "TimeSphere"
