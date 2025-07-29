@@ -1,6 +1,10 @@
 // src\features\team\useSubtakSugesstion.ts
 import { useState } from "react";
 import type { SubTask } from "./subtask";
+import { fetchSubtaskSuggestions } from "./openrouter";
+import { useAppDispatch } from "../../state/hooks";
+import { createMultipleSubtasksThunk } from "./kanbanSlice";
+import toast from "react-hot-toast";
 
 export type SuggestedSubtask = {
   id: string;
@@ -24,23 +28,44 @@ export const useSubtaskSuggestion = (
     );
   };
 
-  const handleAddSuggestions = () => {
-    const selected = suggestedSubtasks.filter((s) => s.isSelected);
+  const dispatch = useAppDispatch();
 
-    const newSubTasks: SubTask[] = [
-      ...existingSubtasks,
-      ...selected.map((s, index) => ({
-            id: crypto.randomUUID(),
-            title: s.title,
-            isComplete: false,
-            subtaskPosition: existingSubtasks.length + index, 
-            })),
-    ];
+const handleAddSuggestions = async (parentTaskId: string) => {
+  const selected = suggestedSubtasks.filter((s) => s.isSelected);
+  if (selected.length === 0) return;
 
-    handleUpdate(newSubTasks);
+  try {
+    const res = await dispatch(createMultipleSubtasksThunk({
+      parentTaskId,
+      titles: selected.map((s) => s.title),
+    })).unwrap();
+
+    const newSubTasks: SubTask[] = res.subtasks;
+    const updatedList: SubTask[] = [...existingSubtasks, ...newSubTasks];
+
+    handleUpdate(updatedList);
     setSuggestedSubtasks([]);
     setSuggestionModalOpen(false);
-  };
+  } catch {
+    toast.error("Không thể thêm subtask. Vui lòng thử lại.");
+  }
+};
+
+  const handleOpenSuggestions = async (taskTitle: string) => {
+  setSuggestionModalOpen(true);
+  setIsLoadingSuggestion(true);
+
+  const titles = await fetchSubtaskSuggestions(taskTitle);
+
+  const formatted = titles.map((title, idx) => ({
+    id: `sug-${idx}`,
+    title,
+    isSelected: false,
+  }));
+
+  setSuggestedSubtasks(formatted);
+  setIsLoadingSuggestion(false);
+};
 
   return {
     suggestedSubtasks,
@@ -51,5 +76,6 @@ export const useSubtaskSuggestion = (
     setIsLoadingSuggestion,
     toggleSuggestion,
     handleAddSuggestions,
+    handleOpenSuggestions,
   };
 };

@@ -43,6 +43,7 @@ export const TaskDetailModal = ({
   teamId,
 }: TaskDetailModalProps) => {
   const dispatch = useAppDispatch();
+  const user = useAppSelector((state) => state.auth.user);
   const subTaskRef = useRef<SubTaskListHandle>(null);
   const [hasSubTasks, setHasSubTasks] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -147,6 +148,7 @@ export const TaskDetailModal = ({
     setSuggestionModalOpen,
     toggleSuggestion,
     handleAddSuggestions,
+    handleOpenSuggestions,
   } = useSubtaskSuggestion(subTasks, handleSubTaskChange);
 
   //upload
@@ -297,17 +299,21 @@ export const TaskDetailModal = ({
                 onToggleCollapse={() => setIsCollapsed((prev) => !prev)}
                 onToggleHideCompleted={() => setHideCompleted((prev) => !prev)}
                 onAddSubtask={() => subTaskRef.current?.addAtTop()}
-                onOpenSuggestionModal={() => setSuggestionModalOpen(true)}
+                // onOpenSuggestionModal={() => setSuggestionModalOpen(true)}
+                onOpenSuggestionModal={() => handleOpenSuggestions(title)}
+                isPremiumUser={user?.isPremium}
               />
 
               {/* AI gợi ý */}
               <SubtaskSuggestionModal
                 isOpen={isSuggestionModalOpen}
                 onCancel={() => setSuggestionModalOpen(false)}
-                onConfirm={handleAddSuggestions}
+                onConfirm={() => handleAddSuggestions(task.id)}
                 suggestions={suggestedSubtasks}
                 onToggleSelect={toggleSuggestion}
                 isLoading={isLoadingSuggestion}
+                taskId={task.id}
+                
               />
 
               {!isCollapsed && (

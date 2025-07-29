@@ -113,6 +113,22 @@ export const updateSubtaskTitleThunk = createAsyncThunk(
     }
   }
 );
+//tạo nhiều subtask
+export const createMultipleSubtasksThunk = createAsyncThunk(
+  "kanban/createSubtasksBulk",
+  async (payload: { parentTaskId: string; titles: string[] }, { rejectWithValue }) => {
+    try {
+      const res = await api.post("/api/kanban/task/subtask/bulk", payload);
+      return {
+        parentTaskId: payload.parentTaskId,
+        subtasks: res.data.data as SubTask[],
+      };
+    } catch {
+      toast.error("Bạn không có quyền tạo nhiều subtasks.");
+      return rejectWithValue("Lỗi tạo nhiều subtasks");
+    }
+  }
+);
 
 //xóa subtask
 export const deleteSubtaskThunk = createAsyncThunk(
@@ -314,7 +330,24 @@ moveTaskLocal: (
           task.subTasks = task.subTasks?.filter((s) => s.id !== subtaskId);
         }
       })
-      
+      .addCase(createMultipleSubtasksThunk.fulfilled, (state, action) => {
+  const { parentTaskId, subtasks } = action.payload;
+
+  for (const col of state.columns) {
+    const task = col.tasks.find((t) => t.id === parentTaskId);
+    if (task) {
+      task.subTasks = [...(task.subTasks || []), ...subtasks];
+      task.subTasks.sort((a, b) => a.subtaskPosition - b.subtaskPosition);
+      break;
+    }
+  }
+
+  const globalTask = state.tasks.find((t) => t.id === parentTaskId);
+  if (globalTask) {
+    globalTask.subTasks = [...(globalTask.subTasks || []), ...subtasks];
+    globalTask.subTasks.sort((a, b) => a.subtaskPosition - b.subtaskPosition);
+  }
+})
       ;
   },
 });

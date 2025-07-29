@@ -1,8 +1,10 @@
+// src\features\team\components\SubTaskList.tsx
 import {
   useState,
   useImperativeHandle,
   forwardRef,
   type ForwardedRef,
+  useEffect,
 } from "react";
 import type { SubTask } from "../subtask";
 import { toggleSubtaskComplete } from "../subtask"; // ✅ import đúng hàm gọi API
@@ -42,6 +44,11 @@ export const SubTaskList = forwardRef(
     const [newInputIndex, setNewInputIndex] = useState<number | null>(null);
     const token = useAppSelector((state) => state.auth.token);
     const dispatch = useAppDispatch();
+
+    useEffect(() => {
+      setItems(subTasks); // đồng bộ lại khi props thay đổi
+    }, [subTasks]);
+
     const [modalSubtaskId, setModalSubtaskId] = useState<string | null>(null);
     useImperativeHandle(ref, () => ({
       addAtTop() {
@@ -141,7 +148,7 @@ export const SubTaskList = forwardRef(
           </div>
         )}
 
-        <div className=" space-y-2 pr-4">
+        <div className="space-y-2 pr-4">
           {visibleItems.map((sub) => (
             <div key={sub.id} className="group flex items-start gap-2">
               {/* Khối nội dung bên trái */}

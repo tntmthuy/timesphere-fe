@@ -86,7 +86,7 @@ export const UpgradePage = () => {
           <ul className="space-y-4">
             {[
               "Unlimited team creation",
-              "Advanced dashboard",
+              "AI-powered sub-task suggestions",
               "Team calendar",
             ].map((item) => (
               <li key={item} className="flex items-center gap-4">

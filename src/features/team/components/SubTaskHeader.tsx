@@ -9,6 +9,7 @@ type Props = {
   showAddButton?: boolean;
   onAddSubtask?: () => void;
   onOpenSuggestionModal?: () => void;
+  isPremiumUser?: boolean;
 };
 
 export const SubTaskHeader: FC<Props> = ({
@@ -20,6 +21,7 @@ export const SubTaskHeader: FC<Props> = ({
   showAddButton,
   onAddSubtask,
   onOpenSuggestionModal,
+  isPremiumUser,
 }) => {
   return (
     <div className="flex items-center justify-between">
@@ -95,15 +97,17 @@ export const SubTaskHeader: FC<Props> = ({
           </button>
         </div>
       </div>
-      <button
-  onClick={(e) => {
-    e.stopPropagation();
-    onOpenSuggestionModal?.();
-  }}
-  className="ml-6 flex items-center gap-1 rounded-full bg-gradient-to-r from-purple-700 via-indigo-600 to-blue-600 px-2 py-0.5 text-[11px] text-indigo-200 shadow-md transition hover:brightness-110"
->
-  AI suggestion
-</button>
+      {isPremiumUser && (
+  <button
+    onClick={(e) => {
+      e.stopPropagation();
+      onOpenSuggestionModal?.();
+    }}
+    className="ml-6 flex items-center gap-1 rounded-full bg-gradient-to-r from-purple-700 via-indigo-600 to-blue-600 px-2 py-0.5 text-[11px] text-indigo-200 shadow-md transition hover:brightness-110"
+  >
+    AI suggestion
+  </button>
+)}
       {/* ➕ Add subtask button (optional) */}
       {showAddButton && subTasks.length === 0 && (
         <div className="flex items-center gap-2">
