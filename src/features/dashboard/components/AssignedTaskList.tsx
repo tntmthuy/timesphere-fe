@@ -44,15 +44,15 @@ export const AssignedTaskList = () => {
 
           return (
             <div
-  key={task.taskId}
-  className={`relative flex flex-col justify-between rounded p-4 transition duration-300 ${
-    isOverdue
-      ? "bg-slate-100 text-slate-400"
-      : isDueSoon
-      ? "bg-red-100 text-red-800"
-      : "bg-yellow-200 text-slate-800"
-  } ${isDueSoon || isOverdue ? "" : "hover:shadow-md"}`}
->
+              key={task.taskId}
+              className={`relative flex flex-col justify-between rounded p-4 transition duration-300 ${
+                isOverdue
+                  ? "bg-slate-100 text-slate-400"
+                  : isDueSoon
+                    ? "bg-red-100 text-red-800"
+                    : "bg-yellow-200 text-slate-800"
+              } ${isDueSoon || isOverdue ? "" : "hover:shadow-md"}`}
+            >
               {/* ⏰ Due Date – Top right */}
               {task.dateDue && (
                 <div

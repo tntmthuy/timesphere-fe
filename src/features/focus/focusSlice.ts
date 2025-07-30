@@ -21,11 +21,23 @@ export type UserFocusStats = {
   totalMinutes: number;
 };
 
+type DayComparison = {
+  today: { minutes: number; count: number };
+  yesterday: { minutes: number; count: number };
+};
+
+type WeeklyComparison = {
+  thisWeek: { [key: string]: number };
+  lastWeek: { [key: string]: number };
+};
+
 type FocusState = {
   sessions: FocusSessionResponse[];
   loading: boolean;
   weeklyMinutes: number;
   userStats: UserFocusStats[];
+  dayComparison: DayComparison | null;
+  weeklyComparison: WeeklyComparison | null;
 };
 
 const initialState: FocusState = {
@@ -33,9 +45,11 @@ const initialState: FocusState = {
   loading: false,
   weeklyMinutes: 0,
   userStats: [],
+  dayComparison: null,
+  weeklyComparison: null,
 };
 
-// 🎯 Thunk: Lấy toàn bộ phiên đã hoàn thành
+// Lấy toàn bộ phiên đã hoàn thành
 export const fetchCompletedSessionsThunk = createAsyncThunk<
   FocusSessionResponse[],
   void,
@@ -50,7 +64,7 @@ export const fetchCompletedSessionsThunk = createAsyncThunk<
   }
 });
 
-// 🎯 Lấy số phút tập trung tuần này
+// Lấy số phút tập trung tuần này
 export const fetchWeeklyMinutesThunk = createAsyncThunk<
   number,
   void,
@@ -64,7 +78,7 @@ export const fetchWeeklyMinutesThunk = createAsyncThunk<
   }
 });
 
-// 🚀 Thunk: Khởi tạo phiên tập trung mới
+// Khởi tạo phiên tập trung mới
 export const startSessionThunk = createAsyncThunk<
   FocusSessionResponse,
   { targetMinutes: number; description?: string },
@@ -80,7 +94,7 @@ export const startSessionThunk = createAsyncThunk<
   }
 });
 
-// 🚀 Thunk: Kết thúc phiên tập trung
+// Kết thúc phiên tập trung
 export const endSessionThunk = createAsyncThunk<
   FocusSessionResponse,
   { sessionId: number; actualMinutes: number },
@@ -96,7 +110,7 @@ export const endSessionThunk = createAsyncThunk<
   }
 });
 
-// 🚀 Thunk: Xóa phiên tập trung
+// Xóa phiên tập trung
 export const deleteSessionThunk = createAsyncThunk<
   number, // trả về sessionId đã xóa
   number, // input là sessionId
@@ -122,6 +136,49 @@ export const fetchAllUserFocusStatsThunk = createAsyncThunk<
     return data;
   } catch {
     return rejectWithValue("FAILED_TO_FETCH_FOCUS_STATS");
+  }
+});
+
+//focus stats all users in week
+export const fetchWeeklyStatsAllUsersThunk = createAsyncThunk<
+  UserFocusStats[],
+  void,
+  { state: RootState }
+>("focus/fetchWeeklyStatsAllUsers", async (_, { rejectWithValue }) => {
+  try {
+    const res = await api.get("/api/focus/stats/week/all");
+    const data = Array.isArray(res.data.data) ? res.data.data : [];
+    return data;
+  } catch {
+    return rejectWithValue("FAILED_TO_FETCH_WEEKLY_STATS_ALL_USERS");
+  }
+});
+
+// focus stasts yesterday and today
+export const fetchDayComparisonThunk = createAsyncThunk<
+  DayComparison,
+  void,
+  { state: RootState }
+>("focus/fetchDayComparison", async (_, { rejectWithValue }) => {
+  try {
+    const res = await api.get("/api/focus/stats/day-comparison");
+    return res.data.data;
+  } catch {
+    return rejectWithValue("FAILED_TO_FETCH_DAY_COMPARISON");
+  }
+});
+
+//focus stats this week and last week
+export const fetchWeeklyFocusComparisonThunk = createAsyncThunk<
+  WeeklyComparison,
+  void,
+  { state: RootState }
+>("focus/fetchWeeklyComparison", async (_, { rejectWithValue }) => {
+  try {
+    const res = await api.get("/api/focus/stats/week/comparison");
+    return res.data.data;
+  } catch {
+    return rejectWithValue("FAILED_TO_FETCH_WEEKLY_COMPARISON");
   }
 });
 
@@ -164,7 +221,24 @@ const focusSlice = createSlice({
       .addCase(fetchAllUserFocusStatsThunk.fulfilled, (state, action) => {
         state.userStats = action.payload;
       })
-      ;
+    .addCase(fetchWeeklyStatsAllUsersThunk.pending, (state) => {
+      state.loading = true;
+    })
+    .addCase(fetchWeeklyStatsAllUsersThunk.fulfilled, (state, action) => {
+      state.userStats = action.payload;
+      state.loading = false;
+    })
+    .addCase(fetchWeeklyStatsAllUsersThunk.rejected, (state) => {
+      state.loading = false;
+      state.userStats = [];
+    })
+    .addCase(fetchDayComparisonThunk.fulfilled, (state, action) => {
+      state.dayComparison = action.payload;
+    })
+    .addCase(fetchWeeklyFocusComparisonThunk.fulfilled, (state, action) => {
+      state.weeklyComparison = action.payload;
+    })
+    ;
       
   },
 });

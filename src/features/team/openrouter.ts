@@ -15,7 +15,7 @@ export const fetchSubtaskSuggestions = async (taskTitle: string): Promise<string
         messages: [
           {
             role: "user",
-            content: `Liệt kê tối đa 8 subtask cụ thể để thực hiện nhiệm vụ: "${taskTitle}". Trả về định dạng danh sách: "- [nội dung]". Không thêm tiêu đề, mở bài hay giải thích.`
+            content: `Liệt kê tối đa 5 subtask cụ thể để thực hiện nhiệm vụ: "${taskTitle}". Trả về định dạng danh sách: "- [nội dung]". Không thêm tiêu đề, mở bài hay giải thích.`
           }
         ]
       })

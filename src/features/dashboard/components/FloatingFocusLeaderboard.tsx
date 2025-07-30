@@ -53,11 +53,11 @@ export const FloatingFocusLeaderboard = () => {
             <div className="flex items-start justify-between px-6 py-6 shadow-sm">
               <div>
                 <h2 className="mb-1 text-xs font-semibold tracking-wide text-yellow-900 uppercase">
-                  Focus Leaderboard
-                </h2>
-                <p className="text-[11px] text-gray-500">
-                  See who’s leading the pack with the highest focus time today.
-                </p>
+  Focus Leaderboard
+</h2>
+<p className="text-[11px] text-gray-500">
+  Check out who’s leading this week with the most focused minutes. Let’s stay sharp!
+</p>
               </div>
               <button
                 onClick={() => setClosing(true)}

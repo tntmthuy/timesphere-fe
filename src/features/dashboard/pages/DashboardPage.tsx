@@ -6,6 +6,8 @@ import { fetchUserSubscriptionThunk } from "../../subscription/subscriptionSlice
 import { UserStatusCard } from "../components/UserStatusCard";
 import { AssignedTaskList } from "../components/AssignedTaskList";
 import { FloatingFocusLeaderboard } from "../components/FloatingFocusLeaderboard";
+import { FocusDonutChart } from "../components/FocusDonutChart";
+import { WeeklyBarChart } from "../components/WeeklyBarChart";
 
 export const DashboardPage = () => {
   const dispatch = useAppDispatch();
@@ -42,6 +44,24 @@ export const DashboardPage = () => {
       {/* Task list */}
       <section className="mt-10">
         <AssignedTaskList />
+      </section>
+
+      {/* Biểu đồ tập trung */}
+      <section className="mt-12">
+        <h2 className="relative mb-5 flex items-center gap-3 rounded py-2 pl-5 text-[15px] font-semibold tracking-widest text-slate-800 uppercase">
+          <span className="absolute top-0 left-0 h-full w-1 bg-yellow-400" />
+          <span className="relative z-10">Mind On Time</span>
+        </h2>
+        <FocusDonutChart />
+      </section>
+
+      {/* Biểu đồ tuần - cột */}
+      <section className="mt-12">
+        {/* <h2 className="relative mb-5 flex items-center gap-3 rounded py-2 pl-5 text-[15px] font-semibold tracking-widest text-slate-800 uppercase">
+          <span className="absolute top-0 left-0 h-full w-1 bg-yellow-400" />
+          <span className="relative z-10">Weekly Focus Overview</span>
+        </h2> */}
+        <WeeklyBarChart />
       </section>
 
       {/* Nút mở sidebar leaderboard */}

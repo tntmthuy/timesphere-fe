@@ -3,55 +3,87 @@ import type { User } from "../../auth/authSlice";
 import { useAppSelector } from "../../../state/hooks";
 
 export const UserStatusCard = ({ user }: { user: User }) => {
-  const subscription = useAppSelector((state) => state.subscription.info);
+  const subscriptions = useAppSelector((state) => state.subscription.infoList);
+  if (!subscriptions || subscriptions.length === 0) return null;
 
-  const endDate = subscription?.endDate ? new Date(subscription.endDate) : null;
-  const formattedExpire = endDate ? endDate.toLocaleDateString("vi-VN") : null;
-  const daysLeft = endDate
-    ? Math.ceil((endDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
-    : null;
-  const isExpiringSoon = daysLeft !== null && daysLeft <= 7;
+  const recentSub = subscriptions.reduce((latest, current) => {
+    return new Date(current.startDate) > new Date(latest.startDate)
+      ? current
+      : latest;
+  }, subscriptions[0]);
+
+  const startDate = new Date(recentSub.startDate);
+  const endDate = new Date(recentSub.endDate);
+  const formattedStart = startDate.toLocaleDateString("vi-VN");
+  const formattedExpire = endDate.toLocaleDateString("vi-VN");
+  const daysLeft = Math.ceil(
+    (endDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24),
+  );
+  const isExpiringSoon = daysLeft <= 7;
 
   return (
-    <div className="mb-6 rounded-lg bg-yellow-200 p-5 text-[14px] text-gray-800 shadow-md border border-yellow-100">
-      {/* 👤 Access level */}
-      <div className="mb-3">
-        <span className="font-semibold text-yellow-900">
-          Access Level:{" "}
-          <span className="text-yellow-700">{user.role}</span>
-        </span>
-        {user.isAdmin && (
-          <span className="ml-2 inline-block rounded bg-red-100 px-2 py-[2px] text-[12px] font-medium text-red-600">
-            Administrator Privileges
-          </span>
-        )}
-      </div>
-
-      {/* 💎 Premium info */}
-      {user.role === "PREMIUM" && formattedExpire && (
-        <>
-          <div className="mb-2 text-green-700 italic">
-            Your Premium membership is valid until <strong>{formattedExpire}</strong>.
+    <div
+      className={`mb-6 rounded-xl p-5 text-[14px] shadow-lg ${
+        user.role === "PREMIUM"
+          ? "border border-purple-400 bg-gradient-to-br from-indigo-900 via-purple-800 to-black text-white ring-1 ring-purple-500"
+          : "border border-yellow-100 bg-yellow-200 text-gray-800"
+      }`}
+    >
+      {/* 👤 Role + Subscription summary */}
+      {user.role === "PREMIUM" && (
+        <div className="mb-3 flex flex-col space-y-1">
+          {/* Badge + Info (same row) */}
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="inline-flex animate-pulse items-center rounded-full border border-indigo-400 bg-gradient-to-r from-indigo-700 via-purple-600 to-pink-400 px-3 py-1 text-sm font-semibold text-white shadow-md">
+              PREMIUM
+            </span>
+            <span className="text-[13px] text-purple-100">
+              Your Premium membership is active from{" "}
+              <strong>{formattedStart}</strong> to{" "}
+              <strong>{formattedExpire}</strong>.
+            </span>
           </div>
-          {isExpiringSoon && (
-            <div className="text-red-600 font-medium">
-              ⚠️ Your subscription will expire in {daysLeft} day{daysLeft > 1 ? "s" : ""}. Please renew to maintain uninterrupted access.
-            </div>
-          )}
-        </>
+
+          {/* Cảnh báo hoặc thông tin còn thời gian */}
+          <span
+            className={`text-[12px] italic ${
+              isExpiringSoon ? "text-pink-300" : "text-purple-300"
+            }`}
+          >
+            {isExpiringSoon
+              ? `⚠️ Your subscription will expire in ${daysLeft} day${daysLeft > 1 ? "s" : ""}. Please renew to maintain uninterrupted access.`
+              : `Your subscription is valid for another ${daysLeft} day${daysLeft > 1 ? "s" : ""}.`}
+          </span>
+        </div>
       )}
 
-      {/* 🆓 Free plan info */}
+      {/* FREE plan layout */}
       {user.role === "FREE" && (
-        <p className="text-[13px]">
-          You are currently subscribed to the <span className="font-semibold text-gray-700">Free plan</span>.{" "}
+        <div className="mb-3 flex flex-col space-y-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="inline-flex items-center rounded-full border border-slate-300 bg-gradient-to-r from-slate-100 via-slate-200 to-slate-300 px-3 py-1 text-sm font-semibold text-slate-700 shadow-sm">
+              FREE
+            </span>
+            <span className="text-[13px] text-gray-700">
+              You are currently subscribed to the <strong>Free plan</strong>.
+            </span>
+          </div>
           <Link
             to="/mainpage/upgrade"
-            className="ml-1 text-yellow-700 font-semibold underline hover:text-yellow-900"
+            className="text-[12px] text-yellow-700 italic underline hover:text-yellow-900"
           >
             Explore upgrade options →
           </Link>
-        </p>
+        </div>
+      )}
+
+      {/* 🛡️ Admin badge */}
+      {user.isAdmin && (
+        <div className="mt-2">
+          <span className="inline-block rounded bg-red-200 px-2 py-[2px] text-[12px] font-medium text-red-800">
+            Administrator Privileges
+          </span>
+        </div>
       )}
     </div>
   );

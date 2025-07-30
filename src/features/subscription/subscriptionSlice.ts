@@ -32,13 +32,13 @@ export const fetchPlansThunk = createAsyncThunk<
 
 // 🎯 Lấy thông tin gói của user
 export const fetchUserSubscriptionThunk = createAsyncThunk<
-  SubscriptionInfo,
+  SubscriptionInfo[], // vì data là mảng
   void,
   { rejectValue: string }
 >("subscription/fetchInfo", async (_, { rejectWithValue }) => {
   try {
     const res = await api.get("/api/plans/subscription/me");
-    return res.data.data as SubscriptionInfo;
+    return res.data.data as SubscriptionInfo[];
   } catch {
     return rejectWithValue("Không thể tải thông tin gói đăng ký");
   }
@@ -47,6 +47,7 @@ export const fetchUserSubscriptionThunk = createAsyncThunk<
 // ✅ State & Slice
 interface SubscriptionState {
   plans: SubscriptionPlan[];
+  infoList: SubscriptionInfo[]; 
   info: SubscriptionInfo | null;
   loading: boolean;
   error: string | null;
@@ -54,6 +55,7 @@ interface SubscriptionState {
 
 const initialState: SubscriptionState = {
   plans: [],
+  infoList: [],
   info: null,
   loading: false,
   error: null,
@@ -87,8 +89,8 @@ const subscriptionSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(fetchUserSubscriptionThunk.fulfilled, (state, action: PayloadAction<SubscriptionInfo>) => {
-        state.info = action.payload;
+      .addCase(fetchUserSubscriptionThunk.fulfilled, (state, action: PayloadAction<SubscriptionInfo[]>) => {
+        state.infoList = action.payload;
         state.loading = false;
       })
       .addCase(fetchUserSubscriptionThunk.rejected, (state, action) => {

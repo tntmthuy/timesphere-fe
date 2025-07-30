@@ -97,26 +97,26 @@ export const SubTaskHeader: FC<Props> = ({
           </button>
         </div>
       </div>
-      {isPremiumUser && (
-  <button
-    onClick={(e) => {
-      e.stopPropagation();
-      onOpenSuggestionModal?.();
-    }}
-    className="ml-6 flex items-center gap-1 rounded-full bg-gradient-to-r from-purple-700 via-indigo-600 to-blue-600 px-2 py-0.5 text-[11px] text-indigo-200 shadow-md transition hover:brightness-110"
-  >
-    AI suggestion
-  </button>
-)}
-      {/* ➕ Add subtask button (optional) */}
-      {showAddButton && subTasks.length === 0 && (
-        <div className="flex items-center gap-2">
+      <div className="flex items-center gap-3">
+        {isPremiumUser && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onOpenSuggestionModal?.();
+            }}
+            className="flex items-center gap-1 rounded-full bg-gradient-to-r from-purple-700 via-indigo-600 to-blue-600 px-2 py-0.5 text-[11px] text-indigo-200 shadow-md transition hover:brightness-110"
+          >
+            AI suggestion
+          </button>
+        )}
+
+        {showAddButton && subTasks.length === 0 && (
           <button
             onClick={(e) => {
               e.stopPropagation();
               onAddSubtask?.();
             }}
-            className="ml-6 flex items-center gap-1 px-1 py-0.5 text-xs text-gray-500 transition hover:rounded hover:bg-yellow-50 hover:text-yellow-600"
+            className="flex items-center gap-1 px-1 py-0.5 text-xs text-gray-500 transition hover:rounded hover:bg-yellow-50 hover:text-yellow-600"
           >
             <svg viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5">
               <path
@@ -126,8 +126,8 @@ export const SubTaskHeader: FC<Props> = ({
               />
             </svg>
           </button>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };

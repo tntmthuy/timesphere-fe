@@ -50,7 +50,7 @@ export const TaskCard = ({ task, onClick, dragData }: TaskCardProps) => {
     id: task.id,
     data: dragData,
   });
-  
+
   return (
     <div
       ref={setNodeRef}
@@ -65,12 +65,19 @@ export const TaskCard = ({ task, onClick, dragData }: TaskCardProps) => {
       />
 
       {/* Tag priority */}
-      <div className="mb-1">
+      <div className="mb-1 flex items-center gap-2">
         <span
           className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${getPriorityColorClass(task.priority)}`}
         >
           {task.priority ?? ""}
         </span>
+
+        {/* !!! warning nếu quá hạn */}
+        {task.dateDue && new Date(task.dateDue).getTime() < Date.now() && (
+          <div className="absolute top-2 right-2 animate-pulse text-[13px] font-bold text-red-500">
+            !!!
+          </div>
+        )}
       </div>
 
       {/* Title */}

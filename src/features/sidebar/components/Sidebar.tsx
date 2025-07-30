@@ -40,7 +40,9 @@ export const Sidebar = ({ onNewTeam }: SidebarProps) => {
   };
 
   return (
-<aside className="fixed top-0 left-0 h-screen w-64 flex flex-col justify-between bg-black px-4 py-6 text-white z-40">      <div className="space-y-2">
+    <aside className="fixed top-0 left-0 z-40 flex h-screen w-64 flex-col justify-between bg-black px-4 py-6 text-white">
+      {" "}
+      <div className="space-y-2">
         {/* nữa tách ra thành component profile */}
         <div
           className="cursor-pointer rounded-md p-2 transition hover:bg-gray-800 hover:text-white"
@@ -110,7 +112,6 @@ export const Sidebar = ({ onNewTeam }: SidebarProps) => {
           />
         </nav>
       </div>
-
       <div className="space-y-1 border-t border-[#444] pt-4">
         <button
           onClick={() => navigate("/mainpage/upgrade")}

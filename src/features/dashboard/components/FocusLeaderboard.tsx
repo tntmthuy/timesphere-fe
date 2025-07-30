@@ -1,12 +1,19 @@
-import { useAppSelector } from "../../../state/hooks";
+import { useEffect } from "react";
+import { useAppDispatch, useAppSelector } from "../../../state/hooks";
+import { fetchWeeklyStatsAllUsersThunk } from "../../focus/focusSlice";
 
 export const FocusLeaderboard = () => {
+  const dispatch = useAppDispatch();
   const userStats = useAppSelector((state) => state.focus.userStats);
+
+  useEffect(() => {
+    dispatch(fetchWeeklyStatsAllUsersThunk());
+  }, [dispatch]);
 
   const sortedStats = [...userStats].sort((a, b) =>
     b.totalMinutes !== a.totalMinutes
       ? b.totalMinutes - a.totalMinutes
-      : a.name.localeCompare(b.name)
+      : a.name.localeCompare(b.name),
   );
 
   const toHourMinute = (minutes: number) => {
@@ -31,7 +38,12 @@ export const FocusLeaderboard = () => {
 
   const getInitialAvatar = (name: string) => {
     const firstChar = name?.trim()?.charAt(0)?.toUpperCase() ?? "?";
-    const bgColors = ["bg-yellow-400", "bg-orange-400", "bg-pink-400", "bg-green-400"];
+    const bgColors = [
+      "bg-yellow-400",
+      "bg-orange-400",
+      "bg-pink-400",
+      "bg-green-400",
+    ];
     const color = bgColors[firstChar.charCodeAt(0) % bgColors.length];
 
     return (
@@ -45,7 +57,6 @@ export const FocusLeaderboard = () => {
 
   return (
     <section className="w-full px-2 pt-2">
-    
       <div className="rounded-lg border border-yellow-300 bg-white shadow-sm">
         <table className="min-w-full text-xs">
           <thead className="bg-yellow-300 text-[11px] font-medium text-yellow-900 uppercase">
@@ -61,11 +72,14 @@ export const FocusLeaderboard = () => {
                 idx === 0
                   ? "bg-yellow-100 font-bold"
                   : idx === 1
-                  ? "bg-yellow-50"
-                  : "";
+                    ? "bg-yellow-50"
+                    : "";
 
               return (
-                <tr key={idx} className={`border-t border-slate-200 ${rowStyle}`}>
+                <tr
+                  key={idx}
+                  className={`border-t border-slate-200 ${rowStyle}`}
+                >
                   <td className="px-3 py-2">#{idx + 1}</td>
                   <td className="flex items-center gap-2 px-3 py-2">
                     {user.avatar ? (

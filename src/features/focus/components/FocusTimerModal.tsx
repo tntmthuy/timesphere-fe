@@ -4,7 +4,7 @@ import { deleteSessionThunk } from "../focusSlice";
 import { useAppDispatch } from "../../../state/hooks";
 
 type Props = {
-  sessionId: number; 
+  sessionId: number;
   targetLabel: string;
   targetMinutes: number;
   breakMinutes: number;
