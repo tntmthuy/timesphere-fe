@@ -13,7 +13,7 @@ export function ConfirmModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
       <div className="relative w-[280px] max-w-xs rounded-xl bg-white px-6 py-6 text-center shadow-xl">
-        {/* ✅ Nút Close */}
+        {/* Nút Close */}
         <button
           onClick={onCancel}
           className="absolute top-3 right-3 text-gray-400 transition hover:text-gray-600"
@@ -34,24 +34,22 @@ export function ConfirmModal({
           </svg>
         </button>
 
-        {/* ✅ Icon trash má tự chèn */}
         <div className="flex justify-center">
           <img
-            src="/images/trash.jpg" // 📌 Thay bằng ảnh má tự chèn
+            src="/images/warning.png" 
             alt="Trash"
             className="h-45 w-50"
           />
         </div>
 
-        {/* ✅ Tiêu đề */}
+        {/* Tiêu đề */}
         <h2 className="text-lg font-bold text-gray-900">{title}</h2>
 
-        {/* ✅ Văn bản đúng dòng như ảnh */}
+        {/* Văn bản đúng dòng như ảnh */}
         <p className="text-[10px] whitespace-pre-line text-gray-600">
           {message}
         </p>
 
-        {/* ✅ Hai nút cùng dòng, cách đều chill */}
         <div className="mt-3 flex flex-col items-center space-y-3">
           {/* Confirm button */}
           <button

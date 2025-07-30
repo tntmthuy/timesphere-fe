@@ -113,6 +113,7 @@ export const updateSubtaskTitleThunk = createAsyncThunk(
     }
   }
 );
+
 //tạo nhiều subtask
 export const createMultipleSubtasksThunk = createAsyncThunk(
   "kanban/createSubtasksBulk",

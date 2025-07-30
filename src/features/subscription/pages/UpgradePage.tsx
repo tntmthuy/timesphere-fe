@@ -6,6 +6,7 @@ import { PlanCheckoutSidebar } from "../components/PlanCheckoutSidebar";
 import { PremiumThankYouModal } from "../components/PremiumThanhYouModal";
 import axios from "axios";
 import { fetchUserProfileThunk } from "../../auth/authSlice";
+import { ConfirmModal } from "../../team/components/ConfirmModal";
 
 type SubscriptionPlan = {
   type: "WEEKLY" | "MONTHLY" | "YEARLY";
@@ -24,13 +25,22 @@ const planDescriptions: Record<SubscriptionPlan["type"], string> = {
 export const UpgradePage = () => {
   const dispatch = useAppDispatch();
   const { plans, loading } = useAppSelector((state) => state.subscription);
+  const user = useAppSelector((state) => state.auth.user);
 
-  //SỬA SAU, UI TRƯỚC
   const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlan | null>(
     null,
   );
   const [showModal, setShowModal] = useState(false);
-
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const handleSelectPlan = (plan: SubscriptionPlan) => {
+    if (user?.role === "PREMIUM") {
+      setSelectedPlan(plan);
+      setShowConfirmModal(true);
+    } else {
+      setSelectedPlan(plan);
+      setShowModal(true);
+    }
+  };
   useEffect(() => {
     dispatch(fetchPlansThunk());
   }, [dispatch]);
@@ -128,10 +138,7 @@ export const UpgradePage = () => {
                       {plan.type.toLowerCase()}
                     </span>
                     <button
-                      onClick={() => {
-                        setSelectedPlan(plan);
-                        setShowModal(true);
-                      }}
+                      onClick={() => handleSelectPlan(plan)}
                       type="button"
                       className="rounded bg-yellow-500 px-5 py-2 text-sm font-semibold text-white hover:bg-yellow-600 focus:ring-2 focus:ring-yellow-400 focus:outline-none"
                     >
@@ -140,6 +147,20 @@ export const UpgradePage = () => {
                   </div>
                 </div>
               ))}
+              {showConfirmModal && selectedPlan && (
+                <ConfirmModal
+                  title="You Already Have PREMIUM"
+                  message={`Continuing will reset the subscription from the beginning.`}
+                  onConfirm={() => {
+                    setShowConfirmModal(false);
+                    setShowModal(true);
+                  }}
+                  onCancel={() => {
+                    setSelectedPlan(null);
+                    setShowConfirmModal(false);
+                  }}
+                />
+              )}
             </div>
           )}
           {selectedPlan && showModal && (

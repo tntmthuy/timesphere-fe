@@ -7,4 +7,6 @@ export type KanbanColumnDto = {
   title: string;
   position: number;
   tasks: TaskDto[];
+
+  isPlaceholder?: boolean;
 };
