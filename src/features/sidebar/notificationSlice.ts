@@ -56,6 +56,18 @@ export const markNotificationAsRead = createAsyncThunk<
   }
 });
 
+// mark all
+export const markAllNotificationsAsRead = createAsyncThunk<
+  void,
+  void,
+  { state: RootState }
+>("notification/markAllAsRead", async (_, { rejectWithValue }) => {
+  try {
+    await api.post("/api/notifications/read-all");
+  } catch {
+    return rejectWithValue("FAILED_TO_MARK_ALL_AS_READ");
+  }
+});
 
 //delete
 export const deleteNotificationThunk = createAsyncThunk<
@@ -71,6 +83,18 @@ export const deleteNotificationThunk = createAsyncThunk<
   }
 });
 
+//delete all
+export const deleteAllNotificationsThunk = createAsyncThunk<
+  void,
+  void,
+  { state: RootState }
+>("notification/deleteAll", async (_, { rejectWithValue }) => {
+  try {
+    await api.delete("/api/notifications/delete-all");
+  } catch {
+    return rejectWithValue("FAILED_TO_DELETE_ALL_NOTIFICATIONS");
+  }
+});
 
 //Slice
 const notificationSlice = createSlice({
@@ -100,6 +124,14 @@ const notificationSlice = createSlice({
     builder.addCase(deleteNotificationThunk.fulfilled, (state, action) => {
       const id = action.payload;
       state.list = state.list.filter((n) => n.id !== id);
+    });
+    builder.addCase(markAllNotificationsAsRead.fulfilled, (state) => {
+      state.list.forEach((noti) => {
+        noti.read = true;
+      });
+    });
+    builder.addCase(deleteAllNotificationsThunk.fulfilled, (state) => {
+      state.list = [];
     });
   },
 });
