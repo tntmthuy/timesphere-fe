@@ -55,9 +55,9 @@ export const KanbanColumn = ({
       );
       setTitle(res.data.data?.title ?? cleanTitle);
       toast.dismiss();
-      toast.success("New column added.");
+      toast.success("Column updated.");
     } catch {
-      toast.error("Failed to create.");
+      toast.error("Failed to update.");
     }
   };
 
