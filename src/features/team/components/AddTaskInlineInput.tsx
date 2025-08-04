@@ -21,6 +21,7 @@ export const AddTaskInlineInput = ({ columnId, teamId, onAddTask }: Props) => {
     if (editing && inputRef.current) inputRef.current.focus();
   }, [editing]);
   const dispatch = useAppDispatch();
+  
   const handleSubmit = async () => {
     const trimmed = value.trim();
     if (!trimmed || !token) return;
@@ -37,6 +38,7 @@ export const AddTaskInlineInput = ({ columnId, teamId, onAddTask }: Props) => {
       toast.error("Unable to create task");
     }
   };
+  
   const handleBlur = () => {
     const trimmed = value.trim();
 

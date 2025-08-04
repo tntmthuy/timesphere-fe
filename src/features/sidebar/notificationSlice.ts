@@ -96,6 +96,18 @@ export const deleteAllNotificationsThunk = createAsyncThunk<
   }
 });
 
+//hệ thống thông báo
+export const remindDeadlineThunk = createAsyncThunk<void, void>(
+  "notification/remindDeadline",
+  async (_, { rejectWithValue }) => {
+    try {
+      await api.post("/api/notifications/test-remind-deadline");
+    } catch {
+      return rejectWithValue("FAILED_TO_TRIGGER_REMINDER");
+    }
+  }
+);
+
 //Slice
 const notificationSlice = createSlice({
   name: "notification",

@@ -23,6 +23,7 @@ import type { AttachedFileDTO } from "../comment";
 import { fetchTeamCalendarThunk, searchMembersInTeamThunk } from "../teamSlice";
 import { SubtaskSuggestionModal } from "./SubtaskSugesstionModal";
 import { useSubtaskSuggestion } from "../useSubtakSugesstion";
+import { fetchNotificationsThunk, remindDeadlineThunk } from "../../sidebar/notificationSlice";
 
 type TaskDetailModalProps = {
   task: TaskDto;
@@ -151,9 +152,9 @@ export const TaskDetailModal = ({
     handleOpenSuggestions,
     handleRetrySuggestions,
   } = useSubtaskSuggestion(subTasks, handleSubTaskChange, task.taskTitle);
-const handleRetry = () => {
-  handleRetrySuggestions(); // Gọi lại API từ hook
-};
+  const handleRetry = () => {
+    handleRetrySuggestions(); // Gọi lại API từ hook
+  };
 
   //upload
   const uploadFiles = async (
@@ -318,7 +319,6 @@ const handleRetry = () => {
                 isLoading={isLoadingSuggestion}
                 taskId={task.id}
                 onRetry={handleRetry}
-
               />
 
               {!isCollapsed && (
@@ -413,10 +413,12 @@ const handleRetry = () => {
           <div className="col-span-1 mt-12 space-y-6">
             <DueDatePicker
               value={dueDate}
-              onChange={(date) => {
+              onChange={async (date) => {
                 setDueDate(date);
                 const formatted = date ? formatDateLocal(date) : null;
                 performSave({ dateDue: formatted });
+                await dispatch(remindDeadlineThunk());
+                await dispatch(fetchNotificationsThunk());
               }}
             />
             <PriorityDropdown
