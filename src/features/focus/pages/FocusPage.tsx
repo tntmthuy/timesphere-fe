@@ -9,9 +9,11 @@ import {
   fetchWeeklyMinutesThunk,
   startSessionThunk,
   endSessionThunk,
+  deleteSessionThunk,
 } from "../focusSlice";
 import type { RootState } from "../../../state/store";
 import { useAppDispatch } from "../../../state/hooks";
+import { ConfirmModal } from "../../team/components/ConfirmModal";
 
 const formatMinutes = (total: number): string => {
   const hours = Math.floor(total / 60);
@@ -28,6 +30,9 @@ export const FocusPage = () => {
   const [description, setDescription] = useState("");
   const [showTimer, setShowTimer] = useState(false);
   const [activeSessionId, setActiveSessionId] = useState<number | null>(null);
+  const [selectedSessionId, setSelectedSessionId] = useState<number | null>(
+    null,
+  );
 
   const dispatch = useAppDispatch();
   const { sessions, loading, weeklyMinutes } = useSelector(
@@ -60,7 +65,7 @@ export const FocusPage = () => {
         endSessionThunk({
           sessionId: activeSessionId,
           // actualMinutes: parseInt(focusTime),
-          actualMinutes: 1,
+          actualMinutes: 27,
         }),
       ).unwrap();
 
@@ -71,6 +76,22 @@ export const FocusPage = () => {
     } catch {
       // handle error if needed
     }
+  };
+
+  //xóa phiên
+  const handleDelete = (id: number) => {
+    setSelectedSessionId(id); // mở modal
+  };
+
+  const handleConfirmDelete = () => {
+    if (selectedSessionId !== null) {
+      dispatch(deleteSessionThunk(selectedSessionId));
+      setSelectedSessionId(null); // đóng modal
+    }
+  };
+
+  const handleCancelDelete = () => {
+    setSelectedSessionId(null); // đóng modal
   };
 
   return (
@@ -119,7 +140,19 @@ export const FocusPage = () => {
         </div>
 
         {/* ➡️ Right */}
-        <FocusHistoryCard sessions={sessions} loading={loading} />
+        <FocusHistoryCard
+          sessions={sessions}
+          loading={loading}
+          onDelete={handleDelete}
+        />
+        {selectedSessionId !== null && (
+          <ConfirmModal
+            title="Delete this session?"
+            message="Deleted sessions will no longer be counted in your stats."
+            onConfirm={handleConfirmDelete}
+            onCancel={handleCancelDelete}
+          />
+        )}
       </div>
     </div>
   );

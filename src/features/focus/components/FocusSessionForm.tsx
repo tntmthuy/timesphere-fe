@@ -37,7 +37,7 @@ export const FocusSessionForm = ({
               onChange={(e) => onChangeFocus(e.target.value)}
               className="mt-1 w-full rounded-md border border-yellow-300 bg-white px-3 py-2 text-sm"
             >
-              <option value="1">Dev Test (3s)</option>
+              <option value="1">Dev Test (3s)</option>              
               <option value="25">25 min</option>
               <option value="30">30 min</option>
               <option value="45">45 min</option>
@@ -54,7 +54,8 @@ export const FocusSessionForm = ({
               className="mt-1 w-full rounded-md border border-yellow-300 bg-white px-3 py-2 text-sm"
             >
               <option value="0.05">Dev Break (3s)</option>
-              <option value="5">5 min</option> // ✅ thêm value rõ ràng
+              <option value="0">Off</option>
+              <option value="5">5 min</option>
               <option value="10">10 min</option>
               <option value="15">15 min</option>
             </select>
