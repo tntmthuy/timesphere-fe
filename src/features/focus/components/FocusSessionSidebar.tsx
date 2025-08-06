@@ -19,6 +19,19 @@ export const FocusSessionSidebar = ({ sessions, onClose, onDelete }: Props) => {
     }
   }, [isClosing, onClose]);
 
+  const formatMinutes = (total: number): string => {
+    const hours = Math.floor(total / 60);
+    const minutes = total % 60;
+
+    const hrLabel = hours === 1 ? "hr" : "hrs";
+    const minLabel = minutes === 1 ? "min" : "mins";
+
+    const hrsText = hours > 0 ? `${hours} ${hrLabel}` : "";
+    const minText = minutes > 0 ? `${minutes} ${minLabel}` : "";
+
+    return [hrsText, minText].filter(Boolean).join(" ");
+  };
+
   return (
     <div
       className="fixed inset-0 z-50 flex justify-end"
@@ -28,20 +41,34 @@ export const FocusSessionSidebar = ({ sessions, onClose, onDelete }: Props) => {
       }}
     >
       <div
-        className={`flex h-full w-[400px] flex-col bg-white shadow-lg ${
+        className={`flex h-full w-[400px] flex-col shadow-lg ${
           isClosing ? "animate-slideout" : "animate-slidein"
         }`}
+        style={{
+          backgroundImage: "url('/images/focus1.jpg')",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+          backgroundColor: "rgba(255,255,255,0.9)", // nếu muốn lớp trắng mờ
+        }}
       >
         {/* Header */}
-        <div className="flex items-center justify-between border-b px-6 py-4">
-          <h2 className="text-xl font-bold text-yellow-900">
-            All Focus Sessions
-          </h2>
+        {/* 📌 Header tiêu đề + nút close */}
+        <div className="flex items-start justify-between px-6 py-6 shadow-sm">
+          <div>
+            <h2 className="mb-1 text-xs font-semibold tracking-wide text-yellow-900 uppercase">
+              All Focus Sessions
+            </h2>
+            <p className="text-[11px] text-gray-700">
+              Here’s a complete log of your focus sessions. Reflect on your
+              journey, celebrate your progress, and keep going strong!
+            </p>
+          </div>
           <button
-            className="text-sm text-yellow-700 hover:underline"
             onClick={() => setIsClosing(true)}
+            className="text-sm text-yellow-700 transition hover:scale-[1.05] hover:text-red-500"
           >
-            ✕ Close
+            ✕
           </button>
         </div>
 
@@ -85,7 +112,7 @@ export const FocusSessionSidebar = ({ sessions, onClose, onDelete }: Props) => {
                     </div>
                   )}
                   <div className="mt-1 text-sm font-bold text-yellow-900">
-                    {session.actualMinutes} mins
+                    {formatMinutes(session.actualMinutes)}
                   </div>
                 </div>
               );

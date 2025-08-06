@@ -14,6 +14,8 @@ import {
 import type { RootState } from "../../../state/store";
 import { useAppDispatch } from "../../../state/hooks";
 import { ConfirmModal } from "../../team/components/ConfirmModal";
+import { FocusCalendar } from "../components/FocusCalendar";
+import { Link } from "react-router-dom";
 
 const formatMinutes = (total: number): string => {
   const hours = Math.floor(total / 60);
@@ -32,6 +34,9 @@ export const FocusPage = () => {
   const [activeSessionId, setActiveSessionId] = useState<number | null>(null);
   const [selectedSessionId, setSelectedSessionId] = useState<number | null>(
     null,
+  );
+  const isPremium = useSelector(
+    (state: RootState) => state.auth.user?.isPremium,
   );
 
   const dispatch = useAppDispatch();
@@ -154,6 +159,26 @@ export const FocusPage = () => {
           />
         )}
       </div>
+      <h2 className="relative mt-10 flex items-center gap-3 rounded pl-5 text-[15px] font-semibold tracking-widest text-slate-800 uppercase">
+        <span className="absolute top-0 left-0 h-full w-1 bg-yellow-400" />
+        <span className="relative z-10">Your Focus Journey</span>
+      </h2>
+      {isPremium ? (
+        <FocusCalendar sessions={sessions} />
+      ) : (
+        <div className="mt-6 rounded-md bg-yellow-100 p-4 text-sm text-yellow-800 shadow-sm">
+          Focus Calendar is available for Premium users. Upgrade to unlock
+          your journey view!
+          <div className="mt-3">
+            <Link
+              to="/mainpage/upgrade"
+              className="text-[12px] text-yellow-700 italic underline hover:text-yellow-900"
+            >
+              Explore upgrade options →
+            </Link>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

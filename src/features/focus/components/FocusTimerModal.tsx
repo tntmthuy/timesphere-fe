@@ -57,7 +57,7 @@ export const FocusTimerModal = ({
   const hasReachedBreak =
     breakElapsed >= (isBreakTestMode ? 3 : breakMinutes * 60);
 
-  // 🔊 Load âm thanh 1 lần
+  // Load âm thanh 1 lần
   useEffect(() => {
     const preload = setTimeout(() => {
       focusSoundRef.current = new Audio("/sounds/microwave-timer.mp3");
@@ -87,7 +87,7 @@ export const FocusTimerModal = ({
     }
   }, [mode, hasReachedBreak, breakSoundPlayed]);
 
-  // ⏱️ Focus timer
+  // ⏱Focus timer
   useEffect(() => {
     if (paused) return;
     const interval = setInterval(() => {
@@ -138,7 +138,17 @@ export const FocusTimerModal = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/40 backdrop-blur-sm">
-      <div className="relative flex h-[420px] w-[360px] flex-col justify-between rounded-xl border border-yellow-200 bg-yellow-50 p-8 text-center shadow-lg">
+      <div
+        className="relative flex h-[460px] w-[360px] flex-col justify-between rounded-xl border border-yellow-200 p-8 text-center shadow-lg"
+        style={{
+          backgroundImage: "url('/images/focus5.jpg')",
+          backgroundSize: "cover",
+          backgroundRepeat: "no-repeat",
+          backgroundPosition: "bottom center",
+          backgroundColor: "rgba(255, 247, 209, 0.95)",
+        }}
+      >
+        {" "}
         {/* ❌ Close */}
         <button
           onClick={() => {
@@ -169,7 +179,6 @@ It won't be recorded as a completed focus — are you sure you want to exit?`}
             }}
           />
         )}
-
         {/* 🕐 Title */}
         <h2 className="text-xl font-semibold text-yellow-800">
           {mode === "break"
@@ -181,17 +190,15 @@ It won't be recorded as a completed focus — are you sure you want to exit?`}
             Break Mode
           </span>
         )}
-
         {/* ⏱️ Main timer & quote */}
         <div className="flex flex-1 flex-col items-center justify-center">
           <div className="text-4xl font-bold text-slate-700">
             {mode === "focus" ? format(elapsed) : format(currentBreakCountdown)}
           </div>
-          <p className="mt-3 max-w-[80%] text-sm text-yellow-700 italic">
-            {currentQuote}
+          <p className="mt-3 max-w-[80%] text-sm text-amber-700 italic">
+            “{currentQuote}”
           </p>
         </div>
-
         {/* 🎯 Controls */}
         <div className="flex justify-center">
           {mode === "break" ? (
@@ -208,14 +215,14 @@ It won't be recorded as a completed focus — are you sure you want to exit?`}
                 setPaused(false);
                 setBreakSoundPlayed(false);
               }}
-              className="rounded-md bg-yellow-600 px-6 py-3 text-sm font-semibold text-white hover:bg-yellow-700"
+              className="rounded-md bg-amber-900 px-6 py-3 text-sm font-semibold text-white hover:bg-amber-600"
             >
               End Session
             </button>
           ) : (
             <button
               onClick={() => setPaused((p) => !p)}
-              className="rounded-full bg-yellow-500 p-5 transition duration-200 hover:bg-yellow-600"
+              className="rounded-full bg-amber-900 p-5 transition duration-200 hover:bg-amber-600"
             >
               {paused ? (
                 <svg

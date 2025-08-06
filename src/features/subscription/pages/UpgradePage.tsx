@@ -97,7 +97,7 @@ export const UpgradePage = () => {
             {[
               "Unlimited team creation",
               "AI-powered sub-task suggestions",
-              "Team calendar",
+              "Calendar",
             ].map((item) => (
               <li key={item} className="flex items-center gap-4">
                 <span className="h-3 w-3 rounded-full bg-yellow-500" />

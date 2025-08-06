@@ -39,7 +39,7 @@ export const FocusHistoryCard = ({
             viewBox="0 0 24 24"
             strokeWidth={1.5}
             stroke="currentColor"
-            className="ml-2 h-6 w-6 text-white"
+            className="ml-2 h-6 w-6 text-white mr-4 cursor-pointer hover:text-gray-200"
           >
             <path
               strokeLinecap="round"

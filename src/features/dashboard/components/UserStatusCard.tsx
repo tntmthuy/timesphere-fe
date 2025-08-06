@@ -20,7 +20,7 @@ export const UserStatusCard = ({ user }: { user: User }) => {
     (endDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24),
   );
   const isExpiringSoon = daysLeft <= 7;
-
+console.log("User role:", user.role);
   return (
     <div
       className={`mb-6 rounded-xl p-5 text-[14px] shadow-lg ${
