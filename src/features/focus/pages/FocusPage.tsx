@@ -70,7 +70,7 @@ export const FocusPage = () => {
         endSessionThunk({
           sessionId: activeSessionId,
           // actualMinutes: parseInt(focusTime),
-          actualMinutes: 27,
+          actualMinutes: 44,
         }),
       ).unwrap();
 

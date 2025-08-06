@@ -136,6 +136,14 @@ export const FocusTimerModal = ({
       .padStart(2, "0")}:${sec.toString().padStart(2, "0")}`;
   };
 
+  const formatTargetLabel = (minutes: number) => {
+    const h = Math.floor(minutes / 60);
+    const m = minutes % 60;
+    if (h > 0 && m > 0) return `${h}h ${m}m`;
+    if (h > 0) return `${h}h`;
+    return `${m}m`;
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/40 backdrop-blur-sm">
       <div
@@ -183,7 +191,7 @@ It won't be recorded as a completed focus — are you sure you want to exit?`}
         <h2 className="text-xl font-semibold text-yellow-800">
           {mode === "break"
             ? `Focus (${format(elapsed)})`
-            : `Focus (${targetMinutes} min)`}
+            : `Focus (${formatTargetLabel(targetMinutes)})`}
         </h2>
         {mode === "break" && (
           <span className="mt-1 inline-block rounded-full bg-yellow-300 px-3 py-1 text-xs font-medium text-yellow-800">

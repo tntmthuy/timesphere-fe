@@ -1,3 +1,5 @@
+import { FocusTimePicker } from "./FocusTimePicker";
+
 // src/components/FocusSessionForm.tsx
 type Props = {
   focusTime: string;
@@ -32,17 +34,7 @@ export const FocusSessionForm = ({
             <label className="text-sm font-medium text-yellow-800">
               Focus Duration
             </label>
-            <select
-              value={focusTime}
-              onChange={(e) => onChangeFocus(e.target.value)}
-              className="mt-1 w-full rounded-md border border-yellow-300 bg-white px-3 py-2 text-sm"
-            >
-              <option value="1">Dev Test (3s)</option>              
-              <option value="25">25 min</option>
-              <option value="30">30 min</option>
-              <option value="45">45 min</option>
-              <option value="60">60 min</option>
-            </select>
+            <FocusTimePicker value={focusTime} onChange={onChangeFocus} />
           </div>
           <div>
             <label className="text-sm font-medium text-yellow-800">
@@ -53,11 +45,13 @@ export const FocusSessionForm = ({
               onChange={(e) => onChangeBreak(e.target.value)}
               className="mt-1 w-full rounded-md border border-yellow-300 bg-white px-3 py-2 text-sm"
             >
-              <option value="0.05">Dev Break (3s)</option>
+              <option value="0.05">Dev Test (3s)</option>
               <option value="0">Off</option>
-              <option value="5">5 min</option>
-              <option value="10">10 min</option>
-              <option value="15">15 min</option>
+              {[5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55].map((m) => (
+                <option key={m} value={m.toString()}>
+                  {m} min
+                </option>
+              ))}
             </select>
           </div>
         </div>
