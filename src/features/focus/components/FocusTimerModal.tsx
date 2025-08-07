@@ -50,6 +50,10 @@ export const FocusTimerModal = ({
   const hasReachedTarget = elapsed >= (isDevTestMode ? 3 : targetMinutes * 60);
   const currentBreakCountdown = Math.max(0, breakMinutes * 60 - breakElapsed);
 
+  //focus
+  const targetSeconds = isDevTestMode ? 3 : targetMinutes * 60;
+  const remainingSeconds = Math.max(0, targetSeconds - elapsed);
+
   //break
   const breakSoundRef = useRef<HTMLAudioElement | null>(null);
   const [breakSoundPlayed, setBreakSoundPlayed] = useState(false);
@@ -131,17 +135,14 @@ export const FocusTimerModal = ({
     const h = Math.floor(s / 3600);
     const m = Math.floor((s % 3600) / 60);
     const sec = s % 60;
-    return `${h.toString().padStart(2, "0")}:${m
-      .toString()
-      .padStart(2, "0")}:${sec.toString().padStart(2, "0")}`;
-  };
 
-  const formatTargetLabel = (minutes: number) => {
-    const h = Math.floor(minutes / 60);
-    const m = minutes % 60;
-    if (h > 0 && m > 0) return `${h}h ${m}m`;
-    if (h > 0) return `${h}h`;
-    return `${m}m`;
+    if (targetMinutes >= 60) {
+      return `${h.toString().padStart(2, "0")}:${m
+        .toString()
+        .padStart(2, "0")}:${sec.toString().padStart(2, "0")}`;
+    }
+
+    return `${m.toString().padStart(2, "0")}:${sec.toString().padStart(2, "0")}`;
   };
 
   return (
@@ -188,20 +189,24 @@ It won't be recorded as a completed focus — are you sure you want to exit?`}
           />
         )}
         {/* 🕐 Title */}
-        <h2 className="text-xl font-semibold text-yellow-800">
-          {mode === "break"
-            ? `Focus (${format(elapsed)})`
-            : `Focus (${formatTargetLabel(targetMinutes)})`}
-        </h2>
+        {mode === "focus" && (
+          <h2 className="text-xl font-semibold text-yellow-800">
+            {elapsed < targetSeconds
+              ? `Focus (${format(targetSeconds)})`
+              : `Focus (${format(elapsed)})`}
+          </h2>
+        )}
         {mode === "break" && (
-          <span className="mt-1 inline-block rounded-full bg-yellow-300 px-3 py-1 text-xs font-medium text-yellow-800">
+          <span className="mt-1 inline-flex items-center justify-center rounded-full bg-black px-1.5 py-1 text-xs font-medium text-gray-100">
             Break Mode
           </span>
         )}
         {/* ⏱️ Main timer & quote */}
         <div className="flex flex-1 flex-col items-center justify-center">
           <div className="text-4xl font-bold text-slate-700">
-            {mode === "focus" ? format(elapsed) : format(currentBreakCountdown)}
+            {mode === "focus"
+              ? format(remainingSeconds)
+              : format(currentBreakCountdown)}
           </div>
           <p className="mt-3 max-w-[80%] text-sm text-amber-700 italic">
             “{currentQuote}”
