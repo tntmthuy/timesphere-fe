@@ -49,11 +49,10 @@ export const FocusSessionSidebar = ({ sessions, onClose, onDelete }: Props) => {
           backgroundSize: "cover",
           backgroundPosition: "center",
           backgroundRepeat: "no-repeat",
-          backgroundColor: "rgba(255,255,255,0.9)", // nếu muốn lớp trắng mờ
+          backgroundColor: "rgba(255,255,255,0.9)",
         }}
       >
         {/* Header */}
-        {/* 📌 Header tiêu đề + nút close */}
         <div className="flex items-start justify-between px-6 py-6 shadow-sm">
           <div>
             <h2 className="mb-1 text-xs font-semibold tracking-wide text-yellow-900 uppercase">

@@ -29,7 +29,7 @@ console.log("User role:", user.role);
           : "border border-yellow-100 bg-yellow-200 text-gray-800"
       }`}
     >
-      {/* 👤 Role + Subscription summary */}
+      {/* Role + Subscription summary */}
       {user.role === "PREMIUM" && (
         <div className="mb-3 flex flex-col space-y-1">
           {/* Badge + Info (same row) */}
@@ -77,7 +77,7 @@ console.log("User role:", user.role);
         </div>
       )}
 
-      {/* 🛡️ Admin badge */}
+      {/* Admin badge */}
       {user.isAdmin && (
         <div className="mt-2">
           <span className="inline-block rounded bg-red-200 px-2 py-[2px] text-[12px] font-medium text-red-800">

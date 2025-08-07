@@ -158,13 +158,13 @@ export const FocusTimerModal = ({
         }}
       >
         {" "}
-        {/* ❌ Close */}
+        {/* Nút Close */}
         <button
           onClick={() => {
             if (mode === "focus" && !hasReachedTarget) {
               setShowConfirm(true); // 👉 mở modal xác nhận
             } else {
-              onClose(); // ✅ nếu break mode hoặc đã hết giờ ➜ đóng bình thường
+              onEnd();
             }
           }}
           className="absolute top-3 right-3 text-lg text-slate-600 hover:text-slate-800"

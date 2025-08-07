@@ -42,7 +42,7 @@ export const FocusCalendar = ({ sessions }: Props) => {
     return (
       <div className="flex flex-col items-center rounded-lg bg-white/30 p-4 shadow-sm backdrop-blur-[1px]">
         {" "}
-        {/* 🔼 Header tháng */}
+        {/* Header tháng */}
         <div className="mb-4 flex w-full items-center justify-between">
           {showLeftArrow ? (
             <button
@@ -70,7 +70,7 @@ export const FocusCalendar = ({ sessions }: Props) => {
             <div className="w-6" />
           )}
         </div>
-        {/* 🗓️ Tiêu đề thứ trong tuần */}
+        {/* Tiêu đề thứ trong tuần */}
         <div className="mb-2 grid grid-cols-7 gap-2">
           {WEEKDAYS.map((day) => (
             <div
@@ -81,7 +81,7 @@ export const FocusCalendar = ({ sessions }: Props) => {
             </div>
           ))}
         </div>
-        {/* 📅 Các ngày */}
+        {/* Các ngày */}
         <div className="grid grid-cols-7 gap-2">
           {Array.from({ length: startOffset }).map((_, idx) => (
             <div

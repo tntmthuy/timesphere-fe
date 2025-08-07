@@ -28,7 +28,7 @@ export const FocusSessionForm = ({
       <div className="mb-4 h-px w-full bg-yellow-400" />
 
       <div className="flex flex-col gap-6">
-        {/* 🔁 Row 1: Focus + Break */}
+        {/* Focus + Break */}
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <div>
             <label className="text-sm font-medium text-yellow-800">
@@ -56,7 +56,6 @@ export const FocusSessionForm = ({
           </div>
         </div>
 
-        {/* 📌 Row 2: Description */}
         <div>
           <label className="mb-1 text-sm font-medium text-yellow-800">
             Session Description

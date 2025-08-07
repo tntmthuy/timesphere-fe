@@ -71,7 +71,6 @@ export const UpgradePage = () => {
 
   return (
     <div className="min-h-screen bg-yellow-50 px-20 py-24">
-      {/* 🧡 Hàng đầu: Header giữa */}
       <div className="mb-20 text-center">
         <h2 className="text-4xl font-bold text-yellow-900">
           Upgrade Your Account
@@ -86,9 +85,7 @@ export const UpgradePage = () => {
         </div>
       </div>
 
-      {/* 🛠 Hàng 2: layout 2 cột */}
       <div className="grid grid-cols-1 gap-20 md:grid-cols-3">
-        {/* ✅ Cột trái: lợi ích premium */}
         <div>
           <h3 className="mb-6 text-xl font-bold text-yellow-900">
             Why go premium?
@@ -107,7 +104,6 @@ export const UpgradePage = () => {
           </ul>
         </div>
 
-        {/* ✅ Cột phải: tiêu đề + danh sách gói */}
         <div className="md:col-span-2">
           <h3 className="mb-6 text-xl font-bold text-yellow-900">
             Choose your plan

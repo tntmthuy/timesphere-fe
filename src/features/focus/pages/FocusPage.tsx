@@ -59,7 +59,7 @@ export const FocusPage = () => {
       setShowTimer(true);
       setDescription("");
     } catch {
-      // handle error if needed
+      // để sau
     }
   };
 
@@ -70,7 +70,7 @@ export const FocusPage = () => {
         endSessionThunk({
           sessionId: activeSessionId,
           // actualMinutes: parseInt(focusTime),
-          actualMinutes: 44,
+          actualMinutes: 78,
         }),
       ).unwrap();
 
@@ -79,7 +79,7 @@ export const FocusPage = () => {
       setShowTimer(false);
       setActiveSessionId(null);
     } catch {
-      // handle error if needed
+      // để sau
     }
   };
 
@@ -118,9 +118,7 @@ export const FocusPage = () => {
         </p>
       </div>
 
-      {/* 🧱 Layout: Left ➜ Form + Timer | Right ➜ History */}
       <div className="grid grid-cols-1 items-stretch gap-6 md:grid-cols-2">
-        {/* ⬅️ Left */}
         <div className="flex h-full flex-col gap-4">
           <FocusSessionForm
             focusTime={focusTime}
@@ -144,7 +142,6 @@ export const FocusPage = () => {
           )}
         </div>
 
-        {/* ➡️ Right */}
         <FocusHistoryCard
           sessions={sessions}
           loading={loading}
