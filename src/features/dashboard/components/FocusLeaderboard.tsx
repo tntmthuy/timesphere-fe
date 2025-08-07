@@ -109,12 +109,12 @@ export const FocusLeaderboard = () => {
         <div className="mt-6">
           <div className="mx-auto flex w-full max-w-md items-center justify-between rounded-xl border border-yellow-300 bg-yellow-100 px-5 py-4 shadow-md">
             <span className="text-sm font-medium text-yellow-700">
-              Hạng của bạn
+              Your rank
             </span>
             <span className="text-2xl font-bold text-yellow-800">
               #{currentUserRank + 1}
             </span>
-            <span className="text-sm text-yellow-600">tuần này</span>
+            <span className="text-sm text-yellow-600">this week</span>
           </div>
         </div>
       )}
