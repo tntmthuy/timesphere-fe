@@ -1,26 +1,35 @@
 import { Link } from "react-router-dom";
 import type { User } from "../../auth/authSlice";
 import { useAppSelector } from "../../../state/hooks";
+import type { SubscriptionInfo } from "../../subscription/subscriptionSlice";
 
 export const UserStatusCard = ({ user }: { user: User }) => {
   const subscriptions = useAppSelector((state) => state.subscription.infoList);
-  if (!subscriptions || subscriptions.length === 0) return null;
+  const hasSubscription = subscriptions && subscriptions.length > 0;
 
-  const recentSub = subscriptions.reduce((latest, current) => {
-    return new Date(current.startDate) > new Date(latest.startDate)
-      ? current
-      : latest;
-  }, subscriptions[0]);
+  let recentSub: SubscriptionInfo | null = null;
+  let formattedStart = "";
+  let formattedExpire = "";
+  let daysLeft = 0;
+  let isExpiringSoon = false;
 
-  const startDate = new Date(recentSub.startDate);
-  const endDate = new Date(recentSub.endDate);
-  const formattedStart = startDate.toLocaleDateString("vi-VN");
-  const formattedExpire = endDate.toLocaleDateString("vi-VN");
-  const daysLeft = Math.ceil(
-    (endDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24),
-  );
-  const isExpiringSoon = daysLeft <= 7;
-console.log("User role:", user.role);
+  if (hasSubscription) {
+    recentSub = subscriptions.reduce((latest, current) => {
+      return new Date(current.startDate) > new Date(latest.startDate)
+        ? current
+        : latest;
+    }, subscriptions[0]);
+
+    const startDate = new Date(recentSub.startDate);
+    const endDate = new Date(recentSub.endDate);
+    formattedStart = startDate.toLocaleDateString("vi-VN");
+    formattedExpire = endDate.toLocaleDateString("vi-VN");
+    daysLeft = Math.ceil(
+      (endDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24),
+    );
+    isExpiringSoon = daysLeft <= 7;
+  }
+
   return (
     <div
       className={`mb-6 rounded-xl p-5 text-[14px] shadow-lg ${

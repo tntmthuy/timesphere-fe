@@ -9,18 +9,20 @@ export const VerifyCodePage = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
 
-  const { email, secretImageUri, status, error } = useAppSelector((state) => state.auth);
+  const { email, secretImageUri, status, error } = useAppSelector(
+    (state) => state.auth,
+  );
 
   useEffect(() => {
     if (!email) navigate("/register");
   }, [email, navigate]);
 
   useEffect(() => {
-  if (status === "succeeded") {
-    dispatch(clearToken()); // chỉ xoá token, không reset state
-    navigate("/login");
-  }
-}, [status, dispatch, navigate]);
+    if (status === "succeeded") {
+      dispatch(clearToken()); // chỉ xoá token, không reset state
+      navigate("/login");
+    }
+  }, [status, dispatch, navigate]);
 
   useEffect(() => {
     if (status === "failed") {
@@ -42,7 +44,10 @@ export const VerifyCodePage = () => {
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, index: number) => {
+  const handleKeyDown = (
+    e: React.KeyboardEvent<HTMLInputElement>,
+    index: number,
+  ) => {
     if (e.key === "Backspace" && !code[index] && index > 0) {
       inputsRef.current[index - 1]?.focus();
     }
@@ -58,11 +63,18 @@ export const VerifyCodePage = () => {
   return (
     <section className="flex min-h-screen items-center justify-center bg-white px-4">
       <div className="w-full max-w-md space-y-6 rounded-xl bg-white p-8 shadow-lg">
-        <h2 className="text-center text-2xl font-bold text-black">Verify Two-Factor Authentication</h2>
+        <h2 className="text-center text-2xl font-bold text-black">
+          Verify Two-Factor Authentication
+        </h2>
 
         {secretImageUri && (
           <div className="flex justify-center">
-            <img src={secretImageUri} alt="QR code" className="mb-4 w-48 rounded" loading="lazy" />
+            <img
+              src={secretImageUri}
+              alt="QR code"
+              className="mb-4 w-48 rounded"
+              loading="lazy"
+            />
           </div>
         )}
 
@@ -85,23 +97,51 @@ export const VerifyCodePage = () => {
             ))}
           </div>
 
-          {status === "loading" && <p className="text-center text-gray-500">Đang xác thực...</p>}
+          {status === "loading" && (
+            <p className="text-center text-gray-500">Đang xác thực...</p>
+          )}
           {error && <p className="text-center text-red-500">{error}</p>}
 
           <button
             type="submit"
             disabled={code.join("").length < 6 || status === "loading"}
-            className="w-full rounded bg-[#FFDE70] px-6 py-2 font-medium text-black hover:bg-black hover:text-white transition"
+            className="w-full rounded bg-[#FFDE70] px-6 py-2 font-medium text-black transition hover:bg-black hover:text-white"
           >
             Verify Code
           </button>
         </form>
 
         <div className="flex justify-between text-sm text-[#B3B1B0]">
-          <button onClick={() => window.history.back()} className="hover:text-[#FFDE70]">
+          <button
+            onClick={() => window.history.back()}
+            className="hover:text-[#FFDE70]"
+          >
             ← Back
           </button>
-          <Link to="/" className="hover:text-[#FFDE70]">🏠 Home</Link>
+          <Link
+            to="/"
+            className="flex items-center gap-1 text-sm font-medium text-gray-500 transition hover:text-[#FFDE70]"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+              className="h-5 w-5"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 
+        .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 
+        1.125-1.125h2.25c.621 0 1.125.504 
+        1.125 1.125V21h4.125c.621 0 1.125-.504 
+        1.125-1.125V9.75M8.25 21h8.25"
+              />
+            </svg>{" "}
+            Home
+          </Link>
         </div>
       </div>
     </section>
