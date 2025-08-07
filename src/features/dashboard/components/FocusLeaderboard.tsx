@@ -5,6 +5,7 @@ import { fetchWeeklyStatsAllUsersThunk } from "../../focus/focusSlice";
 export const FocusLeaderboard = () => {
   const dispatch = useAppDispatch();
   const userStats = useAppSelector((state) => state.focus.userStats);
+  const currentUser = useAppSelector((state) => state.auth.user);
 
   useEffect(() => {
     dispatch(fetchWeeklyStatsAllUsersThunk());
@@ -15,7 +16,9 @@ export const FocusLeaderboard = () => {
       ? b.totalMinutes - a.totalMinutes
       : a.name.localeCompare(b.name),
   );
-
+  const currentUserRank = sortedStats.findIndex(
+    (user) => user.userId === currentUser?.id,
+  );
   const toHourMinute = (minutes: number) => {
     const h = Math.floor(minutes / 60);
     const m = minutes % 60;
@@ -102,6 +105,19 @@ export const FocusLeaderboard = () => {
           </tbody>
         </table>
       </div>
+      {currentUserRank >= 0 && (
+        <div className="mt-6">
+          <div className="mx-auto flex w-full max-w-md items-center justify-between rounded-xl border border-yellow-300 bg-yellow-100 px-5 py-4 shadow-md">
+            <span className="text-sm font-medium text-yellow-700">
+              Hạng của bạn
+            </span>
+            <span className="text-2xl font-bold text-yellow-800">
+              #{currentUserRank + 1}
+            </span>
+            <span className="text-sm text-yellow-600">tuần này</span>
+          </div>
+        </div>
+      )}
     </section>
   );
 };

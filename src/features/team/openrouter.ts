@@ -15,7 +15,7 @@ export const fetchSubtaskSuggestions = async (taskTitle: string): Promise<string
         messages: [
           {
             role: "user",
-            content: `Liệt kê tối đa 5 subtask cụ thể để thực hiện nhiệm vụ: "${taskTitle}". Trả về định dạng danh sách: "- [nội dung]". Không thêm tiêu đề, mở bài hay giải thích.`
+            content: `Liệt kê tối đa 8 subtask cụ thể để thực hiện nhiệm vụ: "${taskTitle}". Trả về định dạng danh sách: "- [nội dung]". Không thêm tiêu đề, mở bài hay giải thích.`
           }
         ]
       })
@@ -29,8 +29,11 @@ export const fetchSubtaskSuggestions = async (taskTitle: string): Promise<string
       .split("\n")
       .filter((line: string) => line.trim())
       .map((line: string) =>
-        line.replace(/^[-•\d]+[.)]?\s*/, "").trim()
-        );
+        line
+          .replace(/^[-•\d]+[.)]?\s*/, "") 
+          .replace(/^\[|\]$/g, "")         
+          .trim()
+      )
   } catch (err) {
     console.error("Lỗi gọi OpenRouter:", err);
     return [];

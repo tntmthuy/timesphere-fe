@@ -16,6 +16,7 @@ export type FocusSessionResponse = {
 };
 
 export type UserFocusStats = {
+  userId: string;
   name: string;
   avatar: string | null;
   totalMinutes: number;
