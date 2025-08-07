@@ -150,11 +150,17 @@ export const FocusTimerModal = ({
       <div
         className="relative flex h-[460px] w-[360px] flex-col justify-between rounded-xl border border-yellow-200 p-8 text-center shadow-lg"
         style={{
-          backgroundImage: "url('/images/focus5.jpg')",
+          backgroundImage:
+            mode === "break"
+              ? "url('/images/break.jpg')"
+              : "url('/images/focus5.jpg')",
           backgroundSize: "cover",
           backgroundRepeat: "no-repeat",
           backgroundPosition: "bottom center",
-          backgroundColor: "rgba(255, 247, 209, 0.95)",
+          backgroundColor:
+            mode === "break"
+              ? "rgba(220, 240, 255, 0.95)" // màu nhẹ cho break
+              : "rgba(255, 247, 209, 0.95)", // màu vàng cho focus
         }}
       >
         {" "}
