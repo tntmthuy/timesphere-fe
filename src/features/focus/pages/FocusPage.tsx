@@ -70,7 +70,7 @@ export const FocusPage = () => {
         endSessionThunk({
           sessionId: activeSessionId,
           // actualMinutes: parseInt(focusTime),
-          actualMinutes: 78,
+          actualMinutes: 101,
         }),
       ).unwrap();
 
@@ -164,8 +164,8 @@ export const FocusPage = () => {
         <FocusCalendar sessions={sessions} />
       ) : (
         <div className="mt-6 rounded-md bg-yellow-100 p-4 text-sm text-yellow-800 shadow-sm">
-          Focus Calendar is available for Premium users. Upgrade to unlock
-          your journey view!
+          Focus Calendar is available for Premium users. Upgrade to unlock your
+          journey view!
           <div className="mt-3">
             <Link
               to="/mainpage/upgrade"

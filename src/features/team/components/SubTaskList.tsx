@@ -226,6 +226,7 @@ export const SubTaskList = forwardRef(
             onConfirm={async () => {
               const action = await dispatch(deleteSubtaskThunk(modalSubtaskId));
               if (deleteSubtaskThunk.fulfilled.match(action)) {
+                toast.dismiss();
                 toast.success("Subtask deleted!");
                 const updatedItems = items.filter(
                   (i) => i.id !== modalSubtaskId,
