@@ -28,12 +28,14 @@ export const fetchSubtaskSuggestions = async (taskTitle: string): Promise<string
     return raw
       .split("\n")
       .filter((line: string) => line.trim())
-      .map((line: string) =>
-        line
-          .replace(/^[-•\d]+[.)]?\s*/, "") 
-          .replace(/^\[|\]$/g, "")         
-          .trim()
-      )
+      .map((line: string) => {
+        // Loại bỏ đầu dòng như "- ", "• ", "1. ", v.v.
+        const cleaned = line.replace(/^[-•\d]+[.)]?\s*/, "").trim();
+
+        // Nếu có định dạng [nội dung], thì lấy phần bên trong
+        const match = cleaned.match(/\[(.*?)\]/);
+        return match ? match[1].trim() : cleaned;
+      });
   } catch (err) {
     console.error("Lỗi gọi OpenRouter:", err);
     return [];
